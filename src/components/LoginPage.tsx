@@ -34,7 +34,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
             const result = await response.json()
             if (result.success) {
-                alert('Role cookie set successfully')
+                // alert('Role cookie set successfully')
                 router.push(`/${role}`)
                 onLogin();
                 // optionally redirect user or update state

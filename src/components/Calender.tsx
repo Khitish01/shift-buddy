@@ -209,14 +209,14 @@ const Calender = () => {
                     </button>
                 </div>
             </div>
-            <div className="flex gap-6 border border-r-0 border-t-[#E4E7EC]">
+            <div className="flex gap-6 border border-r-0 border-t-[#E4E7EC] bg-white">
                 {/* Schedule Content */}
 
                 <div className="flex-1">
 
 
                     {/* Time Slots */}
-                    <div className="bg-white rounded-lg shadow-sm overflow-auto max-h-screen">
+                    <div className="bg-white rounded-lg shadow-sm overflow-auto max-h-screen custom-scrollbar">
                         {timeSlots.map((time, index) => (
                             <div key={time} className="flex ">
                                 <div className="w-20 pb-4 px-4 text-sm border-r border-[#E2E2E2]">
@@ -260,7 +260,7 @@ const Calender = () => {
                 {/* Right Sidebar */}
                 <div className="w-80 space-y-6">
                     {/* Calendar */}
-                    <div className="bg-white mt-4 p-4 rounded-t-lg shadow-sm" style={{
+                    <div className="mt-4 p-4 rounded-t-lg shadow-sm" style={{
                         backgroundImage: 'url(/images/calendar-bg.svg)', // Path to your image in the public folder
                         backgroundSize: 'cover', // Cover the entire area
                         backgroundPosition: 'center', // Center the image
@@ -302,7 +302,7 @@ const Calender = () => {
                                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                             />
                         </div>
-                        <div className="space-y-3 overflow-auto max-h-[20rem]">
+                        <div className="space-y-3 overflow-auto max-h-[20rem] custom-scrollbar">
                             {assignees.map((assignee, index) => (
                                 <div key={index} className="bg-[#69417E14] px-3 py-2 gap-2 inline-block mr-3 rounded-full">
                                     <div className="flex items-center gap-3">

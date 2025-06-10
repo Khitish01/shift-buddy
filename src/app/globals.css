@@ -195,3 +195,24 @@
   font-weight: bold;
   color: #000;
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #FFFFFF;
+  /* white background for the track */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #69417E;
+  /* purple scrollbar thumb */
+  border-radius: 8px;
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #69417E #FFFFFF;
+}

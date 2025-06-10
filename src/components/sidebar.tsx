@@ -15,7 +15,7 @@ const SideBar = () => {
         // { icon: HelpCircle, label: 'Help', id: 'help' }
     ];
     return (
-        < div className="fixed left-0 top-0 h-full w-20 bg-[#69417E] flex flex-col items-center py-4 z-50 rounded-br-3xl rounded-tr-3xl" >
+        < div className="fixed left-0 top-0 h-full w-20 bg-primary flex flex-col items-center py-4 z-50 rounded-br-3xl rounded-tr-3xl" >
             {/* Logo */}
             < div className="w-10 h-10 rounded-lg flex items-center justify-center mb-8" >
                 <div className="w-8 h-8 rounded-full flex items-center justify-center">
@@ -32,7 +32,7 @@ const SideBar = () => {
                                 key={item.id}
                                 onClick={() => setActiveView(item.id)}
                                 className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${activeView === item.id
-                                    ? 'bg-white bg-opacity-20 text-[#69417E]'
+                                    ? 'bg-white bg-opacity-20 text-primary'
                                     : 'text-purple-200 hover:text-white hover:bg-white hover:bg-opacity-10'
                                     }`}
                                 title={item.label}
@@ -47,7 +47,7 @@ const SideBar = () => {
 
                         onClick={() => setActiveView('settings')}
                         className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${activeView === 'settings'
-                            ? 'bg-white bg-opacity-20 text-[#69417E]'
+                            ? 'bg-white bg-opacity-20 text-primary'
                             : 'text-purple-200 hover:text-white hover:bg-white hover:bg-opacity-10'
                             }`}
                         title={'Settings'}
@@ -57,7 +57,7 @@ const SideBar = () => {
                     <button
                         onClick={() => setActiveView('logout')}
                         className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${activeView === 'logout'
-                            ? 'bg-white bg-opacity-20 text-[#69417E]'
+                            ? 'bg-white bg-opacity-20 text-primary'
                             : 'text-purple-200 hover:text-white hover:bg-white hover:bg-opacity-10'
                             }`}
                         title={'Logout'}

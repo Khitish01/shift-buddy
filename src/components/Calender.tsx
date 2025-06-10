@@ -3,7 +3,7 @@
 import dayjs from "dayjs";
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { BarChart3, Calendar, ChevronLeft, ChevronRight, DollarSign, Plus, Search, UserCheck, Users } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NoBookings from "./NoData";
 import { SideDrawer } from "./SIdeDrawer";
 import { BookSlotContent } from "./SlotBooking";
@@ -12,8 +12,10 @@ dayjs.extend(isSameOrBefore);
 
 const Calender = () => {
     const [activeView, setActiveView] = useState('schedule');
-    const [currentDate, setCurrentDate] = useState<Date>(new Date(2025, 5, 7)); // June 7, 2025
-    const [selectedDayCalender, setSelectedDayCalender] = useState<number | null>(dayjs().get('D'))
+    const [currentDate] = useState(dayjs());
+    const [selectedMonth, setSelectedMonth] = useState(dayjs());
+    const [selectedDayCalender, setSelectedDayCalender] = useState<dayjs.Dayjs>(dayjs())
+    const [dates, setDates] = useState<any[]>([]);
     const [drawerState, setDrawerState] = useState({
         isOpen: false,
         type: 'book', // 'book' or 'details'
@@ -33,6 +35,30 @@ const Calender = () => {
         { name: 'Michael Johnson', color: 'bg-blue-500' },
         { name: 'Ana Lee', color: 'bg-pink-500' },
         { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
+        { name: 'Daniel Miller', color: 'bg-gray-700' },
         { name: 'Joseph Harris', color: 'bg-yellow-500' }
     ];
 
@@ -48,23 +74,55 @@ const Calender = () => {
         return date.toLocaleDateString('en-US', { weekday: 'long' });
     };
 
-    const getDaysInMonth = (date: Date) => {
-        const year = date.getFullYear();
-        const month = date.getMonth();
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const startingDayOfWeek = firstDay.getDay();
+    // const getDaysInMonth = (date: Date) => {
+    //     const year = date.getFullYear();
+    //     const month = date.getMonth();
+    //     const firstDay = new Date(year, month, 1);
+    //     const lastDay = new Date(year, month + 1, 0);
+    //     const daysInMonth = lastDay.getDate();
+    //     const startingDayOfWeek = firstDay.getDay();
 
-        const days = [];
-        for (let i = 0; i < startingDayOfWeek; i++) {
-            days.push(null);
-        }
-        for (let i = 1; i <= daysInMonth; i++) {
-            days.push(i);
-        }
-        return days;
+    //     const days = [];
+    //     for (let i = 0; i < startingDayOfWeek; i++) {
+    //         days.push(null);
+    //     }
+    //     for (let i = 1; i <= daysInMonth; i++) {
+    //         days.push(i);
+    //     }
+    //     getDaysInCurrentMonth()
+    //     return days;
+    // };
+
+    useEffect(() => {
+        getDaysInMonth(selectedMonth)
+    }, [])
+
+    const getDaysInMonth = (date: string | dayjs.Dayjs) => {
+        const month = dayjs(date); // Accepts "YYYY-MM" or a Dayjs object
+        const startOfMonth = month.startOf('month');
+        const totalDays = month.daysInMonth();
+
+        const datesArray = Array.from({ length: totalDays }, (_, i) =>
+            startOfMonth.add(i, 'day').format('YYYY-MM-DD')
+        );
+
+        setDates(datesArray); // or return datesArray if needed
     };
+
+    const handlePrevMonth = () => {
+        const newMonth = selectedMonth.subtract(1, 'month');
+        setSelectedMonth(newMonth);
+        getDaysInMonth(newMonth);
+    };
+
+    const handleNextMonth = () => {
+        const newMonth = selectedMonth.add(1, 'month');
+        setSelectedMonth(newMonth);
+        getDaysInMonth(newMonth);
+    };
+
+
+
     const openDrawer = (type: 'book' | 'details') => {
         setDrawerState({
             isOpen: true,
@@ -93,7 +151,7 @@ const Calender = () => {
         // Force add the final end time if it's not already in the array
         if (slots[slots.length - 1] !== end.format('HH:mm')) {
             slots.push(end.format('HH:mm'));
-        }debugger
+        }
 
         return slots;
     };
@@ -120,25 +178,29 @@ const Calender = () => {
     return (
         // <main className="pt-24 pl-20 p-6 w-[calc(100vw-1rem)]">
         <div>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-4">
 
                     <div>
-                        <h2 className="text-xl font-semibold">{formatDate(currentDate)}</h2>
-                        <p className="text-gray-500">{formatDayName(currentDate)}</p>
+                        <h2 className="text-xl font-semibold">{dayjs(selectedDayCalender).format('MMMM D, YYYY')}</h2>
+                        <p className="text-gray-500">{dayjs(selectedDayCalender).format('dddd')}</p>
                     </div>
 
                 </div>
                 <div className="flex gap-4">
                     <div className="flex gap-3">
-                        <button className="p-2 hover:bg-gray-100 rounded-lg border border-[#E4E7EC]">
+                        <button className="p-2 hover:bg-gray-100 rounded-lg border border-[#E4E7EC]"
+                            onClick={() => setSelectedDayCalender(prev => dayjs(prev).add(-1, 'd'))}
+                        >
                             <ChevronLeft size={20} />
                         </button>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg border border-[#E4E7EC]">
+                        <button className="p-2 hover:bg-gray-100 rounded-lg border border-[#E4E7EC]"
+                            onClick={() => setSelectedDayCalender(prev => dayjs(prev).add(1, 'd'))}
+                        >
                             <ChevronRight size={20} />
                         </button>
                     </div>
-                    <button className="bg-[#69417E] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-700"
+                    <button className="bg-primary text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-700"
                         style={{ boxShadow: '0px 1px 2px 0px #1018280D' }}
                         onClick={() => openDrawer('book')}
                     >
@@ -147,14 +209,14 @@ const Calender = () => {
                     </button>
                 </div>
             </div>
-            <div className="flex gap-6 border border-t-[#E4E7EC]">
+            <div className="flex gap-6 border border-r-0 border-t-[#E4E7EC]">
                 {/* Schedule Content */}
 
                 <div className="flex-1">
 
 
                     {/* Time Slots */}
-                    <div className="bg-white rounded-lg shadow-sm">
+                    <div className="bg-white rounded-lg shadow-sm overflow-auto max-h-screen">
                         {timeSlots.map((time, index) => (
                             <div key={time} className="flex ">
                                 <div className="w-20 pb-4 px-4 text-sm border-r border-[#E2E2E2]">
@@ -198,25 +260,32 @@ const Calender = () => {
                 {/* Right Sidebar */}
                 <div className="w-80 space-y-6">
                     {/* Calendar */}
-                    <div className="bg-white p-4 rounded-t-lg shadow-sm bg-gradient-to-bl to-[#E0E9F7] from-[#EFDBF4]">
+                    <div className="bg-white mt-4 p-4 rounded-t-lg shadow-sm" style={{
+                        backgroundImage: 'url(/images/calendar-bg.svg)', // Path to your image in the public folder
+                        backgroundSize: 'cover', // Cover the entire area
+                        backgroundPosition: 'center', // Center the image
+                        backgroundRepeat: 'no-repeat', // Prevent tiling
+                        // minHeight: '100vh', // Full viewport height
+                        width: '100%',
+                    }}>
                         <div className="flex items-center justify-between mb-4">
-                            <button><ChevronLeft size={16} /></button>
-                            <h3 className="font-medium">June 2025</h3>
-                            <button><ChevronRight size={16} /></button>
+                            <button onClick={handlePrevMonth} className="hover:bg-gray-100 rounded-full p-1"><ChevronLeft size={16} /></button>
+                            <h3 className="font-medium">{selectedMonth.format('MMMM YYYY')}</h3>
+                            <button onClick={handleNextMonth} className="hover:bg-gray-100 rounded-full p-1"><ChevronRight size={16} /></button>
                         </div>
                         <div className="grid grid-cols-7 gap-3 text-center text-xs">
                             {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
                                 <div key={i} className="py-2 font-medium text-gray-500">{day}</div>
                             ))}
-                            {getDaysInMonth(currentDate).map((day, index) => (
+                            {dates.map((day, index) => (
                                 <div
                                     key={index}
-                                    onClick={() => setSelectedDayCalender(day)}
-                                    className={`py-2 ${day ? 'hover:bg-[#FFFFFF] cursor-pointer rounded-full' : ''} ${day === selectedDayCalender ? 'bg-[#FFFFFF] rounded-full ' : ''
+                                    onClick={() => setSelectedDayCalender(dayjs(day, 'YYYY-MM-DD'))}
+                                    className={`py-2 ${day ? 'hover:bg-[#FFFFFF] cursor-pointer rounded-full' : ''} ${dayjs(day, 'YYYY-MM-DD').isSame(selectedDayCalender, 'day') ? 'bg-[#FFFFFF] rounded-full ' : ''
                                         }`}
-                                    style={day === selectedDayCalender ? { boxShadow: '0px 2px 14px 0px #00000014' } : {}}
+                                    style={dayjs(day, 'YYYY-MM-DD').isSame(selectedDayCalender, 'day') ? { boxShadow: '0px 2px 14px 0px #00000014' } : {}}
                                 >
-                                    {day}
+                                    {dayjs(day, 'YYYY-MM-DD').get('D')}
                                 </div>
                             ))}
                         </div>
@@ -233,7 +302,7 @@ const Calender = () => {
                                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                             />
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-3 overflow-auto max-h-[20rem]">
                             {assignees.map((assignee, index) => (
                                 <div key={index} className="bg-[#69417E14] px-3 py-2 gap-2 inline-block mr-3 rounded-full">
                                     <div className="flex items-center gap-3">

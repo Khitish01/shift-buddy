@@ -66,7 +66,7 @@ export const BookSlotContent: React.FC = () => {
                         onChange={(e) => handleInputChange('shiftcareId', e.target.value)}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                     />
-                    <button className="px-8 py-1 bg-[#F2C7AC] text-[#69417E] text-sm rounded-full hover:bg-orange-300 transition-colors">
+                    <button className="px-8 py-1 bg-[#F2C7AC] text-primary text-sm rounded-full hover:bg-orange-300 transition-colors">
                         Enter
                     </button>
                 </div>
@@ -78,7 +78,7 @@ export const BookSlotContent: React.FC = () => {
                     <button
                         onClick={() => setActiveTab('personal')}
                         className={`py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'personal'
-                            ? 'border-b-[3px] border-b-[#69417E]'
+                            ? 'border-b-[3px] border-primary'
                             : ''
                             }`}
                     >
@@ -87,7 +87,7 @@ export const BookSlotContent: React.FC = () => {
                     <button
                         onClick={() => setActiveTab('medical')}
                         className={`py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'medical'
-                            ? 'border-b-[3px] border-b-[#69417E]'
+                            ? 'border-b-[3px] border-primary'
                             : ''
                             }`}
                     >
@@ -503,7 +503,7 @@ export const BookSlotContent: React.FC = () => {
                                             </span>
                                         ))}
                                     </div>
-                                    <button className="px-4 py-2 bg-[#F2C7AC] text-[#69417E] rounded-full  hover:bg-[#ecb08a] transition-colors text-sm">
+                                    <button className="px-4 py-2 bg-[#F2C7AC] text-primary rounded-full  hover:bg-[#ecb08a] transition-colors text-sm">
                                         Add Document
                                     </button>
                                 </div>
@@ -528,7 +528,7 @@ export const BookSlotContent: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex justify-end">
-                            <button className=" px-5 py-2 bg-[#69417E] text-white rounded-lg hover:bg-[#483154] transition-colors">
+                            <button className=" px-5 py-2 bg-primary text-white rounded-lg hover:bg-[#483154] transition-colors">
                                 Book Slot
                             </button>
                         </div>

@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 const Header = () => {
     const router = useRouter();
     return (
-        <header className="fixed top-0 right-0 left-16 bg-white border-b border-gray-200 px-6 py-4 z-40">
+        <header className="fixed top-0 right-0 left-[4.5rem] bg-white border-b border-gray-200 px-6 py-4 z-40">
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                    <h1 className="text-xl font-semibold text-[#69417E] flex flex-col">
+                    {/* <p className="text-xl font-semibold text-primary flex flex-col">
                         <span>Shift</span><span >Buddy</span>
-                    </h1>
+                    </p> */}
+                    <img src="/logos/logo-text.svg" alt="" />
                 </div>
 
                 <div className="flex items-center space-x-4">

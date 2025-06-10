@@ -69,7 +69,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             <div className=" bg-white flex items-center justify-center p-10 absolute top-11 md:top-0 right-[-25px] md:right-0 w-[80%] md:w-[35%] h-[70%] md:h-[80%] rounded-3xl" style={{ transform: 'translate(-20%, 15%)' }}>
                 <div className="w-full h-full">
                     <div className="mb-12 pb-6 border-b-8 border-[#F8EDDD] w-[60%] md:w-[50%]">
-                        <p className="text-black mb-2 text-xs md:text-lg">Welcome to <span className="text-[#69417E] font-semibold">ShiftBuddy</span></p>
+                        <p className="text-black mb-2 text-xs md:text-lg">Welcome to <span className="text-primary font-semibold">ShiftBuddy</span></p>
                         <h1 className="text-xl md:text-4xl font-bold text-gray-900">Sign up</h1>
                     </div>
 
@@ -112,7 +112,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                         <div className='flex justify-end mt-14'>
                             <Button
                                 type="submit"
-                                className=" w-40 md:w-60 h-12 bg-[#69417E] hover:bg-[#715581] text-white font-medium rounded-lg mt-8 cursor-pointer"
+                                className=" w-40 md:w-60 h-12 bg-primary hover:bg-[#715581] text-white font-medium rounded-lg mt-8 cursor-pointer"
                                 style={{ boxShadow: '0px 4px 19px 0px #7793414D' }}
                             >
                                 Sign in

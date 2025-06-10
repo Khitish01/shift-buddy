@@ -34,7 +34,7 @@ export default function AdminLayout({
                 <SideBar />
                 <div className="">
                     <Header />
-                    <main className="pt-28 pl-24 p-5 w-[calc(100vw-1rem)]">
+                    <main className="pt-20 pl-24 p-5 w-[calc(100vw-1rem)] bg-[#fafafa]">
 
                         {children}
                     </main>

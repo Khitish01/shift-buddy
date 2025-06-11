@@ -5,10 +5,11 @@ interface SideDrawerProps {
     isOpen: boolean;
     onClose: () => void;
     title: string;
+    avatar: string
     children: React.ReactNode;
 }
 
-export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, title, children }) => {
+export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, avatar, title, children }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
 
@@ -42,7 +43,14 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, title, 
             >
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 pb-0">
-                    <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+                    {avatar == '' ? (
+                        <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+                    ) : (
+                        <div className='flex items-center gap-3'>
+                            <img src={avatar} alt="" className='rounded-full' />
+                            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+                        </div>
+                    )}
                     <button
                         onClick={onClose}
                         className="p-1 hover:bg-gray-100 bg-[#F4F1F1] rounded-full transition-colors"

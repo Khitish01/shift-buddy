@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { TopLoaderProvider } from "@/hooks/TopLoader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        {/* <div id="top-loader"></div>
+        <div id="page-overlay"></div> */}
+        <TopLoaderProvider>
+
+          {children}
+        </TopLoaderProvider>
       </body>
     </html>
   );

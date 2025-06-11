@@ -19,6 +19,7 @@ const Calender = () => {
     const [drawerState, setDrawerState] = useState({
         isOpen: false,
         type: 'book', // 'book' or 'details'
+        avatar: '',
         title: ''
     });
 
@@ -74,25 +75,6 @@ const Calender = () => {
         return date.toLocaleDateString('en-US', { weekday: 'long' });
     };
 
-    // const getDaysInMonth = (date: Date) => {
-    //     const year = date.getFullYear();
-    //     const month = date.getMonth();
-    //     const firstDay = new Date(year, month, 1);
-    //     const lastDay = new Date(year, month + 1, 0);
-    //     const daysInMonth = lastDay.getDate();
-    //     const startingDayOfWeek = firstDay.getDay();
-
-    //     const days = [];
-    //     for (let i = 0; i < startingDayOfWeek; i++) {
-    //         days.push(null);
-    //     }
-    //     for (let i = 1; i <= daysInMonth; i++) {
-    //         days.push(i);
-    //     }
-    //     getDaysInCurrentMonth()
-    //     return days;
-    // };
-
     useEffect(() => {
         getDaysInMonth(selectedMonth)
     }, [])
@@ -123,11 +105,12 @@ const Calender = () => {
 
 
 
-    const openDrawer = (type: 'book' | 'details') => {
+    const openDrawer = (type: 'book' | 'details', name: string = '') => {
         setDrawerState({
             isOpen: true,
             type,
-            title: type === 'book' ? 'Book Slot' : 'Booking Details'
+            avatar: type === 'book' ? '' : 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop&crop=face',
+            title: type === 'book' ? 'Book Slot' : name
         });
     };
 
@@ -200,7 +183,7 @@ const Calender = () => {
                             <ChevronRight size={20} />
                         </button>
                     </div>
-                    <button className="bg-primary text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-700"
+                    <button className="bg-primary text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-900"
                         style={{ boxShadow: '0px 1px 2px 0px #1018280D' }}
                         onClick={() => openDrawer('book')}
                     >
@@ -223,13 +206,16 @@ const Calender = () => {
                                     <div className="font-medium text-[#3A3A3A]">{time}</div>
                                     <div className="text-xs text-[#8C8C8C]">AM</div>
                                 </div>
-                                <div className="flex-1 py-4 px-4 border-b border-gray-100 ">
+                                <div className="flex-1 py-4 px-4 border-b border-gray-100 " onClick={() => openDrawer('book')}>
                                     <div className="grid grid-cols-3 gap-4">
                                         {scheduleData
                                             .filter(item => item.time === time)
                                             .map((item, idx) => (
                                                 <div key={idx} className="bg-purple-50 p-3 rounded-4xl border border-purple-100"
-                                                    onClick={() => openDrawer('details')}>
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // prevents triggering openDrawer('book')
+                                                        openDrawer('details', item.employee)
+                                                    }}>
                                                     <div className="flex items-center space-x-3">
                                                         <img
                                                             src={item.avatar}
@@ -321,6 +307,7 @@ const Calender = () => {
             <SideDrawer
                 isOpen={drawerState.isOpen}
                 onClose={closeDrawer}
+                avatar={drawerState.avatar}
                 title={drawerState.title}
             >
                 {drawerState.type === 'book' ? <BookSlotContent /> : <BookingDetailsContent />}

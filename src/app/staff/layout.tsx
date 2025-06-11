@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "Organization Admin",
-    description: "This is the organization admin",
+    title: "Staff",
+    description: "This is the staff",
 };
 
 export default function AdminLayout({

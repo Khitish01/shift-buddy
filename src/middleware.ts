@@ -32,7 +32,7 @@ export function middleware(request: NextRequest) {
 
     // If no role, redirect to login
     if (!role) {
-        return NextResponse.redirect(new URL('/login', request.url))
+        return NextResponse.redirect(new URL('/', request.url))
     }
 
     // Check if the path is allowed for the user's role

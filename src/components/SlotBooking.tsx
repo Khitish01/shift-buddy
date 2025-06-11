@@ -28,19 +28,38 @@ export const BookSlotContent: React.FC = () => {
         mobilityNotes: 'None',
         emergencyPlan: 'Dose 30',
         carer: 'Erman Watson',
-        repeat: 'Daily'
+        repeat: 'daily'
     });
 
     const [medicationTags, setMedicationTags] = useState(['IBM 60 - M', 'IBM 100-N']);
-    const [documentTags, setDocumentTags] = useState(['Scan.png', 'Report.png']);
+    // const [documentTags, setDocumentTags] = useState(['Scan.png', 'Report.png']);
+
+    const documentRef = useRef<HTMLInputElement | null>(null);
+    const [documents, setDocuments] = useState<File[]>([]);
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newFiles = Array.from(event.target.files || []);
+        const uniqueFiles = newFiles.filter(
+            (newFile) => !documents.some((doc) => doc.name === newFile.name)
+        );
+        setDocuments([...documents, ...uniqueFiles]);
+    };
+
+    const handleAddClick = () => {
+        documentRef.current?.click();
+    };
+
+    const handleRemove = (fileName: string) => {
+        setDocuments((prev) => prev.filter((doc) => doc.name !== fileName));
+    };
 
     const removeMedicationTag = (index: number) => {
         setMedicationTags(prev => prev.filter((_, i) => i !== index));
     };
 
-    const removeDocumentTag = (index: number) => {
-        setDocumentTags(prev => prev.filter((_, i) => i !== index));
-    };
+    // const removeDocumentTag = (index: number) => {
+    //     setDocumentTags(prev => prev.filter((_, i) => i !== index));
+    // };
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -491,11 +510,11 @@ export const BookSlotContent: React.FC = () => {
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Medical Document</label>
                                     {/* Document Tags */}
                                     <div className="flex flex-wrap gap-2 mb-3">
-                                        {documentTags.map((tag, index) => (
+                                        {documents.map((file, index) => (
                                             <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                📄 {tag}
+                                                📄 {file.name}
                                                 <button
-                                                    onClick={() => removeDocumentTag(index)}
+                                                    onClick={() => handleRemove(file.name)}
                                                     className="ml-2 text-blue-600 hover:text-blue-800"
                                                 >
                                                     ×
@@ -503,9 +522,18 @@ export const BookSlotContent: React.FC = () => {
                                             </span>
                                         ))}
                                     </div>
-                                    <button className="px-4 py-2 bg-[#F2C7AC] text-primary rounded-full  hover:bg-[#ecb08a] transition-colors text-sm">
+                                    <button className="px-4 py-2 bg-[#F2C7AC] text-primary rounded-full  hover:bg-[#ecb08a] transition-colors text-sm"
+                                        onClick={handleAddClick}
+                                    >
                                         Add Document
                                     </button>
+                                    <input
+                                        type="file"
+                                        ref={documentRef}
+                                        onChange={handleFileChange}
+                                        multiple
+                                        hidden
+                                    />
                                 </div>
                             </div>
 
@@ -520,9 +548,11 @@ export const BookSlotContent: React.FC = () => {
                                         onChange={(e) => handleInputChange('repeat', e.target.value)}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                                     >
-                                        <option value="Daily">Daily</option>
-                                        <option value="Weekly">Weekly</option>
-                                        <option value="Monthly">Monthly</option>
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly">Weekly on the day</option>
+                                        <option value="monthly">Monthly on the day</option>
+                                        <option value="weekday">Every weekday(Monday to Friday)</option>
+                                        <option value="once">Does not repeat</option>
                                     </select>
                                 </div>
                             </div>

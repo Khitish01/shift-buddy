@@ -216,3 +216,51 @@
   scrollbar-width: thin;
   scrollbar-color: #69417E #FFFFFF;
 }
+
+#top-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  width: 100%;
+  background: linear-gradient(90deg, #69417E, #cf88d4, #35084e);
+  background-size: 200% 100%;
+  animation: loaderAnim 1.5s linear infinite;
+  z-index: 9999;
+  display: block;
+}
+
+#page-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: #ffffff30;
+  /* semi-transparent white */
+  backdrop-filter: blur(2px);
+  z-index: 9998;
+  display: none;
+  cursor: wait;
+}
+
+@keyframes loaderAnim {
+
+  /* 0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  } */
+  0% {
+    left: -100%;
+    width: 100%;
+  }
+
+  50% {
+    left: 25%;
+    width: 50%;
+  }
+
+  100% {
+    left: 100%;
+    width: 0;
+  }
+}

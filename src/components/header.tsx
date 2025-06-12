@@ -1,32 +1,37 @@
 'use client'
-import { Bell, Calendar, Search } from "lucide-react";
+import { useSidebar } from "@/context/SidebarContext";
+import { Bell, Calendar, Menu, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const Header = () => {
     const router = useRouter();
+    const { isOpen, toggle, close } = useSidebar();
     return (
-        <header className="fixed top-0 right-0 left-[4.5rem] bg-white border-b border-gray-200 px-6 py-4 z-40">
+        <header className={`fixed top-0 right-0  bg-white border-b border-gray-200 px-6 py-4 z-40 ${isOpen?'left-[4.5rem]':'left-0'}`}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                     {/* <p className="text-xl font-semibold text-primary flex flex-col">
                         <span>Shift</span><span >Buddy</span>
                     </p> */}
+                    <button onClick={toggle} className="md:hidden">
+                        <Menu size={24} />
+                    </button>
                     <img src="/logos/logo-text.svg" alt="" />
                 </div>
 
                 <div className="flex items-center space-x-4">
                     {/* Search */}
-                    <div className="relative">
+                    {/* <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                         <input
                             type="text"
                             placeholder="Type to search"
                             className="pl-10 pr-4 py-2 w-64 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                         />
-                    </div>
+                    </div> */}
 
                     {/* Icons */}
-                    <button className="p-2 text-gray-400 hover:text-gray-600" onClick={()=>router.push('/admin/scheduler')}>
+                    <button className="p-2 text-gray-400 hover:text-gray-600" onClick={() => router.push('/admin/scheduler')}>
                         <Calendar size={20} />
                     </button>
                     <button className="p-2 text-gray-400 hover:text-gray-600 relative">

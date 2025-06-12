@@ -1,10 +1,12 @@
 'use client'
 
+import { useSidebar } from "@/context/SidebarContext";
 import { Calendar, ClipboardList, HelpCircle, Home, LogOut, Settings, Truck, Users } from "lucide-react";
 import { useState } from "react";
 
 const SideBar = () => {
     const [activeView, setActiveView] = useState('dashboard');
+    const { isOpen, close } = useSidebar();
     const sidebarItems = [
         { icon: Home, label: 'Dashboard', id: 'dashboard' },
         { icon: Users, label: 'Staff', id: 'staff' },
@@ -15,7 +17,7 @@ const SideBar = () => {
         // { icon: HelpCircle, label: 'Help', id: 'help' }
     ];
     return (
-        < div className="fixed left-0 top-0 h-full w-20 bg-primary flex flex-col items-center py-4 z-50 rounded-br-3xl rounded-tr-3xl" >
+        < div className={`fixed left-0 top-0 h-full  bg-primary flex flex-col items-center py-4 z-50 rounded-br-3xl rounded-tr-3xl ${isOpen ? 'w-20 block' : 'w-0 hidden'}`} >
             {/* Logo */}
             < div className="w-10 h-10 rounded-lg flex items-center justify-center mb-8" >
                 <div className="w-8 h-8 rounded-full flex items-center justify-center">

@@ -207,7 +207,7 @@ const Calender = () => {
                                     <div className="text-xs text-[#8C8C8C]">AM</div>
                                 </div>
                                 <div className="flex-1 py-4 px-4 border-b border-gray-100 " onClick={() => openDrawer('book')}>
-                                    <div className="grid grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         {scheduleData
                                             .filter(item => item.time === time)
                                             .map((item, idx) => (

@@ -227,7 +227,7 @@
   background-size: 200% 100%;
   animation: loaderAnim 1.5s linear infinite;
   z-index: 9999;
-  display: block;
+  display: none;
 }
 
 #page-overlay {

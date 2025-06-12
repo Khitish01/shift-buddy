@@ -1,9 +1,13 @@
 'use client';
 
+import { useSidebar } from '@/context/SidebarContext';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 
 const BarChart = () => {
+    const isMobile = useIsMobile();
+    const { isCollapse, isOpen } = useSidebar();
     const chartOptions: Highcharts.Options = {
         chart: {
             type: 'column',
@@ -13,6 +17,7 @@ const BarChart = () => {
             borderRadius: 8,
             spacing: [20, 20, 20, 20],
             height: 350,
+            width: isCollapse ? 600 : 500
         },
         title: {
             text: '',

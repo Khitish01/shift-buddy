@@ -4,6 +4,7 @@ import Footer from "@/components/footer";
 import Header from "@/components/header";
 import SideBar from "@/components/sidebar";
 import { useSidebar } from "@/context/SidebarContext";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 // import "../global.css";
@@ -28,7 +29,8 @@ export default function AdminLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const { isOpen, close } = useSidebar()
+    const { isOpen, isCollapse, collapse } = useSidebar()
+    const isMobile = useIsMobile();
     return (
         <div
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -38,7 +40,7 @@ export default function AdminLayout({
                 <SideBar />
                 <div className="">
                     <Header />
-                    <main className={`pt-20 p-5  bg-[#fafafa] ${isOpen ? 'pl-24 w-[calc(100vw-1rem)]' : 'pl-5 w-[calc(100vw)]'}`}>
+                    <main className={`pt-20 p-5  bg-[#fafafa] transition-all duration-300 ease-in-out ${isOpen && !isMobile ? !isCollapse ? 'pl-[19rem] w-[calc(100vw-1rem)]' : 'pl-24 w-[calc(100vw-1rem)]' : 'pl-5 w-[calc(100vw)]'}`}>
 
                         {children}
                     </main>

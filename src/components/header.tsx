@@ -1,13 +1,15 @@
 'use client'
 import { useSidebar } from "@/context/SidebarContext";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { Bell, Calendar, Menu, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const Header = () => {
     const router = useRouter();
-    const { isOpen, toggle, close } = useSidebar();
+    const { isOpen, isCollapse, toggle, collapse } = useSidebar();
+    const isMobile = useIsMobile();
     return (
-        <header className={`fixed top-0 right-0  bg-white border-b border-gray-200 px-6 py-4 z-40 ${isOpen?'left-[4.5rem]':'left-0'}`}>
+        <header className={`fixed top-0 right-0  bg-white border-b border-gray-200 px-6 py-4 z-40 transition-all duration-300 ease-in-out ${isOpen && !isMobile ? !isCollapse ? 'left-[17.5rem]' : 'left-[4.5rem]' : 'left-0'}`}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                     {/* <p className="text-xl font-semibold text-primary flex flex-col">

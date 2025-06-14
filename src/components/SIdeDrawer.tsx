@@ -32,14 +32,14 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, avatar,
         <>
             {/* Backdrop */}
             <div
-                className={`fixed inset-0 bg-[#0000000b] bg-opacity-50 z-40 transition-opacity duration-300 ${isAnimating ? 'opacity-100' : 'opacity-0'
+                className={`fixed inset-0 h-screen w-screen bg-[#0000000b] bg-opacity-50 z-[99] transition-opacity duration-300 ${isAnimating ? 'opacity-100' : 'opacity-0'
                     }`}
                 onClick={onClose}
             />
 
             {/* Drawer */}
             <div
-                className={`fixed right-0 top-0 h-screen ${width == '75%' ? 'w-[80%]' : 'w-[50%]'} bg-white overflow-auto shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${isAnimating ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed right-0 top-0 h-screen ${width == '75%' ? 'w-[80%]' : 'w-[50%]'} bg-white overflow-auto shadow-2xl z-[100] transform transition-transform duration-300 ease-in-out ${isAnimating ? 'translate-x-0' : 'translate-x-full'
                     }`}
             >
                 {/* Header */}

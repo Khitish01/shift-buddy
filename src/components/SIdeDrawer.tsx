@@ -7,9 +7,10 @@ interface SideDrawerProps {
     title: string;
     avatar: string
     children: React.ReactNode;
+    width?: string
 }
 
-export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, avatar, title, children }) => {
+export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, avatar, title, children, width = '50%' }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
 
@@ -38,7 +39,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, avatar,
 
             {/* Drawer */}
             <div
-                className={`fixed right-0 top-0 h-screen w-[50%] bg-white overflow-auto shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${isAnimating ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed right-0 top-0 h-screen ${width == '75%' ? 'w-[80%]' : 'w-[50%]'} bg-white overflow-auto shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${isAnimating ? 'translate-x-0' : 'translate-x-full'
                     }`}
             >
                 {/* Header */}

@@ -8,6 +8,8 @@ import NoBookings from "./NoData";
 import { SideDrawer } from "./SIdeDrawer";
 import { BookSlotContent } from "./SlotBooking";
 import { BookingDetailsContent } from "./BookingDetails";
+import CarerProfilePage from "./CareerProfile";
+import CalendarPage from "./CarrerprofileDetails";
 dayjs.extend(isSameOrBefore);
 
 const Calender = () => {
@@ -18,7 +20,7 @@ const Calender = () => {
     const [dates, setDates] = useState<any[]>([]);
     const [drawerState, setDrawerState] = useState({
         isOpen: false,
-        type: 'book', // 'book' or 'details'
+        type: 'book', // 'book' or 'details' or 'career'
         avatar: '',
         title: ''
     });
@@ -105,18 +107,37 @@ const Calender = () => {
 
 
 
-    const openDrawer = (type: 'book' | 'details', name: string = '') => {
+    const openDrawer = (type: 'book' | 'details' | 'career', name: string = '') => {
         setDrawerState({
             isOpen: true,
             type,
-            avatar: type === 'book' ? '' : 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop&crop=face',
-            title: type === 'book' ? 'Book Slot' : name
+            avatar:
+                type === 'career'
+                    ? ''
+                    : type === 'book'
+                        ? ''
+                        : 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop&crop=face',
+            title: type === 'career' ? '' : type === 'book' ? 'Book Slot' : name
         });
     };
 
+
     const closeDrawer = () => {
         setDrawerState(prev => ({ ...prev, isOpen: false }));
+
+        // setCalenderDrawer(false)
+
     };
+    const closeCalenderDrawer = () => {
+        // setDrawerState(prev => ({ ...prev, isOpen: false }));
+
+        setCalenderDrawer(false)
+
+    };
+    const [calenderDrawer, setCalenderDrawer] = useState<boolean>(false);
+    // const openCalendarDrawer = () => {
+    //     setCalederDrawer(true)
+    // }
     const generateTimeSlots = (
         startTime = '00:00',
         endTime = '23:59',
@@ -290,7 +311,9 @@ const Calender = () => {
                         </div>
                         <div className="space-y-3 overflow-auto max-h-[20rem] custom-scrollbar">
                             {assignees.map((assignee, index) => (
-                                <div key={index} className="bg-[#69417E14] px-3 py-2 gap-2 inline-block mr-3 rounded-full">
+                                <div key={index} className="bg-[#69417E14] px-3 py-2 gap-2 inline-block mr-3 rounded-full"
+                                    onClick={() => openDrawer('career')}
+                                >
                                     <div className="flex items-center gap-3">
                                         <div className={`w-6 h-6 rounded-full ${assignee.color} flex items-center justify-center text-white text-xs font-medium`}>
                                             {assignee.name.split(' ').map(n => n[0]).join('')}
@@ -310,7 +333,16 @@ const Calender = () => {
                 avatar={drawerState.avatar}
                 title={drawerState.title}
             >
-                {drawerState.type === 'book' ? <BookSlotContent /> : <BookingDetailsContent />}
+                {drawerState.type === 'book' ? <BookSlotContent /> : drawerState.type === 'career' ? <CarerProfilePage OpenCalendarView={() => setCalenderDrawer(true)} /> : <BookingDetailsContent />}
+            </SideDrawer>
+            <SideDrawer
+                isOpen={calenderDrawer}
+                onClose={closeCalenderDrawer}
+                avatar={''}
+                title={''}
+                width={'75%'}
+            >
+                <CalendarPage />
             </SideDrawer>
         </div>
 

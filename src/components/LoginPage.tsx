@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { login } from './apicalls/auth';
+import { useTopLoader } from '@/hooks/TopLoader';
 
 interface LoginPageProps {
     onLogin: () => void;
@@ -17,11 +18,12 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('admin') // example role
     const router = useRouter()
+    const loader = useTopLoader()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         console.log('logged in....');
-
+        loader.showLoader()
         try {
             // const response = await login(role)
             const response = await fetch('/api/set-role-cookie', {
@@ -43,6 +45,8 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             }
         } catch (error) {
             console.error('Error setting role:', error)
+        } finally {
+            loader.showLoader()
         }
 
 

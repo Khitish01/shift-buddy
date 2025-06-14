@@ -3,6 +3,43 @@ import Progressbar from "./ProgressBar";
 
 export const BookingDetailsContent: React.FC = () => {
     const [activeTab, setActiveTab] = useState("medicalinfo");
+    const sampleNotes = [
+        {
+            id: "1",
+            time: "01:30pm",
+            date: "25/06/2024",
+            author: "William Garcia",
+            content: `On examination, findings such as vitals, physical exam results, or relevant test outcomes. Based on the current presentation, the working diagnosis is [insert diagnosis or clinical impression]. The plan includes treatment steps, medications, lifestyle advice, referrals, or follow-up instructions.`
+        },
+        {
+            id: "2",
+            time: "01:30pm",
+            date: "25/06/2024",
+            author: "Mia Davis",
+            content: `On examination, findings such as vitals, physical exam results, or relevant test outcomes. Based on the current presentation, the working diagnosis is [insert diagnosis or clinical impression]. The plan includes treatment steps, medications, lifestyle advice, referrals, or follow-up instructions.`
+        },
+        {
+            id: "2",
+            time: "01:30pm",
+            date: "25/06/2024",
+            author: "Mia Davis",
+            content: `On examination, findings such as vitals, physical exam results, or relevant test outcomes. Based on the current presentation, the working diagnosis is [insert diagnosis or clinical impression]. The plan includes treatment steps, medications, lifestyle advice, referrals, or follow-up instructions.`
+        },
+        {
+            id: "2",
+            time: "01:30pm",
+            date: "25/06/2024",
+            author: "Mia Davis",
+            content: `On examination, findings such as vitals, physical exam results, or relevant test outcomes. Based on the current presentation, the working diagnosis is [insert diagnosis or clinical impression]. The plan includes treatment steps, medications, lifestyle advice, referrals, or follow-up instructions.`
+        },
+        {
+            id: "2",
+            time: "01:30pm",
+            date: "25/06/2024",
+            author: "Mia Davis",
+            content: `On examination, findings such as vitals, physical exam results, or relevant test outcomes. Based on the current presentation, the working diagnosis is [insert diagnosis or clinical impression]. The plan includes treatment steps, medications, lifestyle advice, referrals, or follow-up instructions.`
+        },
+    ];
 
     return (
         <div className="p-6">
@@ -136,6 +173,27 @@ export const BookingDetailsContent: React.FC = () => {
                         </h2>
                     </div>
                     <Progressbar currentStatus={4} taskId="ID09876" />
+                </>
+            )}
+            {activeTab == 'progressnote' && (
+                <>
+                    <div className="bg-[#FDF9FF] px-4 py-2 mb-4">
+                        <h2 className="text-lg font-semibold text-gray-900 text-center">
+                            Track Treatment - ID09876
+                        </h2>
+                    </div>
+                    <div className="space-y-4 max-h-[500px] overflow-auto">
+                        {sampleNotes.map((note:any,index:number) => (
+                            <div key={index} className="bg-[#FDF9FF] p-4">
+                                <div className="flex justify-between text-sm text-gray-500 mb-1">
+                                    <span>{note.time}</span>
+                                    <span>{note.date}</span>
+                                </div>
+                                <p className="font-semibold mb-2">{note.author}</p>
+                                <p className="text-sm text-gray-700 whitespace-pre-line">{note.content}</p>
+                            </div>
+                        ))}
+                    </div>
                 </>
             )}
 

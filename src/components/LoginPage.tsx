@@ -26,13 +26,13 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         console.log('logged in....');
         loader.showLoader()
         try {
+            router.push('/admin')
             const res = await apiCall<any>('POST', '/admin/v1/login', {
                 "email": "akshit1@gmail.com",
                 "password": "123456"
             })
             console.log(res);
             // router.push(res?.user?.role)
-            router.push('/admin')
             // onLogin();
 
             // const response = await login(role)

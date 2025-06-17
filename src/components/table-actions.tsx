@@ -31,38 +31,38 @@ export const TableActions = {
 // Common cell renderers
 export const CellRenderers = {
   // Badge renderer for status-like fields
-  badge: (variant: 'default' | 'secondary' | 'destructive' | 'outline' = 'default') => 
-    (value: string) => (
+  badge: (variant: 'default' | 'secondary' | 'destructive' | 'outline' = 'default') =>
+    (value: any) => (
       <Badge variant={variant} className="capitalize">
-        {value}
+        {value === true ? 'Active' : 'InActive'}
       </Badge>
     ),
 
   // Currency formatter
   currency: (value: number) => (
     <span className="font-medium">
-      ${value.toLocaleString()}
+      ${value?.toLocaleString()}
     </span>
   ),
 
   // Number formatter
   number: (value: number) => (
     <span className="font-mono">
-      {value.toLocaleString()}
+      {value?.toLocaleString()}
     </span>
   ),
 
   // Truncated text with tooltip
   truncatedText: (maxLength: number = 30) => (value: string) => (
     <span title={value} className="truncate block max-w-xs">
-      {value.length > maxLength ? `${value.substring(0, maxLength)}...` : value}
+      {value?.length > maxLength ? `${value.substring(0, maxLength)}...` : value}
     </span>
   ),
 
   // Date formatter
   date: (value: string | Date) => {
     const date = new Date(value);
-    return <span>{date.toLocaleDateString()}</span>;
+    return <span>{date?.toLocaleDateString()}</span>;
   },
 
   // Boolean as Yes/No

@@ -1,7 +1,9 @@
+import { usePopup } from "@/context/PopupContext";
 import { Calendar, Clock, FileText, Plus, Search, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
 export const BookSlotContent: React.FC = () => {
+    const { showPopup } = usePopup();
     const [activeTab, setActiveTab] = useState('personal');
     const [formData, setFormData] = useState({
         shiftcareId: '56099',
@@ -70,6 +72,11 @@ export const BookSlotContent: React.FC = () => {
     const handleInputChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
+
+    const handleBooking = () => {
+    // After booking logic
+    showPopup("Your booking has been confirmed!", 4000); // Optional message & duration
+  };
 
     return (
         <div className="p-6">
@@ -558,7 +565,9 @@ export const BookSlotContent: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex justify-end">
-                            <button className=" px-5 py-2 bg-primary text-white rounded-lg hover:bg-[#483154] transition-colors">
+                            <button className=" px-5 py-2 bg-primary text-white rounded-lg hover:bg-[#483154] transition-colors" 
+                            onClick={handleBooking}
+                            >
                                 Book Slot
                             </button>
                         </div>

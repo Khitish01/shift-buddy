@@ -32,13 +32,13 @@ export const TopLoaderProvider = ({ children }: { children: React.ReactNode }) =
   }, [])
 
   // Automatically show/hide loader on route change
-  useEffect(() => {
-    showLoader()
-    const timer = setTimeout(() => {
-      hideLoader()
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [pathname, showLoader, hideLoader])
+  // useEffect(() => {
+  //   showLoader()
+  //   const timer = setTimeout(() => {
+  //     hideLoader()
+  //   }, 1000)
+  //   return () => clearTimeout(timer)
+  // }, [pathname, showLoader, hideLoader])
 
   return (
     <TopLoaderContext.Provider value={{ showLoader, hideLoader }}>

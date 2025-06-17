@@ -1,278 +1,309 @@
-import React, { useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { DataTableProps, SortState, SortDirection } from '@/types/table';
+"use client"
 
-export function DataTable<T extends Record<string, any>>({
+import type React from "react"
+
+import { useState, useMemo } from "react"
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+export interface TableAction {
+    id: string
+    label: string
+    icon: React.ReactNode
+    onClick: (row: any) => void
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
+    className?: string
+}
+
+export interface ColumnDefinition {
+    key: string
+    label: string
+    type: "text" | "image" | "badge" | "date" | "number" | "actions"
+    sortable?: boolean
+    width?: string
+    className?: string
+    render?: (value: any, row: any) => React.ReactNode
+    badgeVariant?: "default" | "secondary" | "destructive" | "outline"
+    badgeColorMap?: Record<string, "default" | "secondary" | "destructive" | "outline">
+}
+
+export interface DataTableProps {
+    data: any[]
+    columns: ColumnDefinition[]
+    actions?: TableAction[]
+    sortable?: boolean
+    paginated?: boolean
+    pageSize?: number
+    pageSizeOptions?: number[]
+    className?: string
+    rowClassName?: string
+    headerClassName?: string
+    onRowClick?: (row: any) => void
+    loading?: boolean
+    emptyMessage?: string
+}
+
+export function DataTable({
     data,
     columns,
     actions = [],
-    searchable = true,
-    searchPlaceholder = "Search...",
     sortable = true,
-    pagination = true,
+    paginated = true,
     pageSize = 10,
-    className,
+    pageSizeOptions = [5, 10, 20, 50],
+    className = "",
+    rowClassName = "",
+    headerClassName = "",
+    onRowClick,
     loading = false,
-    emptyMessage = "No data found."
-}: DataTableProps<T>) {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [sortState, setSortState] = useState<SortState>({ column: null, direction: null });
-    const [currentPage, setCurrentPage] = useState(1);
+    emptyMessage = "No data available",
+}: DataTableProps) {
+    const [sortConfig, setSortConfig] = useState<{
+        key: string
+        direction: "asc" | "desc"
+    } | null>(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [currentPageSize, setCurrentPageSize] = useState(pageSize)
 
-    // Filter data based on search term
-    const filteredData = useMemo(() => {
-        if (!searchTerm) return data;
-
-        return data.filter((row: any) =>
-            Object.values(row).some((value) =>
-                String(value).toLowerCase().includes(searchTerm.toLowerCase())
-            )
-        );
-    }, [data, searchTerm]);
-
-    // Sort data
+    // Sorting logic
     const sortedData = useMemo(() => {
-        if (!sortState.column || !sortState.direction) return filteredData;
+        if (!sortConfig || !sortable) return data
 
-        return [...filteredData].sort((a, b) => {
-            const aValue = a[sortState.column!];
-            const bValue = b[sortState.column!];
+        return [...data].sort((a, b) => {
+            const aValue = a[sortConfig.key]
+            const bValue = b[sortConfig.key]
 
-            if (aValue < bValue) return sortState.direction === 'asc' ? -1 : 1;
-            if (aValue > bValue) return sortState.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
-    }, [filteredData, sortState]);
+            if (aValue === bValue) return 0
 
-    // Paginate data
+            const comparison = aValue < bValue ? -1 : 1
+            return sortConfig.direction === "desc" ? comparison * -1 : comparison
+        })
+    }, [data, sortConfig, sortable])
+
+    // Pagination logic
     const paginatedData = useMemo(() => {
-        if (!pagination) return sortedData;
+        if (!paginated) return sortedData
 
-        const startIndex = (currentPage - 1) * pageSize;
-        return sortedData.slice(startIndex, startIndex + pageSize);
-    }, [sortedData, currentPage, pageSize, pagination]);
+        const startIndex = (currentPage - 1) * currentPageSize
+        return sortedData.slice(startIndex, startIndex + currentPageSize)
+    }, [sortedData, currentPage, currentPageSize, paginated])
 
-    const totalPages = Math.ceil(sortedData.length / pageSize);
+    const totalPages = Math.ceil(sortedData.length / currentPageSize)
 
-    const handleSort = (columnKey: string, columnSortable: boolean | undefined) => {
-        if (!sortable || columnSortable === false) return;
+    const handleSort = (key: string) => {
+        if (!sortable) return
 
-        setSortState((prev: any) => {
-            if (prev.column === columnKey) {
-                const newDirection: SortDirection =
-                    prev.direction === 'asc' ? 'desc' :
-                        prev.direction === 'desc' ? null : 'asc';
-                return { column: newDirection ? columnKey : null, direction: newDirection };
+        setSortConfig((current) => {
+            if (current?.key === key) {
+                return current.direction === "asc" ? { key, direction: "desc" } : null
             }
-            return { column: columnKey, direction: 'asc' };
-        });
-    };
+            return { key, direction: "asc" }
+        })
+    }
+
+    const renderCellContent = (column: ColumnDefinition, value: any, row: any) => {
+        if (column.render) {
+            return column.render(value, row)
+        }
+
+        switch (column.type) {
+            case "image":
+                return (
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={value || "/placeholder.svg"} alt={row.name || "Avatar"} />
+                        <AvatarFallback>{(row.name || "U").charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                )
+            case "badge":
+                let displayValue = value
+                let badgeVariant: any = column.badgeVariant || "default"
+                let customClasses = "capitalize border-none rounded-full py-1 px-4"
+
+                if (typeof value === "boolean") {
+                    displayValue = value ? "Active" : "Inactive"
+                    badgeVariant = "custom"
+
+                    // Apply custom classes for active/inactive
+                    customClasses += value
+                        ? " text-[#1F9254] bg-[#EBF9F1]"
+                        : " text-[#FF8285] bg-[#FBE7E8]"
+                } else if (column.badgeColorMap) {
+                    badgeVariant = column.badgeColorMap[value] || column.badgeVariant || "default"
+                }
+
+                return (
+                    <Badge variant={badgeVariant} className={customClasses}>
+                        {displayValue}
+                    </Badge>
+                )
+            case "actions":
+                return (
+                    <div className="flex items-center gap-1">
+                        {actions.map((action) => (
+                            <Button
+                                key={action.id}
+                                variant={action.variant || "ghost"}
+                                size="sm"
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    action.onClick(row)
+                                }}
+                                className={action.className}
+                                aria-label={action.label}
+                            >
+                                {action.icon}
+                            </Button>
+                        ))}
+                    </div>
+                )
+            case "date":
+                return new Date(value).toLocaleDateString()
+            case "number":
+                return typeof value === "number" ? value.toLocaleString() : value
+            default:
+                return value
+        }
+    }
 
     const getSortIcon = (columnKey: string) => {
-        if (sortState.column !== columnKey) return <ArrowUpDown className="w-4 h-4" />;
-        if (sortState.direction === 'asc') return <ArrowUp className="w-4 h-4" />;
-        if (sortState.direction === 'desc') return <ArrowDown className="w-4 h-4" />;
-        return <ArrowUpDown className="w-4 h-4" />;
-    };
-
-    const renderCell = (column: any, row: T, index: number) => {
-        if (column.cell) {
-            return column.cell(row);
+        if (!sortable || !sortConfig || sortConfig.key !== columnKey) {
+            return null
         }
+        return sortConfig.direction === "asc" ? (
+            <ChevronUp className="ml-1 h-4 w-4" />
+        ) : (
+            <ChevronDown className="ml-1 h-4 w-4" />
+        )
+    }
 
-        if (column.render) {
-            return column.render(row[column.key], row, index);
-        }
-
-        return row[column.key];
-    };
-
-    const LoadingSkeleton = () => (
-        <>
-            {Array.from({ length: pageSize }).map((_, index) => (
-                <TableRow key={index}>
-                    {columns.map((column: any) => (
-                        <TableCell key={column.key}>
-                            <Skeleton className="h-6 w-full" />
-                        </TableCell>
-                    ))}
-                    {actions.length > 0 && (
-                        <TableCell>
-                            <Skeleton className="h-8 w-16" />
-                        </TableCell>
-                    )}
-                </TableRow>
-            ))}
-        </>
-    );
+    if (loading) {
+        return (
+            <div className="w-full p-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                <p className="mt-2 text-muted-foreground">Loading...</p>
+            </div>
+        )
+    }
 
     return (
-        <div className={cn("space-y-4", className)}>
-            {/* Search Bar */}
-            {searchable && (
-                <div className="flex items-center space-x-2">
-                    <div className="relative flex-1 max-w-sm">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                            placeholder={searchPlaceholder}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-9"
-                        />
-                    </div>
-                </div>
-            )}
-
+        <div className={`w-full ${className}`}>
             {/* Table */}
-            <div className="bg-white">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="border-0 border-b border-gray-200 hover:bg-white">
-                            {columns.map((column: any) => (
-                                <TableHead
-                                    key={column.key}
-                                    className={cn(
-                                        "font-semibold text-gray-900 py-4 border-0",
-                                        column.width && `w-${column.width}`,
-                                        column.align === 'center' && 'text-center',
-                                        column.align === 'right' && 'text-right',
-                                        sortable && column.sortable !== false && 'cursor-pointer '
-                                    )}
-                                    onClick={() => handleSort(column.key, column.sortable)}
-                                >
-                                    <div className="flex items-center space-x-2">
-                                        <span>{column.header}</span>
-                                        {sortable && column.sortable !== false && getSortIcon(column.key)}
-                                    </div>
-                                </TableHead>
-                            ))}
-                            {actions.length > 0 && (
-                                <TableHead className="w-20 text-center font-semibold text-gray-900 border-0">
-                                    Actions
-                                </TableHead>
+            <div className="">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className={`${headerClassName}`}>
+                            <tr>
+                                {columns.map((column) => (
+                                    <th
+                                        key={column.key}
+                                        className={`px-4 py-3 text-left text-sm font-semibold text-black ${column.sortable !== false && sortable ? "cursor-pointer hover:text-foreground" : ""
+                                            } ${column.className || ""}`}
+                                        style={{ width: column.width }}
+                                        onClick={() => column.sortable !== false && handleSort(column.key)}
+                                    >
+                                        <div className="flex items-center">
+                                            {column.label}
+                                            {column.sortable !== false && getSortIcon(column.key)}
+                                        </div>
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {paginatedData.length === 0 ? (
+                                <tr>
+                                    <td colSpan={columns.length} className="px-4 py-8 text-center text-muted-foreground">
+                                        {emptyMessage}
+                                    </td>
+                                </tr>
+                            ) : (
+                                paginatedData.map((row, index) => (
+                                    <tr
+                                        key={row.id || index}
+                                        className={`transition-colors ${index % 2 === 0 ? "bg-[#F7F6FE]" : "bg-[#FFFFFF]"
+                                            } ${onRowClick ? "cursor-pointer" : ""} ${rowClassName}`}
+                                        onClick={() => onRowClick?.(row)}
+                                    >
+                                        {columns.map((column) => (
+                                            <td key={column.key} className={`px-4 py-3 text-sm ${column.className || ""}`}>
+                                                {renderCellContent(column, row[column.key], row)}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))
                             )}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {loading ? (
-                            <LoadingSkeleton />
-                        ) : paginatedData.length === 0 ? (
-                            <TableRow className="border-0 hover:bg-white">
-                                <TableCell
-                                    colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
-                                    className="text-center py-8 text-gray-500 border-0"
-                                >
-                                    {emptyMessage}
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            paginatedData.map((row: any, index: number) => (
-                                <TableRow key={index} className="border-0 hover:bg-white">
-                                    {columns.map((column: any) => (
-                                        <TableCell
-                                            key={column.key}
-                                            className={cn(
-                                                "py-4 border-0",
-                                                column.align === 'center' && 'text-center',
-                                                column.align === 'right' && 'text-right'
-                                            )}
-                                        >
-                                            {renderCell(column, row, index)}
-                                        </TableCell>
-                                    ))}
-                                    {actions.length > 0 && (
-                                        <TableCell className="text-center border-0">
-                                            {actions.length === 1 ? (
-                                                <Button
-                                                    variant={actions[0].variant || 'outline'}
-                                                    size="sm"
-                                                    onClick={() => actions[0].onClick(row)}
-                                                    className="h-8"
-                                                >
-                                                    {actions[0].icon}
-                                                    {actions[0].label}
-                                                </Button>
-                                            ) : (
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                            <MoreHorizontal className="w-4 h-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        {actions.map((action: any, actionIndex: number) => (
-                                                            <DropdownMenuItem
-                                                                key={actionIndex}
-                                                                onClick={() => action.onClick(row)}
-                                                                className="cursor-pointer"
-                                                            >
-                                                                {action.icon}
-                                                                {action.label}
-                                                            </DropdownMenuItem>
-                                                        ))}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            )}
-                                        </TableCell>
-                                    )}
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Pagination */}
-            {pagination && totalPages > 1 && (
-                <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-700">
-                        Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, sortedData.length)} of {sortedData.length} results
+            {paginated && paginatedData.length > 0 && (
+                <div className="flex items-center justify-between mt-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>Show</span>
+                        <Select
+                            value={currentPageSize.toString()}
+                            onValueChange={(value) => {
+                                setCurrentPageSize(Number(value))
+                                setCurrentPage(1)
+                            }}
+                        >
+                            <SelectTrigger className="w-20">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {pageSizeOptions.map((size) => (
+                                    <SelectItem key={size} value={size.toString()}>
+                                        {size}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <span>entries</span>
                     </div>
-                    <div className="flex items-center space-x-2">
+
+                    <div className="flex items-center gap-2">
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                             disabled={currentPage === 1}
                         >
-                            <ChevronLeft className="w-4 h-4" />
+                            <ChevronLeft className="h-4 w-4 mr-1" />
                             Previous
                         </Button>
-                        <div className="flex items-center space-x-1">
-                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                const pageNumber = i + 1;
-                                return (
-                                    <Button
-                                        key={pageNumber}
-                                        variant={currentPage === pageNumber ? "default" : "outline"}
-                                        size="sm"
-                                        onClick={() => setCurrentPage(pageNumber)}
-                                        className="w-8 h-8"
-                                    >
-                                        {pageNumber}
-                                    </Button>
-                                );
-                            })}
-                        </div>
+
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            const pageNumber = i + 1
+                            return (
+                                <Button
+                                    key={pageNumber}
+                                    variant={currentPage === pageNumber ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => setCurrentPage(pageNumber)}
+                                    className="w-10"
+                                >
+                                    {pageNumber}
+                                </Button>
+                            )
+                        })}
+
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                             disabled={currentPage === totalPages}
                         >
                             Next
-                            <ChevronRight className="w-4 h-4" />
+                            <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>
                     </div>
                 </div>
             )}
         </div>
-    );
+    )
 }

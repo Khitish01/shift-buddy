@@ -4,7 +4,7 @@ import BarChart from "./DashboardBarchart";
 import DonutChart from "./DashboardDonutchart";
 import { Column } from "@/types/table";
 import { CellRenderers, TableActions } from "./table-actions";
-import { DataTable } from "./DataTable";
+import { ColumnDefinition, DataTable } from "./DataTable";
 import { useState } from "react";
 
 const sampleData = [
@@ -51,6 +51,108 @@ const sampleData = [
     //     jobType: 'Full-Time'
     // }
 ];
+const mockData = [
+    {
+        id: "20462",
+        carerId: "#20462",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Matt Dickerson",
+        joiningDate: "2022-05-13",
+        totalShift: 189,
+        mobileNo: "9098765678",
+        status: "active",
+    },
+    {
+        id: "18933",
+        carerId: "#18933",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Wiktoria",
+        joiningDate: "2022-05-22",
+        totalShift: 263,
+        mobileNo: "9098765678",
+        status: "active",
+    },
+    {
+        id: "45169",
+        carerId: "#45169",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Trixie Byrd",
+        joiningDate: "2022-06-15",
+        totalShift: 45,
+        mobileNo: "9098765678",
+        status: "active",
+    },
+    // {
+    //     id: "34304",
+    //     carerId: "#34304",
+    //     img: "/placeholder.svg?height=40&width=40",
+    //     name: "Brad Mason",
+    //     joiningDate: "2022-09-06",
+    //     totalShift: 86,
+    //     mobileNo: "9098765678",
+    //     status: "active",
+    // },
+    // {
+    //     id: "17188",
+    //     carerId: "#17188",
+    //     img: "/placeholder.svg?height=40&width=40",
+    //     name: "Sanderson",
+    //     joiningDate: "2022-09-25",
+    //     totalShift: 90,
+    //     mobileNo: "9098765678",
+    //     status: "inactive",
+    // },
+    // {
+    //     id: "73003",
+    //     carerId: "#73003",
+    //     img: "/placeholder.svg?height=40&width=40",
+    //     name: "Jun Redfern",
+    //     joiningDate: "2022-10-04",
+    //     totalShift: 13,
+    //     mobileNo: "9098765678",
+    //     status: "active",
+    // },
+    // {
+    //     id: "58825",
+    //     carerId: "#58825",
+    //     img: "/placeholder.svg?height=40&width=40",
+    //     name: "Miriam Kidd",
+    //     joiningDate: "2022-10-17",
+    //     totalShift: 177,
+    //     mobileNo: "9098765678",
+    //     status: "active",
+    // },
+    // {
+    //     id: "44122",
+    //     carerId: "#44122",
+    //     img: "/placeholder.svg?height=40&width=40",
+    //     name: "Dominic",
+    //     joiningDate: "2022-10-24",
+    //     totalShift: 245,
+    //     mobileNo: "9098765678",
+    //     status: "active",
+    // },
+    // {
+    //     id: "89094",
+    //     carerId: "#89094",
+    //     img: "/placeholder.svg?height=40&width=40",
+    //     name: "Shanice",
+    //     joiningDate: "2022-11-01",
+    //     totalShift: 679,
+    //     mobileNo: "9098765678",
+    //     status: "inactive",
+    // },
+    // {
+    //     id: "85252",
+    //     carerId: "#85252",
+    //     img: "/placeholder.svg?height=40&width=40",
+    //     name: "Poppy-Rose",
+    //     joiningDate: "2022-11-22",
+    //     totalShift: 387,
+    //     mobileNo: "9098765678",
+    //     status: "inactive",
+    // },
+]
 
 type Employee = typeof sampleData[0];
 
@@ -70,44 +172,55 @@ const Dashboard = () => {
         { id: 'OL678057', vehicle: 'BMW', carer: 'Mia Davis', payment: '$980' }
     ];
 
-    const columns: Column<Employee>[] = [
+    const columns: ColumnDefinition[] = [
         {
-            key: 'name',
-            header: 'Name',
-            sortable: true, // This column is sortable
-            width: '200px'
+            key: "carerId",
+            label: "Carer ID",
+            type: "text",
+            sortable: false,
+            width: "120px",
         },
         {
-            key: 'id',
-            header: 'ID',
-            sortable: false, // This column is NOT sortable
-            // width: '120px',
-            render: (value) => (
-                <span className="font-mono text-gray-600">{value}</span>
-            )
-        },
-        // {
-        //     key: 'totalIncome',
-        //     header: 'Total Income',
-        //     sortable: true, // This column is sortable
-        //     // align: 'right',
-        //     render: CellRenderers.currency
-        // },
-        {
-            key: 'totalShift',
-            header: 'Total Shift',
-            sortable: true, // This column is sortable
-            // align: 'center',
-            render: CellRenderers.number
+            key: "img",
+            label: "Img",
+            type: "image",
+            sortable: false,
+            width: "80px",
         },
         {
-            key: 'jobType',
-            header: 'Job Type',
-            sortable: false, // This column is NOT sortable
-            render: (value) => CellRenderers.badge(
-                value === 'Full-Time' ? 'default' : 'secondary'
-            )(value)
-        }
+            key: "name",
+            label: "Name",
+            type: "text",
+            sortable: true,
+        },
+        {
+            key: "joiningDate",
+            label: "Joining Date",
+            type: "date",
+            sortable: true,
+        },
+        {
+            key: "totalShift",
+            label: "Total Shift",
+            type: "number",
+            sortable: true,
+        },
+        {
+            key: "mobileNo",
+            label: "Mobile No.",
+            type: "text",
+            sortable: false,
+        },
+        {
+            key: "status",
+            label: "Status",
+            type: "badge",
+            sortable: true,
+            badgeColorMap: {
+                active: "default",
+                inactive: "destructive",
+            },
+        },
     ];
 
     // Define actions for each row
@@ -134,7 +247,7 @@ const Dashboard = () => {
     ];
     return (
         // <main className="pt-24 pl-20 p-6 w-[calc(100vw-1rem)]">
-        <div className="space-y-4">
+        <div className="space-y-4 bg-[#fafafa] p-5 m-[-20px]">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">Dashboard</h2>
                 <div className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm text-gray-600 bg-white ">
@@ -227,13 +340,13 @@ const Dashboard = () => {
 
                         <div className="p-4 pt-0">
                             <DataTable
-                                data={data}
+                                data={mockData}
                                 columns={columns}
                                 actions={[]}
-                                searchable={false}
-                                searchPlaceholder="Search employees..."
+                                // searchable={false}
+                                // searchPlaceholder="Search employees..."
                                 sortable={false}
-                                pagination={false} // Pagination is enabled
+                                paginated={false} // Pagination is enabled
                                 pageSize={5}
                                 loading={loading}
                                 emptyMessage="No employees found. Add some employees to get started."
@@ -314,13 +427,13 @@ const Dashboard = () => {
                         </table> */}
                         <div className="p-4 pt-0">
                             <DataTable
-                                data={data}
+                                data={mockData}
                                 columns={columns}
                                 actions={[]}
-                                searchable={false}
-                                searchPlaceholder="Search employees..."
+                                // searchable={false}
+                                // searchPlaceholder="Search employees..."
                                 sortable={false}
-                                pagination={false} // Pagination is enabled
+                                paginated={false} // Pagination is enabled
                                 pageSize={5}
                                 loading={loading}
                                 emptyMessage="No employees found. Add some employees to get started."

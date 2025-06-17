@@ -1,5 +1,5 @@
 export interface Column<T = any> {
-  key: string;
+  key?: string;
   header: string;
   sortable?: boolean;
   width?: string;

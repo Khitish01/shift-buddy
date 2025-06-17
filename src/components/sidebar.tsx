@@ -13,19 +13,22 @@ import {
     Users,
     X
 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 const SideBar = () => {
     const [activeView, setActiveView] = useState('dashboard');
-    const { isOpen, isCollapse, collapse ,toggle} = useSidebar();
+    const { isOpen, isCollapse, collapse, toggle } = useSidebar();
     const isMobile = useIsMobile();
+    const router = useRouter();
+    const path = usePathname();    
 
     const sidebarItems = [
-        { icon: Home, label: 'Dashboard', id: 'dashboard' },
-        { icon: Users, label: 'Staff', id: 'staff' },
-        { icon: ClipboardList, label: 'Schedule', id: 'schedule' },
-        { icon: Calendar, label: 'Calendar', id: 'calendar' },
-        { icon: Truck, label: 'Vehicles', id: 'vehicles' },
+        { icon: '/icons/dashboard-icon.svg', label: 'Dashboard', id: 'dashboard', path: '/admin/dashboard' },
+        { icon: '/icons/carrier-icon.svg', label: 'Staff', id: 'carrier', path: '/admin/carrier' },
+        { icon: '/icons/sidebar-icon-3.svg', label: 'Schedule', id: 'schedule', path: '/admin/scheduler' },
+        { icon: '/icons/sidebar-icon-4.svg', label: 'Calendar', id: 'calendar', path: '' },
+        { icon: '/icons/sidebar-icon-5.svg', label: 'Vehicles', id: 'vehicles', path: '' },
     ];
     return (
         <div className="relative z-50">
@@ -72,27 +75,35 @@ const SideBar = () => {
                             sidebarItems.map((item) => (
                                 <button
                                     key={item.id}
-                                    onClick={() => setActiveView(item.id)}
-                                    className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${activeView === item.id
+                                    onClick={() => {
+                                        router.push(item?.path)
+                                        setActiveView(item.id)
+                                    }}
+                                    className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${path.includes(item.id)
                                         ? 'bg-white bg-opacity-20 text-primary'
                                         : 'text-purple-200 hover:text-white hover:bg-white hover:bg-opacity-10'
                                         }`}
                                     title={item.label}
                                 >
-                                    <item.icon size={18} />
+                                    {/* <item.icon size={18} /> */}
+                                    <img src={item?.icon} alt="" className={`w-5 h-5 ${!path.includes(item.id) ? '' : 'filter invert sepia saturate-[500%] hue-rotate-[235deg] brightness-[95%] contrast-[87%]'}`} />
                                 </button>
                             ))
                         ) : (
                             sidebarItems.map((item) => (
                                 <button
                                     key={item.id}
-                                    onClick={() => setActiveView(item.id)}
-                                    className={`flex items-center gap-4 mb-3 rounded-lg px-4 py-2 text-sm transition-colors w-full text-left ${activeView === item.id
+                                    onClick={() => {
+                                        router.push(item?.path)
+                                        setActiveView(item.id)
+                                    }}
+                                    className={`flex items-center gap-4 mb-3 rounded-lg px-4 py-2 text-sm transition-colors w-full text-left ${path.includes(item.id)
                                         ? 'bg-white bg-opacity-20 text-primary'
                                         : 'text-purple-200 hover:text-white hover:bg-white hover:bg-opacity-10'
                                         }`}
                                 >
-                                    <item.icon size={18} />
+                                    {/* <item.icon size={18} /> */}
+                                    <img src={item?.icon} alt="" className={`w-5 h-5 ${!path.includes(item.id) ? '' : 'filter invert sepia saturate-[500%] hue-rotate-[235deg] brightness-[95%] contrast-[87%]'}`} />
                                     <span>{item.label}</span>
                                 </button>
                             ))

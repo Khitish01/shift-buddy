@@ -1,0 +1,321 @@
+'use client'
+
+import { useEffect, useState } from "react";
+import { Column } from "@/types/table";
+import { CellRenderers, TableActions } from "./table-actions";
+import { Ban, Edit, Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import { Input } from "./ui/input";
+import { apiCall } from "@/lib/apiClient";
+import { useTopLoader } from "@/hooks/TopLoader";
+import { ColumnDefinition, DataTable, TableAction } from "./DataTable";
+const sampleData = [
+    {
+        id: '000989',
+        name: 'Liam Smith',
+        totalIncome: 86789,
+        totalShift: 568,
+        jobType: 'Full-Time'
+    },
+    {
+        id: '007890',
+        name: 'Noah Johnson',
+        totalIncome: 345,
+        totalShift: 760,
+        jobType: 'Part-Time'
+    },
+    {
+        id: '005648',
+        name: 'James Brown',
+        totalIncome: 7890,
+        totalShift: 23,
+        jobType: 'Part-Time'
+    },
+    {
+        id: '001234',
+        name: 'Emma Wilson',
+        totalIncome: 95000,
+        totalShift: 480,
+        jobType: 'Full-Time'
+    },
+    {
+        id: '002456',
+        name: 'Oliver Davis',
+        totalIncome: 12500,
+        totalShift: 320,
+        jobType: 'Part-Time'
+    },
+    {
+        id: '003789',
+        name: 'Ava Miller',
+        totalIncome: 78000,
+        totalShift: 520,
+        jobType: 'Full-Time'
+    }
+];
+
+const mockData = [
+    {
+        id: "20462",
+        carerId: "#20462",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Matt Dickerson",
+        joiningDate: "2022-05-13",
+        totalShift: 189,
+        mobileNo: "9098765678",
+        status: "active",
+    },
+    {
+        id: "18933",
+        carerId: "#18933",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Wiktoria",
+        joiningDate: "2022-05-22",
+        totalShift: 263,
+        mobileNo: "9098765678",
+        status: "active",
+    },
+    {
+        id: "45169",
+        carerId: "#45169",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Trixie Byrd",
+        joiningDate: "2022-06-15",
+        totalShift: 45,
+        mobileNo: "9098765678",
+        status: "active",
+    },
+    {
+        id: "34304",
+        carerId: "#34304",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Brad Mason",
+        joiningDate: "2022-09-06",
+        totalShift: 86,
+        mobileNo: "9098765678",
+        status: "active",
+    },
+    {
+        id: "17188",
+        carerId: "#17188",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Sanderson",
+        joiningDate: "2022-09-25",
+        totalShift: 90,
+        mobileNo: "9098765678",
+        status: "inactive",
+    },
+    {
+        id: "73003",
+        carerId: "#73003",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Jun Redfern",
+        joiningDate: "2022-10-04",
+        totalShift: 13,
+        mobileNo: "9098765678",
+        status: "active",
+    },
+    {
+        id: "58825",
+        carerId: "#58825",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Miriam Kidd",
+        joiningDate: "2022-10-17",
+        totalShift: 177,
+        mobileNo: "9098765678",
+        status: "active",
+    },
+    {
+        id: "44122",
+        carerId: "#44122",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Dominic",
+        joiningDate: "2022-10-24",
+        totalShift: 245,
+        mobileNo: "9098765678",
+        status: "active",
+    },
+    {
+        id: "89094",
+        carerId: "#89094",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Shanice",
+        joiningDate: "2022-11-01",
+        totalShift: 679,
+        mobileNo: "9098765678",
+        status: "inactive",
+    },
+    {
+        id: "85252",
+        carerId: "#85252",
+        img: "/placeholder.svg?height=40&width=40",
+        name: "Poppy-Rose",
+        joiningDate: "2022-11-22",
+        totalShift: 387,
+        mobileNo: "9098765678",
+        status: "inactive",
+    },
+]
+
+type Employee = typeof sampleData[0];
+const CarrierComponent = () => {
+    const [data, setData] = useState<any>(sampleData);
+    const [loading, setLoading] = useState(false);
+    // Column definitions
+    const columns: ColumnDefinition[] = [
+        {
+            key: "_id",
+            label: "Carer ID",
+            type: "text",
+            sortable: false,
+            width: "120px",
+        },
+        {
+            key: "img",
+            label: "Img",
+            type: "image",
+            sortable: false,
+            width: "80px",
+        },
+        {
+            key: "name",
+            label: "Name",
+            type: "text",
+            sortable: true,
+        },
+        {
+            key: "joiningDate",
+            label: "Joining Date",
+            type: "date",
+            sortable: true,
+        },
+        {
+            key: "totalShift",
+            label: "Total Shift",
+            type: "number",
+            sortable: true,
+        },
+        {
+            key: "mobileNumber",
+            label: "Mobile No.",
+            type: "text",
+            sortable: false,
+        },
+        {
+            key: "status",
+            label: "Status",
+            type: "badge",
+            sortable: true,
+            badgeColorMap: {
+                active: "default",
+                inactive: "destructive",
+            },
+        },
+        {
+            key: "actions",
+            label: "Action",
+            type: "actions",
+            sortable: false,
+            width: "120px",
+        },
+    ]
+
+    // Action definitions
+    const actions: TableAction[] = [
+        {
+            id: "view",
+            label: "View",
+            icon: <Eye className="h-4 w-4" />,
+            onClick: (row) => console.log("View", row),
+            variant: "ghost",
+        },
+        {
+            id: "edit",
+            label: "Edit",
+            icon: <Edit className="h-4 w-4" />,
+            onClick: (row) => console.log("Edit", row),
+            variant: "ghost",
+        },
+        {
+            id: "delete",
+            label: "Delete",
+            icon: <Trash2 className="h-4 w-4" />,
+            onClick: (row) => console.log("Delete", row),
+            variant: "ghost",
+            className: "text-destructive hover:text-destructive",
+        },
+    ]
+
+    const loader = useTopLoader()
+
+    useEffect(() => {
+        const getList = async () => {
+            loader.showLoader()
+            try {
+                const res = await apiCall<any>('POST', '/carrier/v1/carrier_list', {
+                    "search": "",
+                    "sortBy": "",
+                    "sortOrder": "",
+                    "page": "1",
+                    "limit": "10"
+                })
+                console.log(res);
+                setData(res?.data)
+            } catch (error) {
+                console.error('Error setting role:', error)
+            } finally {
+                loader.hideLoader()
+            }
+        }
+        getList()
+    }, [])
+
+    return (
+        // <main className="pt-24 pl-20 p-6 w-[calc(100vw-1rem)]">
+        <div className="bg-white">
+            {/* This is carrier listing page */}
+
+            <div className="flex justify-between items-center mb-3">
+                <h1>Carrier Listing</h1>
+                <div className="flex items-center gap-3">
+                    <Input type="text" placeholder="Search..." />
+                    <button className="bg-primary w-[75%] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-900"
+                        style={{ boxShadow: '0px 1px 2px 0px #1018280D' }}
+                    // onClick={() => openDrawer('book')}
+                    >
+                        <Plus size={16} />
+                        <span>Add Carrier</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* <DataTable
+                data={data}
+                columns={columns}
+                actions={[]}
+                searchable={false}
+                searchPlaceholder="Search employees..."
+                sortable={true}
+                pagination={true} // Pagination is enabled
+                pageSize={5}
+                loading={loading}
+                emptyMessage="No employees found. Add some employees to get started."
+                className="bg-white rounded-lg p-4"
+            /> */}
+
+            <DataTable
+                data={data}
+                columns={columns}
+                actions={actions}
+                sortable={true}
+                paginated={true}
+                pageSize={5}
+                pageSizeOptions={[5, 10, 20, 50]}
+                onRowClick={(row) => console.log("Row clicked:", row)}
+                emptyMessage="No carers found"
+            />
+
+        </div>
+
+    )
+}
+export default CarrierComponent;

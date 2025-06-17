@@ -182,8 +182,8 @@ const Calender = () => {
     return (
         // <main className="pt-24 pl-20 p-6 w-[calc(100vw-1rem)]">
         <div>
-            <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-between bg-[#fafafa] p-5 m-[-20px] mb-[-8px]">
+                <div className="flex items-center space-x-4 ">
 
                     <div>
                         <h2 className="text-xl font-semibold">{dayjs(selectedDayCalender).format('MMMM D, YYYY')}</h2>

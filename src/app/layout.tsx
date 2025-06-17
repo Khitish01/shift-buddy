@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TopLoaderProvider } from "@/hooks/TopLoader";
 import { SidebarProvider } from "@/context/SidebarContext";
+import ConfirmationPopup from "@/components/ConfirmationPopup";
+import { PopupProvider } from "@/context/PopupContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,9 +32,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <TopLoaderProvider>
-          <SidebarProvider>
-            {children}
-          </SidebarProvider>
+          <PopupProvider>
+            <SidebarProvider>
+              {children}
+              <ConfirmationPopup />
+            </SidebarProvider>
+          </PopupProvider>
         </TopLoaderProvider>
       </body>
     </html>

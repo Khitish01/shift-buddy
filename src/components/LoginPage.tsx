@@ -8,6 +8,7 @@ import { Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { login } from './apicalls/auth';
 import { useTopLoader } from '@/hooks/TopLoader';
+import { apiCall } from '@/lib/apiClient';
 
 interface LoginPageProps {
     onLogin: () => void;
@@ -25,28 +26,36 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         console.log('logged in....');
         loader.showLoader()
         try {
-            // const response = await login(role)
-            const response = await fetch('/api/set-role-cookie', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ role }),
+            const res = await apiCall<any>('POST', '/admin/v1/login', {
+                "email": "akshit1@gmail.com",
+                "password": "123456"
             })
+            console.log(res);
+            router.push(res?.user?.role)
+            // onLogin();
 
-            const result = await response.json()
-            if (result.success) {
-                // alert('Role cookie set successfully')
-                router.push(`/${role}`)
-                onLogin();
-                // optionally redirect user or update state
-            } else {
-                alert('Failed to set cookie')
-            }
+            // const response = await login(role)
+            // const response = await fetch('/api/set-role-cookie', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({ role }),
+            // })
+
+            // const result = await response.json()
+            // if (result.success) {
+            //     // alert('Role cookie set successfully')
+            //     router.push(`/${role}`)
+            //     onLogin();
+            //     // optionally redirect user or update state
+            // } else {
+            //     alert('Failed to set cookie')
+            // }
         } catch (error) {
             console.error('Error setting role:', error)
         } finally {
-            loader.showLoader()
+            loader.hideLoader()
         }
 
 

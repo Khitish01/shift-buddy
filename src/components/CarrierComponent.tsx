@@ -7,159 +7,166 @@ import { Ban, Edit, Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { Input } from "./ui/input";
 import { apiCall } from "@/lib/apiClient";
 import { useTopLoader } from "@/hooks/TopLoader";
-import { ColumnDefinition, DataTable, TableAction } from "./DataTable";
-const sampleData = [
-    {
-        id: '000989',
-        name: 'Liam Smith',
-        totalIncome: 86789,
-        totalShift: 568,
-        jobType: 'Full-Time'
-    },
-    {
-        id: '007890',
-        name: 'Noah Johnson',
-        totalIncome: 345,
-        totalShift: 760,
-        jobType: 'Part-Time'
-    },
-    {
-        id: '005648',
-        name: 'James Brown',
-        totalIncome: 7890,
-        totalShift: 23,
-        jobType: 'Part-Time'
-    },
-    {
-        id: '001234',
-        name: 'Emma Wilson',
-        totalIncome: 95000,
-        totalShift: 480,
-        jobType: 'Full-Time'
-    },
-    {
-        id: '002456',
-        name: 'Oliver Davis',
-        totalIncome: 12500,
-        totalShift: 320,
-        jobType: 'Part-Time'
-    },
-    {
-        id: '003789',
-        name: 'Ava Miller',
-        totalIncome: 78000,
-        totalShift: 520,
-        jobType: 'Full-Time'
-    }
-];
+import { ColumnDefinition, DataTable, SortConfig, TableAction } from "./DataTable";
+// const sampleData = [
+//     {
+//         id: '000989',
+//         name: 'Liam Smith',
+//         totalIncome: 86789,
+//         totalShift: 568,
+//         jobType: 'Full-Time'
+//     },
+//     {
+//         id: '007890',
+//         name: 'Noah Johnson',
+//         totalIncome: 345,
+//         totalShift: 760,
+//         jobType: 'Part-Time'
+//     },
+//     {
+//         id: '005648',
+//         name: 'James Brown',
+//         totalIncome: 7890,
+//         totalShift: 23,
+//         jobType: 'Part-Time'
+//     },
+//     {
+//         id: '001234',
+//         name: 'Emma Wilson',
+//         totalIncome: 95000,
+//         totalShift: 480,
+//         jobType: 'Full-Time'
+//     },
+//     {
+//         id: '002456',
+//         name: 'Oliver Davis',
+//         totalIncome: 12500,
+//         totalShift: 320,
+//         jobType: 'Part-Time'
+//     },
+//     {
+//         id: '003789',
+//         name: 'Ava Miller',
+//         totalIncome: 78000,
+//         totalShift: 520,
+//         jobType: 'Full-Time'
+//     }
+// ];
 
-const mockData = [
-    {
-        id: "20462",
-        carerId: "#20462",
-        img: "/placeholder.svg?height=40&width=40",
-        name: "Matt Dickerson",
-        joiningDate: "2022-05-13",
-        totalShift: 189,
-        mobileNo: "9098765678",
-        status: "active",
-    },
-    {
-        id: "18933",
-        carerId: "#18933",
-        img: "/placeholder.svg?height=40&width=40",
-        name: "Wiktoria",
-        joiningDate: "2022-05-22",
-        totalShift: 263,
-        mobileNo: "9098765678",
-        status: "active",
-    },
-    {
-        id: "45169",
-        carerId: "#45169",
-        img: "/placeholder.svg?height=40&width=40",
-        name: "Trixie Byrd",
-        joiningDate: "2022-06-15",
-        totalShift: 45,
-        mobileNo: "9098765678",
-        status: "active",
-    },
-    {
-        id: "34304",
-        carerId: "#34304",
-        img: "/placeholder.svg?height=40&width=40",
-        name: "Brad Mason",
-        joiningDate: "2022-09-06",
-        totalShift: 86,
-        mobileNo: "9098765678",
-        status: "active",
-    },
-    {
-        id: "17188",
-        carerId: "#17188",
-        img: "/placeholder.svg?height=40&width=40",
-        name: "Sanderson",
-        joiningDate: "2022-09-25",
-        totalShift: 90,
-        mobileNo: "9098765678",
-        status: "inactive",
-    },
-    {
-        id: "73003",
-        carerId: "#73003",
-        img: "/placeholder.svg?height=40&width=40",
-        name: "Jun Redfern",
-        joiningDate: "2022-10-04",
-        totalShift: 13,
-        mobileNo: "9098765678",
-        status: "active",
-    },
-    {
-        id: "58825",
-        carerId: "#58825",
-        img: "/placeholder.svg?height=40&width=40",
-        name: "Miriam Kidd",
-        joiningDate: "2022-10-17",
-        totalShift: 177,
-        mobileNo: "9098765678",
-        status: "active",
-    },
-    {
-        id: "44122",
-        carerId: "#44122",
-        img: "/placeholder.svg?height=40&width=40",
-        name: "Dominic",
-        joiningDate: "2022-10-24",
-        totalShift: 245,
-        mobileNo: "9098765678",
-        status: "active",
-    },
-    {
-        id: "89094",
-        carerId: "#89094",
-        img: "/placeholder.svg?height=40&width=40",
-        name: "Shanice",
-        joiningDate: "2022-11-01",
-        totalShift: 679,
-        mobileNo: "9098765678",
-        status: "inactive",
-    },
-    {
-        id: "85252",
-        carerId: "#85252",
-        img: "/placeholder.svg?height=40&width=40",
-        name: "Poppy-Rose",
-        joiningDate: "2022-11-22",
-        totalShift: 387,
-        mobileNo: "9098765678",
-        status: "inactive",
-    },
-]
+// const mockData = [
+//     {
+//         id: "20462",
+//         carerId: "#20462",
+//         img: "/placeholder.svg?height=40&width=40",
+//         name: "Matt Dickerson",
+//         joiningDate: "2022-05-13",
+//         totalShift: 189,
+//         mobileNo: "9098765678",
+//         status: "active",
+//     },
+//     {
+//         id: "18933",
+//         carerId: "#18933",
+//         img: "/placeholder.svg?height=40&width=40",
+//         name: "Wiktoria",
+//         joiningDate: "2022-05-22",
+//         totalShift: 263,
+//         mobileNo: "9098765678",
+//         status: "active",
+//     },
+//     {
+//         id: "45169",
+//         carerId: "#45169",
+//         img: "/placeholder.svg?height=40&width=40",
+//         name: "Trixie Byrd",
+//         joiningDate: "2022-06-15",
+//         totalShift: 45,
+//         mobileNo: "9098765678",
+//         status: "active",
+//     },
+//     {
+//         id: "34304",
+//         carerId: "#34304",
+//         img: "/placeholder.svg?height=40&width=40",
+//         name: "Brad Mason",
+//         joiningDate: "2022-09-06",
+//         totalShift: 86,
+//         mobileNo: "9098765678",
+//         status: "active",
+//     },
+//     {
+//         id: "17188",
+//         carerId: "#17188",
+//         img: "/placeholder.svg?height=40&width=40",
+//         name: "Sanderson",
+//         joiningDate: "2022-09-25",
+//         totalShift: 90,
+//         mobileNo: "9098765678",
+//         status: "inactive",
+//     },
+//     {
+//         id: "73003",
+//         carerId: "#73003",
+//         img: "/placeholder.svg?height=40&width=40",
+//         name: "Jun Redfern",
+//         joiningDate: "2022-10-04",
+//         totalShift: 13,
+//         mobileNo: "9098765678",
+//         status: "active",
+//     },
+//     {
+//         id: "58825",
+//         carerId: "#58825",
+//         img: "/placeholder.svg?height=40&width=40",
+//         name: "Miriam Kidd",
+//         joiningDate: "2022-10-17",
+//         totalShift: 177,
+//         mobileNo: "9098765678",
+//         status: "active",
+//     },
+//     {
+//         id: "44122",
+//         carerId: "#44122",
+//         img: "/placeholder.svg?height=40&width=40",
+//         name: "Dominic",
+//         joiningDate: "2022-10-24",
+//         totalShift: 245,
+//         mobileNo: "9098765678",
+//         status: "active",
+//     },
+//     {
+//         id: "89094",
+//         carerId: "#89094",
+//         img: "/placeholder.svg?height=40&width=40",
+//         name: "Shanice",
+//         joiningDate: "2022-11-01",
+//         totalShift: 679,
+//         mobileNo: "9098765678",
+//         status: "inactive",
+//     },
+//     {
+//         id: "85252",
+//         carerId: "#85252",
+//         img: "/placeholder.svg?height=40&width=40",
+//         name: "Poppy-Rose",
+//         joiningDate: "2022-11-22",
+//         totalShift: 387,
+//         mobileNo: "9098765678",
+//         status: "inactive",
+//     },
+// ]
 
-type Employee = typeof sampleData[0];
+// type Employee = typeof sampleData[0];
 const CarrierComponent = () => {
-    const [data, setData] = useState<any>(sampleData);
+    const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+
+    const [search, setSearch] = useState<string>('')
+    const [debouncedSearch, setDebouncedSearch] = useState(search);
+    const [currentPage, setCurrentPage] = useState(1)
+    const [pageSize, setPageSize] = useState(10)
+    const [totalCount, setTotalCount] = useState(0)
+    const [sortConfig, setSortConfig] = useState<SortConfig | null>(null)
     // Column definitions
     const columns: ColumnDefinition[] = [
         {
@@ -244,22 +251,47 @@ const CarrierComponent = () => {
             className: "text-destructive hover:text-destructive",
         },
     ]
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page)
+    }
+
+    const handlePageSizeChange = (newPageSize: number) => {
+        setPageSize(newPageSize)
+        setCurrentPage(1) // Reset to first page
+    }
+
+    const handleSortChange = (newSortConfig: SortConfig | null) => {
+        setSortConfig(newSortConfig)
+        setCurrentPage(1) // Reset to first page when sorting changes
+    }
+
 
     const loader = useTopLoader()
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(search);
+        }, 500);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [search]);
 
     useEffect(() => {
         const getList = async () => {
             loader.showLoader()
             try {
                 const res = await apiCall<any>('POST', '/carrier/v1/carrier_list', {
-                    "search": "",
+                    "search": search,
                     "sortBy": "",
                     "sortOrder": "",
-                    "page": "1",
-                    "limit": "10"
+                    "page": currentPage,
+                    "limit": pageSize
                 })
                 console.log(res);
                 setData(res?.data)
+                setTotalCount(res?.total)
             } catch (error) {
                 console.error('Error setting role:', error)
             } finally {
@@ -267,7 +299,7 @@ const CarrierComponent = () => {
             }
         }
         getList()
-    }, [])
+    }, [currentPage, pageSize, debouncedSearch])
 
     return (
         // <main className="pt-24 pl-20 p-6 w-[calc(100vw-1rem)]">
@@ -277,7 +309,7 @@ const CarrierComponent = () => {
             <div className="flex justify-between items-center mb-3">
                 <h1>Carrier Listing</h1>
                 <div className="flex items-center gap-3">
-                    <Input type="text" placeholder="Search..." />
+                    <Input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
                     <button className="bg-primary w-[75%] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-900"
                         style={{ boxShadow: '0px 1px 2px 0px #1018280D' }}
                     // onClick={() => openDrawer('book')}
@@ -302,7 +334,7 @@ const CarrierComponent = () => {
                 className="bg-white rounded-lg p-4"
             /> */}
 
-            <DataTable
+            {/* <DataTable
                 data={data}
                 columns={columns}
                 actions={actions}
@@ -312,6 +344,26 @@ const CarrierComponent = () => {
                 pageSizeOptions={[5, 10, 20, 50]}
                 onRowClick={(row) => console.log("Row clicked:", row)}
                 emptyMessage="No carers found"
+                currentPage={1}
+                totalCount={3} /> */}
+            <DataTable
+                data={data}
+                columns={columns}
+                actions={actions}
+                sortable={true}
+                paginated={true}
+                currentPage={currentPage}
+                pageSizeOptions={[5, 10, 20, 50]}
+                pageSize={pageSize}
+                totalCount={totalCount}
+                sortConfig={sortConfig}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                onSortChange={handleSortChange}
+                loading={loading}
+                emptyMessage="No carers found"
+                onRowClick={(row) => console.log("Row clicked:", row)}
+            // className="border rounded-lg"
             />
 
         </div>

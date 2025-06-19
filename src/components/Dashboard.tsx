@@ -350,8 +350,7 @@ const Dashboard = () => {
                                 pageSize={5}
                                 loading={loading}
                                 emptyMessage="No employees found. Add some employees to get started."
-                                className="bg-white rounded-lg "
-                            />
+                                className="bg-white rounded-lg " currentPage={1} totalCount={3}                            />
                         </div>
                     </div>
                 </div>
@@ -437,8 +436,7 @@ const Dashboard = () => {
                                 pageSize={5}
                                 loading={loading}
                                 emptyMessage="No employees found. Add some employees to get started."
-                                className="bg-white rounded-lg "
-                            />
+                                className="bg-white rounded-lg " currentPage={1} totalCount={1}                            />
                         </div>
                     </div>
                 </div>

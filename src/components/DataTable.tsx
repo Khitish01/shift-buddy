@@ -1,8 +1,6 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useMemo } from "react"
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -30,18 +28,29 @@ export interface ColumnDefinition {
     badgeColorMap?: Record<string, "default" | "secondary" | "destructive" | "outline">
 }
 
+export interface SortConfig {
+    column: string
+    direction: "asc" | "desc"
+}
+
 export interface DataTableProps {
     data: any[]
     columns: ColumnDefinition[]
     actions?: TableAction[]
     sortable?: boolean
     paginated?: boolean
-    pageSize?: number
+    currentPage: number
+    pageSize: number
+    totalCount: number
+    sortConfig?: SortConfig | null
     pageSizeOptions?: number[]
     className?: string
     rowClassName?: string
     headerClassName?: string
     onRowClick?: (row: any) => void
+    onPageChange?: (page: number) => void
+    onPageSizeChange?: (pageSize: number) => void
+    onSortChange?: (sortConfig: SortConfig | null) => void
     loading?: boolean
     emptyMessage?: string
 }
@@ -52,56 +61,58 @@ export function DataTable({
     actions = [],
     sortable = true,
     paginated = true,
-    pageSize = 10,
+    currentPage,
+    pageSize,
+    totalCount,
+    sortConfig,
     pageSizeOptions = [5, 10, 20, 50],
     className = "",
     rowClassName = "",
     headerClassName = "",
     onRowClick,
+    onPageChange,
+    onPageSizeChange,
+    onSortChange,
     loading = false,
     emptyMessage = "No data available",
 }: DataTableProps) {
-    const [sortConfig, setSortConfig] = useState<{
-        key: string
-        direction: "asc" | "desc"
-    } | null>(null)
-    const [currentPage, setCurrentPage] = useState(1)
-    const [currentPageSize, setCurrentPageSize] = useState(pageSize)
-
-    // Sorting logic
-    const sortedData = useMemo(() => {
-        if (!sortConfig || !sortable) return data
-
-        return [...data].sort((a, b) => {
-            const aValue = a[sortConfig.key]
-            const bValue = b[sortConfig.key]
-
-            if (aValue === bValue) return 0
-
-            const comparison = aValue < bValue ? -1 : 1
-            return sortConfig.direction === "desc" ? comparison * -1 : comparison
-        })
-    }, [data, sortConfig, sortable])
-
-    // Pagination logic
-    const paginatedData = useMemo(() => {
-        if (!paginated) return sortedData
-
-        const startIndex = (currentPage - 1) * currentPageSize
-        return sortedData.slice(startIndex, startIndex + currentPageSize)
-    }, [sortedData, currentPage, currentPageSize, paginated])
-
-    const totalPages = Math.ceil(sortedData.length / currentPageSize)
+    const totalPages = Math.ceil(totalCount / pageSize)
 
     const handleSort = (key: string) => {
-        if (!sortable) return
+        if (!sortable || !onSortChange) return
 
-        setSortConfig((current) => {
-            if (current?.key === key) {
-                return current.direction === "asc" ? { key, direction: "desc" } : null
+        let newSortConfig: SortConfig | null = null
+
+        if (sortConfig?.column === key) {
+            // If clicking the same column, toggle direction or clear sort
+            if (sortConfig.direction === "asc") {
+                newSortConfig = { column: key, direction: "desc" }
+            } else {
+                newSortConfig = null // Clear sort
             }
-            return { key, direction: "asc" }
-        })
+        } else {
+            // New column, start with ascending
+            newSortConfig = { column: key, direction: "asc" }
+        }
+
+        onSortChange(newSortConfig)
+    }
+
+    const handlePageChange = (page: number) => {
+        if (onPageChange && page !== currentPage) {
+            onPageChange(page)
+        }
+    }
+
+    const handlePageSizeChange = (newPageSize: string) => {
+        const size = Number(newPageSize)
+        if (onPageSizeChange && size !== pageSize) {
+            onPageSizeChange(size)
+            // Reset to first page when changing page size
+            if (onPageChange) {
+                onPageChange(1)
+            }
+        }
     }
 
     const renderCellContent = (column: ColumnDefinition, value: any, row: any) => {
@@ -126,10 +137,7 @@ export function DataTable({
                     displayValue = value ? "Active" : "Inactive"
                     badgeVariant = "custom"
 
-                    // Apply custom classes for active/inactive
-                    customClasses += value
-                        ? " text-[#1F9254] bg-[#EBF9F1]"
-                        : " text-[#FF8285] bg-[#FBE7E8]"
+                    customClasses += value ? " text-[#1F9254] bg-[#EBF9F1]" : " text-[#FF8285] bg-[#FBE7E8]"
                 } else if (column.badgeColorMap) {
                     badgeVariant = column.badgeColorMap[value] || column.badgeVariant || "default"
                 }
@@ -169,7 +177,7 @@ export function DataTable({
     }
 
     const getSortIcon = (columnKey: string) => {
-        if (!sortable || !sortConfig || sortConfig.key !== columnKey) {
+        if (!sortable || !sortConfig || sortConfig.column !== columnKey) {
             return null
         }
         return sortConfig.direction === "asc" ? (
@@ -177,6 +185,32 @@ export function DataTable({
         ) : (
             <ChevronDown className="ml-1 h-4 w-4" />
         )
+    }
+
+    const getVisiblePageNumbers = () => {
+        const delta = 2
+        const range = []
+        const rangeWithDots = []
+
+        for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+            range.push(i)
+        }
+
+        if (currentPage - delta > 2) {
+            rangeWithDots.push(1, "...")
+        } else {
+            rangeWithDots.push(1)
+        }
+
+        rangeWithDots.push(...range)
+
+        if (currentPage + delta < totalPages - 1) {
+            rangeWithDots.push("...", totalPages)
+        } else if (totalPages > 1) {
+            rangeWithDots.push(totalPages)
+        }
+
+        return rangeWithDots
     }
 
     if (loading) {
@@ -213,14 +247,14 @@ export function DataTable({
                             </tr>
                         </thead>
                         <tbody>
-                            {paginatedData.length === 0 ? (
+                            {data.length === 0 ? (
                                 <tr>
                                     <td colSpan={columns.length} className="px-4 py-8 text-center text-muted-foreground">
                                         {emptyMessage}
                                     </td>
                                 </tr>
                             ) : (
-                                paginatedData.map((row, index) => (
+                                data.map((row, index) => (
                                     <tr
                                         key={row.id || index}
                                         className={`transition-colors ${index % 2 === 0 ? "bg-[#F7F6FE]" : "bg-[#FFFFFF]"
@@ -241,17 +275,11 @@ export function DataTable({
             </div>
 
             {/* Pagination */}
-            {paginated && paginatedData.length > 0 && (
+            {paginated && totalCount > 0 && (
                 <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span>Show</span>
-                        <Select
-                            value={currentPageSize.toString()}
-                            onValueChange={(value) => {
-                                setCurrentPageSize(Number(value))
-                                setCurrentPage(1)
-                            }}
-                        >
+                        <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
                             <SelectTrigger className="w-20">
                                 <SelectValue />
                             </SelectTrigger>
@@ -264,38 +292,45 @@ export function DataTable({
                             </SelectContent>
                         </Select>
                         <span>entries</span>
+                        <span className="ml-4">
+                            Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalCount)} of{" "}
+                            {totalCount} entries
+                        </span>
                     </div>
 
                     <div className="flex items-center gap-2">
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                            onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
                         >
                             <ChevronLeft className="h-4 w-4 mr-1" />
                             Previous
                         </Button>
 
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                            const pageNumber = i + 1
-                            return (
+                        {getVisiblePageNumbers().map((pageNumber, index) =>
+                            pageNumber === "..." ? (
+                                <span key={`dots-${index}`} className="px-2 text-muted-foreground">
+                                    ...
+                                </span>
+                            ) : (
                                 <Button
                                     key={pageNumber}
                                     variant={currentPage === pageNumber ? "default" : "outline"}
                                     size="sm"
-                                    onClick={() => setCurrentPage(pageNumber)}
+                                    onClick={() => handlePageChange(pageNumber as number)}
                                     className="w-10"
                                 >
                                     {pageNumber}
                                 </Button>
-                            )
-                        })}
+                            ),
+                        )}
 
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                            onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}
                         >
                             Next

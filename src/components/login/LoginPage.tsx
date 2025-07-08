@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { login } from './apicalls/auth';
-import { useTopLoader } from '@/hooks/TopLoader';
+import { useTopLoader } from '@/context/TopLoader';
 import { apiCall } from '@/lib/apiClient';
+import { showErrorToast, showSucessToast } from '@/lib/toast';
+import { usePopup } from '@/context/PopupContext';
 
 interface LoginPageProps {
     onLogin: () => void;
@@ -20,18 +21,28 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     const [role, setRole] = useState('admin') // example role
     const router = useRouter()
     const loader = useTopLoader()
-
+    const { showPopup, updatePopupStatus } = usePopup();
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('logged in....');
+        // console.log('logged in....');
         loader.showLoader()
+        // showPopup('PENDING', "Login Initiated");
         try {
             // router.push('/admin')
-            const res = await apiCall<any>('POST', '/admin/v1/login', {
-                "email": "akshit1@gmail.com",
-                "password": "123456"
-            })
+            const payload = {
+                email,
+                password
+            }
+            const res = await apiCall<any>('POST', '/admin/v1/login', payload)
+            sessionStorage.setItem('accessToken', JSON.stringify(res.accessToken))
             console.log(res);
+            // showSucessToast('Login Successfull')
+            // showPopup('Booking Processed', "Your booking has been initiated"); // Optional message & duration
+
+            // setTimeout(() => {
+            // updatePopupStatus('success', 'SUCCESS', "Login Successfull", 4000); // Optional message & duration
+            // showPopup('SUCCESS', "Login Successfull");
+            // }, 1000)
             router.push(res?.user?.role)
             // onLogin();
 
@@ -53,8 +64,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             // } else {
             //     alert('Failed to set cookie')
             // }
-        } catch (error) {
-            console.error('Error setting role:', error)
+        } catch (error: any) {
+            console.error('API error:', error.response?.data || error.message);
+            showErrorToast(error?.response?.data?.msg || 'Something went wrong');
         } finally {
             loader.hideLoader()
         }
@@ -82,9 +94,13 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             {/* Right side - Login form */}
             <div className=" bg-white flex items-center justify-center p-10 absolute top-11 md:top-0 right-[-25px] md:right-0 w-[80%] md:w-[35%] h-[70%] md:h-[80%] rounded-3xl" style={{ transform: 'translate(-20%, 15%)' }}>
                 <div className="w-full h-full">
-                    <div className="mb-12 pb-6 border-b-8 border-[#F8EDDD] w-[60%] md:w-[50%]">
+                    <div className="mb-8  ">
                         <p className="text-black mb-2 text-xs md:text-lg">Welcome to <span className="text-primary font-semibold">ShiftBuddy</span></p>
-                        <h1 className="text-xl md:text-4xl font-bold text-gray-900">Sign up</h1>
+                        <h1 className="text-xl md:text-4xl font-semibold text-gray-900">Sign up</h1>
+                        <p className='mt-2 text-[#5B5B5B] text-[14px]'>Empowering Providers. Simplifying Care. Compliance with ease. Log in to get started.</p>
+                        <div className='h-2 bg-[#F8EDDD] w-[60%] md:w-[50%] mt-3'>
+
+                        </div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -123,7 +139,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                             </div>
                         </div>
 
-                        <div className='flex justify-end mt-14'>
+                        <div className='flex justify-end mt-7'>
                             <Button
                                 type="submit"
                                 className=" w-40 md:w-60 h-12 bg-primary hover:bg-[#715581] text-white font-medium rounded-lg mt-8 cursor-pointer"

@@ -10,6 +10,7 @@ import {
   EventClickArg,
   EventContentArg,
 } from "@fullcalendar/core";
+import { useRouter } from "next/navigation";
 // import { useModal } from "@/hooks/useModal";
 // import { Modal } from "@/components/ui/modal";
 
@@ -29,7 +30,8 @@ const CalendarPage: React.FC = () => {
   const [eventLevel, setEventLevel] = useState("");
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const calendarRef = useRef<FullCalendar>(null);
-//   const { isOpen, openModal, closeModal } = useModal();
+  //   const { isOpen, openModal, closeModal } = useModal();
+  const router = useRouter()
 
   const calendarsEvents = {
     Danger: "danger",
@@ -64,6 +66,7 @@ const CalendarPage: React.FC = () => {
   }, []);
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
+    console.log('sfmafsgahsfh');
     resetModalFields();
     setEventStartDate(selectInfo.startStr);
     setEventEndDate(selectInfo.endStr || selectInfo.startStr);
@@ -77,6 +80,15 @@ const CalendarPage: React.FC = () => {
     setEventStartDate(event.start?.toISOString().split("T")[0] || "");
     setEventEndDate(event.end?.toISOString().split("T")[0] || "");
     setEventLevel(event.extendedProps.calendar);
+    console.log(event);
+    const id = 10000;
+    const status = 'completed';
+    const date = '15/06/2025';
+
+    const url = `/admin/scheduler/${id}?status=${encodeURIComponent(status)}&date=${encodeURIComponent(date)}`;
+
+    router.push(url);
+    // router.push(`/admin/scheduler/${{ id: 10000, status: 'completed', date: '15/06/2025' }}`)
     // openModal();
   };
 
@@ -87,12 +99,12 @@ const CalendarPage: React.FC = () => {
         prevEvents.map((event) =>
           event.id === selectedEvent.id
             ? {
-                ...event,
-                title: eventTitle,
-                start: eventStartDate,
-                end: eventEndDate,
-                extendedProps: { calendar: eventLevel },
-              }
+              ...event,
+              title: eventTitle,
+              start: eventStartDate,
+              end: eventEndDate,
+              extendedProps: { calendar: eventLevel },
+            }
             : event
         )
       );
@@ -140,7 +152,7 @@ const CalendarPage: React.FC = () => {
           customButtons={{
             addEventButton: {
               text: "Add Event +",
-            //   click: openModal,
+              //   click: openModal,
             },
           }}
         />

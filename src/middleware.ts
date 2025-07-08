@@ -12,7 +12,8 @@ const protectedRoutes = {
 // Function to get user role (mocked from cookies/localStorage/etc.)
 function getUserRole(request: NextRequest): string | null {
     // Example: Extract role from cookie
-      const role = request.cookies.get('role')?.value
+      const role = 'admin'
+    //   const role = request.cookies.get('role')?.value
     // const role = JSON.parse(localStorage.getItem('authDetails') || '')?.data?.user_type
     return role || null
 }

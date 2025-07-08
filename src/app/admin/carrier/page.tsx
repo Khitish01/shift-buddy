@@ -1,4 +1,4 @@
-import CarrierComponent from "@/components/CarrierComponent";
+import CarrierComponent from "@/components/carrier/CarrierComponent";
 
 const CarrierPage = () => {
     return (

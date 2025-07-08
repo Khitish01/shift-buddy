@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { TopLoaderProvider } from "@/hooks/TopLoader";
+import { TopLoaderProvider } from "@/context/TopLoader";
 import { SidebarProvider } from "@/context/SidebarContext";
-import ConfirmationPopup from "@/components/ConfirmationPopup";
+import ConfirmationPopup from "@/components/common/ConfirmationPopup";
 import { PopupProvider } from "@/context/PopupContext";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({
           <PopupProvider>
             <SidebarProvider>
               {children}
+              <Toaster position="bottom-right" />
               <ConfirmationPopup />
             </SidebarProvider>
           </PopupProvider>

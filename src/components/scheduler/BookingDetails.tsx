@@ -2,7 +2,7 @@ import { useState } from "react";
 import Progressbar from "./ProgressBar";
 
 export const BookingDetailsContent: React.FC = () => {
-    const [activeTab, setActiveTab] = useState("medicalinfo");
+    const [activeTab, setActiveTab] = useState("Personal & Medical Info");
     const sampleNotes = [
         {
             id: "1",
@@ -58,11 +58,11 @@ export const BookingDetailsContent: React.FC = () => {
 
             {/* Tabs */}
             <div className="flex space-x-1 mb-6 border-b border-gray-300">
-                {['Personal', 'Medical Info', 'Progress Note', 'Track'].map((tab) => (
+                {['Personal & Medical Info', 'Progress Note', 'Track'].map((tab) => (
                     <button
                         key={tab}
-                        onClick={() => setActiveTab(tab.toLowerCase().replace(' ', ''))}
-                        className={`px-4 pb-2 font-medium text-sm border-b-[3px] transition-colors ${activeTab === tab.toLowerCase().replace(' ', '')
+                        onClick={() => setActiveTab(tab)}
+                        className={`px-4 pb-2 font-medium text-sm border-b-[3px] transition-colors ${activeTab === tab
                             ? 'border-primary text-primary'
                             : 'border-transparent text-gray-500 hover:text-primary'
                             }`}
@@ -72,7 +72,7 @@ export const BookingDetailsContent: React.FC = () => {
                 ))}
             </div>
 
-            {activeTab == 'medicalinfo' && (
+            {activeTab == 'Personal & Medical Info' && (
                 <> < div className="bg-gradient-to-l to-[#EFDBF4] from-[#E0E9F7] rounded-full p-4 flex items-center justify-between  mb-6">
                     <div className="flex-1">
                         <p className="font-bold text-sm">Carer Details:</p>
@@ -165,7 +165,7 @@ export const BookingDetailsContent: React.FC = () => {
                     </div>
                 </>
             )}
-            {activeTab == 'track' && (
+            {activeTab == 'Track' && (
                 <>
                     <div className="bg-[#FDF9FF] px-4 py-2 mb-4">
                         <h2 className="text-lg font-semibold text-gray-900 text-center">
@@ -175,7 +175,7 @@ export const BookingDetailsContent: React.FC = () => {
                     <Progressbar currentStatus={4} taskId="ID09876" />
                 </>
             )}
-            {activeTab == 'progressnote' && (
+            {activeTab == 'Progress Note' && (
                 <>
                     <div className="bg-[#FDF9FF] px-4 py-2 mb-4">
                         <h2 className="text-lg font-semibold text-gray-900 text-center">
@@ -183,7 +183,7 @@ export const BookingDetailsContent: React.FC = () => {
                         </h2>
                     </div>
                     <div className="space-y-4 max-h-[500px] overflow-auto">
-                        {sampleNotes.map((note:any,index:number) => (
+                        {sampleNotes.map((note: any, index: number) => (
                             <div key={index} className="bg-[#FDF9FF] p-4">
                                 <div className="flex justify-between text-sm text-gray-500 mb-1">
                                     <span>{note.time}</span>

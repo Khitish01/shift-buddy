@@ -1,5 +1,5 @@
 'use client'
-import LoginPage from "@/components/LoginPage";
+import LoginPage from "@/components/login/LoginPage";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

@@ -75,7 +75,7 @@ const BarChart = () => {
                     where: 'all'
                 },
                 pointPadding: 0.05,
-                groupPadding: 0.3,
+                groupPadding: isCollapse ? 0.3 : 0.25,
                 pointWidth: 12,
             },
         },

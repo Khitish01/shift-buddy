@@ -1,5 +1,5 @@
-import Calender from "@/components/Calender";
-import Dashboard from "@/components/Dashboard";
+import Calender from "@/components/scheduler/Calender";
+import Dashboard from "@/components/dashboard/Dashboard";
 
 const DashBoardComponent = () => {
     return (

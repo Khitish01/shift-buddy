@@ -3,8 +3,8 @@ import { Calendar, BarChart3, Users, UserCheck, DollarSign } from "lucide-react"
 import BarChart from "./DashboardBarchart";
 import DonutChart from "./DashboardDonutchart";
 import { Column } from "@/types/table";
-import { CellRenderers, TableActions } from "./table-actions";
-import { ColumnDefinition, DataTable } from "./DataTable";
+import { CellRenderers, TableActions } from "../common/table-actions";
+import { ColumnDefinition, DataTable } from "../common/DataTable";
 import { useState } from "react";
 
 const sampleData = [

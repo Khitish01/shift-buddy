@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Calendar, ChevronDown } from 'lucide-react';
-import { SideDrawer } from './SIdeDrawer';
+import { SideDrawer } from '../common/SIdeDrawer';
 import CalendarPage from './CarrerprofileDetails';
 import { useState } from 'react';
 interface SideDrawerProps {

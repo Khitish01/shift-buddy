@@ -1,13 +1,11 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { Column } from "@/types/table";
-import { CellRenderers, TableActions } from "./table-actions";
 import { Ban, Edit, Eye, Pencil, Plus, Trash2 } from "lucide-react";
-import { Input } from "./ui/input";
+import { Input } from "../ui/input";
 import { apiCall } from "@/lib/apiClient";
-import { useTopLoader } from "@/hooks/TopLoader";
-import { ColumnDefinition, DataTable, SortConfig, TableAction } from "./DataTable";
+import { useTopLoader } from "@/context/TopLoader";
+import { ColumnDefinition, DataTable, SortConfig, TableAction } from "../common/DataTable";
 // const sampleData = [
 //     {
 //         id: '000989',
@@ -170,7 +168,7 @@ const CarrierComponent = () => {
     // Column definitions
     const columns: ColumnDefinition[] = [
         {
-            key: "_id",
+            key: "carrierId",
             label: "Carer ID",
             type: "text",
             sortable: false,

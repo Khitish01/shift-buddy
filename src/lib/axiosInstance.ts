@@ -10,15 +10,30 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
     (config) => {
-        const accessToken = Cookies.get('accessToken'); // reads token from cookies (client-side only)
-        console.log(accessToken);
-        
+        let accessToken = '';
+
+        if (typeof window !== 'undefined') {
+            const fromSession = sessionStorage.getItem('accessToken') || '';
+            // console.log(fromSession);
+
+            const fromCookies = Cookies.get('accessToken');
+            // console.log(fromCookies);
+            accessToken = fromCookies || JSON.parse(fromSession);
+        }
+
         if (accessToken) {
             config.headers['Authorization'] = `Bearer ${accessToken}`;
         }
 
-        config.headers['Content-Type'] = 'application/json';
+        // Only set Content-Type if not already set and data isn't FormData
+        if (
+            !config.headers['Content-Type'] &&
+            !(config.data instanceof FormData)
+        ) {
+            config.headers['Content-Type'] = 'application/json';
+        }
         config.headers['x-client-type'] = 'web';
+        config.headers['Host'] = 'shift-buddy-admin-service-main.onrender.com';
         return config;
     },
     (error) => Promise.reject(error)

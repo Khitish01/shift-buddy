@@ -24,11 +24,11 @@ const SideBar = () => {
     const path = usePathname();    
 
     const sidebarItems = [
-        { icon: '/icons/dashboard-icon.svg', label: 'Dashboard', id: 'dashboard', path: '/admin/dashboard' },
-        { icon: '/icons/carrier-icon.svg', label: 'Staff', id: 'carrier', path: '/admin/carrier' },
-        { icon: '/icons/sidebar-icon-3.svg', label: 'Schedule', id: 'schedule', path: '/admin/scheduler' },
-        { icon: '/icons/sidebar-icon-4.svg', label: 'Calendar', id: 'calendar', path: '' },
-        { icon: '/icons/sidebar-icon-5.svg', label: 'Vehicles', id: 'vehicles', path: '' },
+        { icon: '/icons/dashboard-icon.svg', label: 'Home', id: 'dashboard', path: '/admin/dashboard' },
+        { icon: '/icons/carrier-icon.svg', label: 'Carer', id: 'carrier', path: '/admin/carrier' },
+        { icon: '/icons/sidebar-icon-3.svg', label: 'Shift Management', id: 'schedule', path: '/admin/scheduler' },
+        { icon: '/icons/sidebar-icon-4.svg', label: 'Leave Management', id: 'calendar', path: '' },
+        { icon: '/icons/sidebar-icon-5.svg', label: 'Vehicle Management', id: 'vehicles', path: '' },
     ];
     return (
         <div className="relative z-50">
@@ -81,7 +81,7 @@ const SideBar = () => {
                                     }}
                                     className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${path.includes(item.id)
                                         ? 'bg-white bg-opacity-20 text-primary'
-                                        : 'text-purple-200 hover:text-white hover:bg-white hover:bg-opacity-10'
+                                        : 'text-purple-200 hover:text-primary hover:bg-white hover:bg-opacity-10'
                                         }`}
                                     title={item.label}
                                 >
@@ -99,7 +99,7 @@ const SideBar = () => {
                                     }}
                                     className={`flex items-center gap-4 mb-3 rounded-lg px-4 py-2 text-sm transition-colors w-full text-left ${path.includes(item.id)
                                         ? 'bg-white bg-opacity-20 text-primary'
-                                        : 'text-purple-200 hover:text-white hover:bg-white hover:bg-opacity-10'
+                                        : 'text-purple-200 hover:text-primary hover:bg-white hover:bg-opacity-10'
                                         }`}
                                 >
                                     {/* <item.icon size={18} /> */}
@@ -122,7 +122,7 @@ const SideBar = () => {
                                     onClick={() => setActiveView(key)}
                                     className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${activeView === key
                                         ? 'bg-white bg-opacity-20 text-primary'
-                                        : 'text-purple-200 hover:text-white hover:bg-white hover:bg-opacity-10'
+                                        : 'text-purple-200 hover:text-primary hover:bg-white hover:bg-opacity-10'
                                         }`}
                                     title={label}
                                 >
@@ -134,7 +134,7 @@ const SideBar = () => {
                                     onClick={() => setActiveView(key)}
                                     className={`flex items-center gap-3 rounded-lg px-4 py-2 text-sm transition-colors w-full text-left ${activeView === key
                                         ? 'bg-white bg-opacity-20 text-primary'
-                                        : 'text-purple-200 hover:text-white hover:bg-white hover:bg-opacity-10'
+                                        : 'text-purple-200 hover:text-primary hover:bg-white hover:bg-opacity-10'
                                         }`}
                                 >
                                     <Icon size={20} />

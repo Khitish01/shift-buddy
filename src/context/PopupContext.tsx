@@ -1,33 +1,53 @@
-// context/PopupContext.tsx
 'use client';
 
 import { createContext, useContext, useState } from "react";
 
+type PopupStatus = 'loading' | 'success' | 'error';
+
 type PopupContextType = {
     popup: {
         visible: boolean;
+        header?: string;
         message?: string;
         duration?: number;
+        status: PopupStatus;
     };
-    showPopup: (message?: string, duration?: number) => void;
+    showPopup: (header?: string, message?: string, duration?: number) => void;
+    updatePopupStatus: (status: PopupStatus, header?: string, message?: string, duration?: number) => void;
     hidePopup: () => void;
 };
 
 const PopupContext = createContext<PopupContextType | undefined>(undefined);
 
 export const PopupProvider = ({ children }: { children: React.ReactNode }) => {
-    const [popup, setPopup] = useState({ visible: false, message: "", duration: 3000 });
+    const [popup, setPopup] = useState({
+        visible: false,
+        header: '',
+        message: '',
+        duration: 3000,
+        status: 'loading' as PopupStatus,
+    });
 
-    const showPopup = (message = "", duration = 3000) => {
-        setPopup({ visible: true, message, duration });
+    const showPopup = (header = '', message = '', duration = 3000) => {
+        setPopup({ visible: true, header, message, duration, status: 'loading' });
+    };
+
+    const updatePopupStatus = (status: PopupStatus, header?: string, message?: string, duration?: number) => {
+        setPopup(prev => ({
+            ...prev,
+            status,
+            header: header ?? prev.header,
+            message: message ?? prev.message,
+            duration: duration ?? prev.duration,
+        }));
     };
 
     const hidePopup = () => {
-        setPopup({ ...popup, visible: false });
+        setPopup(prev => ({ ...prev, visible: false }));
     };
 
     return (
-        <PopupContext.Provider value={{ popup, showPopup, hidePopup }}>
+        <PopupContext.Provider value={{ popup, showPopup, updatePopupStatus, hidePopup }}>
             {children}
         </PopupContext.Provider>
     );

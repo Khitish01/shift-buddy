@@ -14,11 +14,11 @@ axiosInstance.interceptors.request.use(
 
         if (typeof window !== 'undefined') {
             const fromSession = sessionStorage.getItem('accessToken') || '';
-            // console.log(fromSession);
+            console.log(fromSession);
 
             const fromCookies = Cookies.get('accessToken');
-            // console.log(fromCookies);
-            accessToken = fromCookies || JSON.parse(fromSession);
+            console.log(fromCookies);
+            accessToken = fromCookies || fromSession ? JSON.parse(fromSession) : '';
         }
 
         if (accessToken) {

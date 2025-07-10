@@ -10,6 +10,7 @@ import { useTopLoader } from '@/context/TopLoader';
 import { apiCall } from '@/lib/apiClient';
 import { showErrorToast, showSucessToast } from '@/lib/toast';
 import { usePopup } from '@/context/PopupContext';
+import Cookies from 'js-cookie'
 
 interface LoginPageProps {
     onLogin: () => void;
@@ -35,6 +36,19 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             }
             const res = await apiCall<any>('POST', '/admin/v1/login', payload)
             sessionStorage.setItem('accessToken', JSON.stringify(res.accessToken))
+            // Cookies.set('accessToken', res.accessToken, { path: '/', secure: true, sameSite: 'Lax' })
+            Cookies.set('accessToken', res.accessToken, {
+                expires: 0.0416, // ~30 minutes (1 day = 1)
+                path: '/',
+                secure: true,
+                sameSite: 'Lax',
+            });
+            Cookies.set('role', res?.user?.role, {
+                expires: 0.0416, // ~30 minutes (1 day = 1)
+                path: '/',
+                secure: true,
+                sameSite: 'Lax',
+            });
             console.log(res);
             // showSucessToast('Login Successfull')
             // showPopup('Booking Processed', "Your booking has been initiated"); // Optional message & duration

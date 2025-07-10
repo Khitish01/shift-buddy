@@ -1,6 +1,7 @@
 // lib/axiosInstance.ts
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import Router from 'next/router';
 
 const axiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000',
@@ -33,7 +34,7 @@ axiosInstance.interceptors.request.use(
             config.headers['Content-Type'] = 'application/json';
         }
         config.headers['x-client-type'] = 'web';
-        config.headers['Host'] = 'shift-buddy-admin-service-main.onrender.com';
+        // config.headers['Host'] = 'shift-buddy-admin-service-main.onrender.com';
         return config;
     },
     (error) => Promise.reject(error)
@@ -42,8 +43,10 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        if (typeof window !== 'undefined' && error.response?.status === 401) {
             console.warn('Unauthorized – maybe redirect to login.');
+            // Router.push('/unauthorized');
+            window.location.href = '/sessionout';
         }
         return Promise.reject(error);
     }

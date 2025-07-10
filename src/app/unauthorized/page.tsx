@@ -55,7 +55,7 @@ const UnAuthorized = () => {
                     onClick={() => router.back()}
                     className="px-6 py-2 bg-gradient-to-r from-[#69417E] to-[#A374C3] text-white font-semibold rounded-full shadow-md hover:opacity-90 transition"
                 >
-                    RETURN HOME
+                    RETURN BACK
                 </a>
             </div>
         </div>

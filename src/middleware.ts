@@ -1,7 +1,7 @@
 // src/middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { jwtVerify } from 'jose'
+// import { jwtVerify } from 'jose'
 
 // Define protected routes
 const protectedRoutes = {
@@ -19,29 +19,29 @@ function getUserRole(request: NextRequest): string | null {
     return role || null
 }
 
-const checkTokenExpiry = (request: NextRequest) => {
-    const accessToken = request.cookies.get('accessToken')?.value
-}
+// const checkTokenExpiry = (request: NextRequest) => {
+//     const accessToken = request.cookies.get('accessToken')?.value
+// }
 
-async function verifyToken(token: string): Promise<boolean> {
-    try {
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET)
-        await jwtVerify(token, secret)
-        return true
-    } catch (e) {
-        return false
-    }
-}
+// async function verifyToken(token: string): Promise<boolean> {
+//     try {
+//         const secret = new TextEncoder().encode(process.env.JWT_SECRET)
+//         await jwtVerify(token, secret)
+//         return true
+//     } catch (e) {
+//         return false
+//     }
+// }
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
     const role = getUserRole(request)
 
-    const accessToken = request.cookies.get('accessToken')?.value
+    // const accessToken = request.cookies.get('accessToken')?.value
 
-    if (!accessToken || !(await verifyToken(accessToken))) {
-        return NextResponse.redirect(new URL('/unauthorized', request.url))
-    }
+    // if (!accessToken || !(await verifyToken(accessToken))) {
+    //     return NextResponse.redirect(new URL('/unauthorized', request.url))
+    // }
 
     // Skip checks for static files, API, etc.
     if (

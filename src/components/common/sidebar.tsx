@@ -1,8 +1,10 @@
 'use client'
 
+import { BookingIcon, CarrierIcon, DashBoardIcon, LeaveIcon, LogoutIcon, ParticipantIcon, SettingsIcon, ShiftIcon, VehicleIcon } from "@/app/images";
 import { useSidebar } from "@/context/SidebarContext";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
+    ArrowBigDown,
     Calendar,
     ChevronRight,
     ClipboardList,
@@ -21,14 +23,16 @@ const SideBar = () => {
     const { isOpen, isCollapse, collapse, toggle } = useSidebar();
     const isMobile = useIsMobile();
     const router = useRouter();
-    const path = usePathname();    
+    const path = usePathname();
 
     const sidebarItems = [
-        { icon: '/icons/dashboard-icon.svg', label: 'Home', id: 'dashboard', path: '/admin/dashboard' },
-        { icon: '/icons/carrier-icon.svg', label: 'Carer', id: 'carrier', path: '/admin/carrier' },
-        { icon: '/icons/sidebar-icon-3.svg', label: 'Shift Management', id: 'schedule', path: '/admin/scheduler' },
-        { icon: '/icons/sidebar-icon-4.svg', label: 'Leave Management', id: 'calendar', path: '' },
-        { icon: '/icons/sidebar-icon-5.svg', label: 'Vehicle Management', id: 'vehicles', path: '' },
+        { icon: DashBoardIcon, label: 'Home', id: 'dashboard', path: '/admin/dashboard' },
+        { icon: BookingIcon, label: 'Booking Management', id: 'booking', path: '' },
+        { icon: ParticipantIcon, label: 'Participant Management', id: 'participant', path: '' },
+        { icon: CarrierIcon, label: 'Carer Management', id: 'carrier', path: '/admin/carrier' },
+        { icon: ShiftIcon, label: 'Shift Management', id: 'shift', path: '' },
+        { icon: LeaveIcon, label: 'Leave Management', id: 'leave', path: '' },
+        { icon: VehicleIcon, label: 'Vehicle Management', id: 'vehicles', path: '' },
     ];
     return (
         <div className="relative z-50">
@@ -85,8 +89,8 @@ const SideBar = () => {
                                         }`}
                                     title={item.label}
                                 >
-                                    {/* <item.icon size={18} /> */}
-                                    <img src={item?.icon} alt="" className={`w-5 h-5 ${!path.includes(item.id) ? '' : 'filter invert sepia saturate-[500%] hue-rotate-[235deg] brightness-[95%] contrast-[87%]'}`} />
+                                    <item.icon className={`w-6 h-6`} />
+                                    {/* <img src={item?.icon} alt="" className={`w-5 h-5 ${!path.includes(item.id) ? '' : 'filter invert sepia saturate-[500%] hue-rotate-[235deg] brightness-[95%] contrast-[87%]'}`} /> */}
                                 </button>
                             ))
                         ) : (
@@ -102,8 +106,8 @@ const SideBar = () => {
                                         : 'text-purple-200 hover:text-primary hover:bg-white hover:bg-opacity-10'
                                         }`}
                                 >
-                                    {/* <item.icon size={18} /> */}
-                                    <img src={item?.icon} alt="" className={`w-5 h-5 ${!path.includes(item.id) ? '' : 'filter invert sepia saturate-[500%] hue-rotate-[235deg] brightness-[95%] contrast-[87%]'}`} />
+                                    <item.icon className={`w-6 h-6 `} />
+                                    {/* <img src={item?.icon} alt="" className={`w-5 h-5 ${!path.includes(item.id) ? '' : 'filter invert sepia saturate-[500%] hue-rotate-[235deg] brightness-[95%] contrast-[87%]'}`} /> */}
                                     <span>{item.label}</span>
                                 </button>
                             ))
@@ -113,7 +117,7 @@ const SideBar = () => {
                     {/* Settings and Logout */}
                     <div className="flex flex-col space-y-2 mt-6">
                         {['settings', 'logout'].map((key) => {
-                            const Icon = key === 'settings' ? Settings : LogOut;
+                            const Icon = key === 'settings' ? SettingsIcon : LogoutIcon;
                             const label = key === 'settings' ? 'Settings' : 'Logout';
 
                             return isCollapse && !isMobile ? (
@@ -126,7 +130,7 @@ const SideBar = () => {
                                         }`}
                                     title={label}
                                 >
-                                    <Icon size={20} />
+                                    <Icon className={`w-6 h-6`} />
                                 </button>
                             ) : (
                                 <button
@@ -137,7 +141,8 @@ const SideBar = () => {
                                         : 'text-purple-200 hover:text-primary hover:bg-white hover:bg-opacity-10'
                                         }`}
                                 >
-                                    <Icon size={20} />
+                                    <Icon size={20} className={`w-6 h-6 hover:text-primary`} />
+                                    {/* <ArrowBigDown /> */}
                                     <span>{label}</span>
                                 </button>
                             );

@@ -35,7 +35,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                 password
             }
             const res = await apiCall<any>('POST', '/admin/v1/login', payload)
-            sessionStorage.setItem('accessToken', JSON.stringify(res.accessToken))
+            // sessionStorage.setItem('accessToken', JSON.stringify(res.accessToken))
             // Cookies.set('accessToken', res.accessToken, { path: '/', secure: true, sameSite: 'Lax' })
             Cookies.set('accessToken', res.accessToken, {
                 expires: 0.0416, // ~30 minutes (1 day = 1)

@@ -16,7 +16,8 @@ import {
     X
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Cookies from 'js-cookie';
 
 const SideBar = () => {
     const [activeView, setActiveView] = useState('dashboard');
@@ -25,10 +26,20 @@ const SideBar = () => {
     const router = useRouter();
     const path = usePathname();
 
+    useEffect(() => {
+        if (activeView == 'logout') {
+            Cookies.remove('accessToken');
+            Cookies.remove('role');
+            // sessionStorage.clear()
+            router.push('/');
+
+        }
+    }, [activeView])
+
     const sidebarItems = [
         { icon: DashBoardIcon, label: 'Home', id: 'dashboard', path: '/admin/dashboard' },
-        { icon: BookingIcon, label: 'Booking Management', id: 'booking', path: '' },
-        { icon: ParticipantIcon, label: 'Participant Management', id: 'participant', path: '' },
+        { icon: BookingIcon, label: 'Booking Management', id: 'booking', path: '/admin/booking' },
+        { icon: ParticipantIcon, label: 'Participant Management', id: 'participant', path: '/admin/participant' },
         { icon: CarrierIcon, label: 'Carer Management', id: 'carrier', path: '/admin/carrier' },
         { icon: ShiftIcon, label: 'Shift Management', id: 'shift', path: '' },
         { icon: LeaveIcon, label: 'Leave Management', id: 'leave', path: '' },

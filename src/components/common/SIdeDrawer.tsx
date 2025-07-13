@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Upload, Calendar, Clock, User, Phone, Mail, MapPin, FileText, Plus } from 'lucide-react';
+import { X, Upload, Calendar, Clock, User, Phone, Mail, MapPin, FileText, Plus, ArrowLeft } from 'lucide-react';
 
 interface SideDrawerProps {
     isOpen: boolean;
@@ -7,10 +7,12 @@ interface SideDrawerProps {
     title: string;
     avatar: string
     children: React.ReactNode;
-    width?: string
+    width?: string;
+    onBack?: () => void; // optional back button handler
+    isBackButton?: boolean
 }
 
-export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, avatar, title, children, width = '50%' }) => {
+export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, avatar, title, children, width = '50%', onBack, isBackButton = false }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
 
@@ -43,12 +45,22 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, avatar,
                     }`}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 pb-0">
+                <div className="flex items-center justify-between p-6 pb-0 h-16">
+
                     {avatar == '' ? (
                         <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
                     ) : (
                         <div className='flex items-center gap-3'>
-                            <img src={avatar} alt="" className='rounded-full' />
+                            {isBackButton && (
+                                <button
+                                    onClick={onBack}
+                                    className="mr-3 p-2 cursor-pointer rounded-full text-zinc-800 bg-[#F3F3F3]"
+                                    title="Back"
+                                >
+                                    <ArrowLeft size={20}/>
+                                </button>
+                            )}
+                            <img src={avatar} alt="" className='rounded-full h-8 w-8' />
                             <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
                         </div>
                     )}

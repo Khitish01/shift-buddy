@@ -8,6 +8,10 @@ import ParticipantIcon from '@/icons/participant-icon.svg';
 import ShiftIcon from '@/icons/shift-icon.svg';
 import VehicleIcon from '@/icons/vehicle-icon.svg';
 
+import CalendarIcon from '@/icons/calendar-icon.svg';
+import ChatIcon from '@/icons/chat-icon.svg';
+import NotificationIcon from '@/icons/notification-icon.svg';
+
 export {
     CarrierIcon,
     DashBoardIcon,
@@ -18,4 +22,7 @@ export {
     ParticipantIcon,
     ShiftIcon,
     VehicleIcon,
+    CalendarIcon,
+    ChatIcon,
+    NotificationIcon
 };

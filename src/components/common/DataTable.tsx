@@ -115,6 +115,12 @@ export function DataTable({
         }
     }
 
+    const getValueByKey = (obj: any, key: string): any => {
+        if (!obj || !key) return undefined;
+        if (!key.includes(".")) return obj[key]; // direct key
+        return key.split(".").reduce((acc, part) => acc?.[part], obj);
+    };
+
     const renderCellContent = (column: ColumnDefinition, value: any, row: any) => {
         if (column.render) {
             return column.render(value, row)
@@ -150,9 +156,9 @@ export function DataTable({
             case "actions":
                 return (
                     <div className="flex items-center gap-1">
-                        {actions.map((action) => (
+                        {actions.map((action,idx) => (
                             <Button
-                                key={action.id}
+                                key={idx}
                                 variant={action.variant || "ghost"}
                                 size="sm"
                                 onClick={(e) => {
@@ -230,9 +236,9 @@ export function DataTable({
                     <table className="w-full">
                         <thead className={`${headerClassName}`}>
                             <tr>
-                                {columns.map((column) => (
+                                {columns.map((column,idx) => (
                                     <th
-                                        key={column.key}
+                                        key={idx}
                                         className={`px-4 py-3 text-left text-sm font-semibold text-black ${column.sortable !== false && sortable ? "cursor-pointer hover:text-foreground" : ""
                                             } ${column.className || ""}`}
                                         style={{ width: column.width }}
@@ -256,14 +262,14 @@ export function DataTable({
                             ) : (
                                 data.map((row, index) => (
                                     <tr
-                                        key={row.id || index}
+                                        key={index}
                                         className={`transition-colors ${index % 2 === 0 ? "bg-[#F7F6FE]" : "bg-[#FFFFFF]"
                                             } ${onRowClick ? "cursor-pointer" : ""} ${rowClassName}`}
                                         onClick={() => onRowClick?.(row)}
                                     >
-                                        {columns.map((column) => (
-                                            <td key={column.key} className={`px-4 py-3 text-sm ${column.className || ""}`}>
-                                                {renderCellContent(column, row[column.key], row)}
+                                        {columns.map((column,idx) => (
+                                            <td key={idx} className={`px-4 py-3 text-sm ${column.className || ""}`}>
+                                                {renderCellContent(column, getValueByKey(row, column.key) ?? '-', row)}
                                             </td>
                                         ))}
                                     </tr>
@@ -284,8 +290,8 @@ export function DataTable({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                {pageSizeOptions.map((size) => (
-                                    <SelectItem key={size} value={size.toString()}>
+                                {pageSizeOptions.map((size,idx) => (
+                                    <SelectItem key={idx} value={size.toString()}>
                                         {size}
                                     </SelectItem>
                                 ))}

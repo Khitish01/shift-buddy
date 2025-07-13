@@ -111,6 +111,7 @@ const SideBar = () => {
                                     onClick={() => {
                                         router.push(item?.path)
                                         setActiveView(item.id)
+                                        isMobile ? toggle() : ''
                                     }}
                                     className={`flex items-center gap-4 mb-3 rounded-lg px-4 py-2 text-sm transition-colors w-full text-left ${path.includes(item.id)
                                         ? 'bg-white bg-opacity-20 text-primary'

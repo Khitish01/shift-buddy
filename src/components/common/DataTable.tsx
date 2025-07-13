@@ -156,7 +156,7 @@ export function DataTable({
             case "actions":
                 return (
                     <div className="flex items-center gap-1">
-                        {actions.map((action,idx) => (
+                        {actions.map((action, idx) => (
                             <Button
                                 key={idx}
                                 variant={action.variant || "ghost"}
@@ -236,7 +236,7 @@ export function DataTable({
                     <table className="w-full">
                         <thead className={`${headerClassName}`}>
                             <tr>
-                                {columns.map((column,idx) => (
+                                {columns.map((column, idx) => (
                                     <th
                                         key={idx}
                                         className={`px-4 py-3 text-left text-sm font-semibold text-black ${column.sortable !== false && sortable ? "cursor-pointer hover:text-foreground" : ""
@@ -267,7 +267,7 @@ export function DataTable({
                                             } ${onRowClick ? "cursor-pointer" : ""} ${rowClassName}`}
                                         onClick={() => onRowClick?.(row)}
                                     >
-                                        {columns.map((column,idx) => (
+                                        {columns.map((column, idx) => (
                                             <td key={idx} className={`px-4 py-3 text-sm ${column.className || ""}`}>
                                                 {renderCellContent(column, getValueByKey(row, column.key) ?? '-', row)}
                                             </td>
@@ -282,69 +282,143 @@ export function DataTable({
 
             {/* Pagination */}
             {paginated && totalCount > 0 && (
-                <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>Show</span>
-                        <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-                            <SelectTrigger className="w-20">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {pageSizeOptions.map((size,idx) => (
-                                    <SelectItem key={idx} value={size.toString()}>
-                                        {size}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <span>entries</span>
-                        <span className="ml-4">
-                            Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalCount)} of{" "}
-                            {totalCount} entries
-                        </span>
+                <div className="mt-4">
+                    {/* Desktop View */}
+                    <div className="hidden md:flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>Show</span>
+                            <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                                <SelectTrigger className="w-20">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {pageSizeOptions.map((size, idx) => (
+                                        <SelectItem key={idx} value={size.toString()}>
+                                            {size}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <span>entries</span>
+                            <span className="ml-4">
+                                Showing {(currentPage - 1) * pageSize + 1} to{" "}
+                                {Math.min(currentPage * pageSize, totalCount)} of {totalCount} entries
+                            </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                <ChevronLeft className="h-4 w-4 mr-1" />
+                                Previous
+                            </Button>
+
+                            {getVisiblePageNumbers().map((pageNumber, index) =>
+                                pageNumber === "..." ? (
+                                    <span key={`dots-${index}`} className="px-2 text-muted-foreground">
+                                        ...
+                                    </span>
+                                ) : (
+                                    <Button
+                                        key={pageNumber}
+                                        variant={currentPage === pageNumber ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => handlePageChange(pageNumber as number)}
+                                        className="w-10"
+                                    >
+                                        {pageNumber}
+                                    </Button>
+                                )
+                            )}
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                            >
+                                Next
+                                <ChevronRight className="h-4 w-4 ml-1" />
+                            </Button>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                        >
-                            <ChevronLeft className="h-4 w-4 mr-1" />
-                            Previous
-                        </Button>
+                    {/* Mobile View */}
+                    <div className="flex flex-col md:hidden gap-3 text-sm text-muted-foreground">
+                        <div className="flex justify-between items-center">
+                            <span>
+                                Showing {(currentPage - 1) * pageSize + 1} -{" "}
+                                {Math.min(currentPage * pageSize, totalCount)} of {totalCount}
+                            </span>
+                            <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                                <SelectTrigger className="w-20 text-xs h-8">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {pageSizeOptions.map((size, idx) => (
+                                        <SelectItem key={idx} value={size.toString()}>
+                                            {size}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                        {getVisiblePageNumbers().map((pageNumber, index) =>
-                            pageNumber === "..." ? (
-                                <span key={`dots-${index}`} className="px-2 text-muted-foreground">
-                                    ...
-                                </span>
-                            ) : (
-                                <Button
-                                    key={pageNumber}
-                                    variant={currentPage === pageNumber ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => handlePageChange(pageNumber as number)}
-                                    className="w-10"
-                                >
-                                    {pageNumber}
-                                </Button>
-                            ),
-                        )}
+                        <div className="flex justify-between items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="flex-1"
+                            >
+                                <ChevronLeft className="h-4 w-4 mr-1" />
+                                Prev
+                            </Button>
 
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                        >
-                            Next
-                            <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
+                            <div className="flex items-center overflow-x-auto gap-1 px-2 scrollbar-hide">
+                                {getVisiblePageNumbers().map((pageNumber, index) =>
+                                    pageNumber === "..." ? (
+                                        <span
+                                            key={`dots-mobile-${index}`}
+                                            className="px-2 text-muted-foreground"
+                                        >
+                                            ...
+                                        </span>
+                                    ) : (
+                                        <Button
+                                            key={`mobile-${pageNumber}`}
+                                            variant={currentPage === pageNumber ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => handlePageChange(pageNumber as number)}
+                                            className="min-w-[2rem] px-2"
+                                        >
+                                            {pageNumber}
+                                        </Button>
+                                    )
+                                )}
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="flex-1"
+                            >
+                                Next
+                                <ChevronRight className="h-4 w-4 ml-1" />
+                            </Button>
+                        </div>
                     </div>
                 </div>
             )}
+
+
         </div>
     )
 }

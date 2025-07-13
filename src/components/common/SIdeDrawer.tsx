@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, Upload, Calendar, Clock, User, Phone, Mail, MapPin, FileText, Plus, ArrowLeft } from 'lucide-react';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 interface SideDrawerProps {
     isOpen: boolean;
@@ -15,6 +16,7 @@ interface SideDrawerProps {
 export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, avatar, title, children, width = '50%', onBack, isBackButton = false }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         if (isOpen) {
@@ -41,7 +43,8 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, avatar,
 
             {/* Drawer */}
             <div
-                className={`fixed right-0 top-0 h-screen ${width == '75%' ? 'w-[80%]' : 'w-[50%]'} bg-white overflow-auto shadow-2xl z-[100] transform transition-transform duration-300 ease-in-out ${isAnimating ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed right-0 top-0 h-screen ${isMobile ? 'w-[95%]' : width == '75%' ? 'w-[80%]' : 'w-[50%]'
+                    } bg-white overflow-auto shadow-2xl z-[100] transform transition-transform duration-300 ease-in-out ${isAnimating ? 'translate-x-0' : 'translate-x-full'
                     }`}
             >
                 {/* Header */}
@@ -57,7 +60,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({ isOpen, onClose, avatar,
                                     className="mr-3 p-2 cursor-pointer rounded-full text-zinc-800 bg-[#F3F3F3]"
                                     title="Back"
                                 >
-                                    <ArrowLeft size={20}/>
+                                    <ArrowLeft size={20} />
                                 </button>
                             )}
                             <img src={avatar} alt="" className='rounded-full h-8 w-8' />

@@ -327,7 +327,7 @@ const ParticipantComponent = () => {
             {/* This is carrier listing page */}
 
             <div className="flex justify-between items-center mb-3">
-                <h1 className="font-semibold text-2xl">Participant Listing</h1>
+                <h1 className="font-semibold text-xl md:text-2xl">Participant Listing</h1>
                 <div className="flex items-center gap-3">
                     <Input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
                     <button className="bg-primary w-full text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-900"

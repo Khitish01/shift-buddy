@@ -11,6 +11,7 @@ import { BookingDetailsContent } from "./BookingDetails";
 import CarerProfilePage from "../carrier/CareerProfile";
 import CalendarPage from "../carrier/CarrerprofileDetails";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useIsMobile } from "@/hooks/useIsMobile";
 dayjs.extend(isSameOrBefore);
 
 const Calender = () => {
@@ -19,6 +20,8 @@ const Calender = () => {
     const [selectedMonth, setSelectedMonth] = useState(dayjs());
     const [selectedDayCalender, setSelectedDayCalender] = useState<dayjs.Dayjs>(dayjs())
     const [dates, setDates] = useState<any[]>([]);
+    const isMobile = useIsMobile();
+    const [showSidebarMobile, setShowSidebarMobile] = useState(false);
     const [drawerState, setDrawerState] = useState({
         isOpen: false,
         type: 'book', // 'book' or 'details' or 'career'
@@ -276,14 +279,26 @@ const Calender = () => {
                 </div>
 
                 {/* Right Sidebar */}
-                <div className="w-80 space-y-6">
+                {isMobile && showSidebarMobile && (
+                    <div
+                        className="fixed inset-0 bg-opacity-30 z-30"
+                        onClick={() => setShowSidebarMobile(false)}
+                    />
+                )}
+                <div
+                    className={`space-y-6 transition-transform duration-300 ease-in-out
+    ${isMobile
+                            ? `fixed top-0 right-0 z-40 p-5 pt-2 bg-white h-full w-[75%] shadow-lg transform ${showSidebarMobile ? 'translate-x-0' : 'translate-x-full'
+                            }`
+                            : 'w-80'
+                        }`}
+                >
                     {/* Calendar */}
                     <div className="mt-4 p-4 rounded-t-lg shadow-sm" style={{
-                        backgroundImage: 'url(/images/calendar-bg.svg)', // Path to your image in the public folder
-                        backgroundSize: 'cover', // Cover the entire area
-                        backgroundPosition: 'center', // Center the image
-                        backgroundRepeat: 'no-repeat', // Prevent tiling
-                        // minHeight: '100vh', // Full viewport height
+                        backgroundImage: 'url(/images/calendar-bg.svg)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat',
                         width: '100%',
                     }}>
                         <div className="flex items-center justify-between mb-4">
@@ -310,8 +325,8 @@ const Calender = () => {
                     </div>
 
                     {/* Assignee */}
-                    {!carrierId.id &&
-                        <div className=" ">
+                    {!carrierId.id && (
+                        <div>
                             <h3 className="font-medium mb-4">Assignee</h3>
                             <div className="relative mb-4">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
@@ -336,9 +351,18 @@ const Calender = () => {
                                 ))}
                             </div>
                         </div>
-                    }
+                    )}
                 </div>
+
             </div>
+            {isMobile && (
+                <button
+                    className="fixed bottom-6 right-6 z-50 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-purple-900 transition"
+                    onClick={() => setShowSidebarMobile(prev => !prev)}
+                >
+                    {showSidebarMobile ? <ChevronRight size={20} /> : <Calendar size={20} />}
+                </button>
+            )}
             {/* Side Drawer */}
             <SideDrawer
                 isOpen={drawerState.isOpen}

@@ -41,7 +41,7 @@ const SideBar = () => {
         { icon: BookingIcon, label: 'Booking Management', id: 'booking', path: '/admin/booking' },
         { icon: ParticipantIcon, label: 'Participant Management', id: 'participant', path: '/admin/participant' },
         { icon: CarrierIcon, label: 'Carer Management', id: 'carrier', path: '/admin/carrier' },
-        { icon: ShiftIcon, label: 'Shift Management', id: 'shift', path: '' },
+        { icon: ShiftIcon, label: 'Shift Management', id: 'shift', path: '/admin/shift' },
         { icon: LeaveIcon, label: 'Leave Management', id: 'leave', path: '' },
         { icon: VehicleIcon, label: 'Vehicle Management', id: 'vehicles', path: '' },
     ];

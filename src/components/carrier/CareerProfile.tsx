@@ -5,12 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Calendar, ChevronDown } from 'lucide-react';
 import { SideDrawer } from '../common/SIdeDrawer';
 import CalendarPage from './CarrerprofileDetails';
-import { useState } from 'react';
-interface SideDrawerProps {
+import { useEffect, useState } from 'react';
+import { useTopLoader } from '@/context/TopLoader';
+import { apiCall } from '@/lib/apiClient';
+import dayjs from 'dayjs';
+import { DocumentUploadIcon } from '@/app/images';
+interface CarerProfileProps {
+    carrierId: string;
     OpenCalendarView: () => void;
 
 }
-const CarerProfilePage: React.FC<SideDrawerProps> = ({ OpenCalendarView }) => {
+const CarerProfilePage: React.FC<CarerProfileProps> = ({ carrierId, OpenCalendarView }) => {
     // const [calenderDrawer, setCalenderDrawer] = useState<boolean>(false);
     // const openCalendarDrawer = () => {
     //     setCalenderDrawer(true)
@@ -18,30 +23,89 @@ const CarerProfilePage: React.FC<SideDrawerProps> = ({ OpenCalendarView }) => {
     // const closeDrawer = () => {
     //     setCalenderDrawer(prev => !prev);
     // };
+    const loader = useTopLoader();
+    const [bookingDetails, setBookingDetails] = useState<any>();
+    const [upcomingBookings, setUpcomingBookings] = useState<any[]>([]);
+
+    const getBookingDetails = async () => {
+        loader.showLoader()
+        const res = await apiCall<any>('POST', `/carrier/v1/carrier_details`, { carrierId })
+        console.log(res);
+        setBookingDetails(res.data);
+        loader.hideLoader()
+    }
+    const getUpcomingBooking = async () => {
+        loader.showLoader()
+        const res = await apiCall<any>('POST', `/slot/v1/get_upcoming_slots`, { carrierId: bookingDetails?._id, limit: 10 })
+        console.log(res);
+        setUpcomingBookings(res.data);
+        loader.hideLoader()
+    }
+    useEffect(() => {
+        getBookingDetails()
+    }, [carrierId])
+    useEffect(() => {
+        getUpcomingBooking()
+    }, [bookingDetails])
+
+
+    const groupedData = upcomingBookings.sort((a, b) => {
+        // sort by startDate first
+        const dateDiff =
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+        if (dateDiff !== 0) return dateDiff;
+        // if same date, sort by startTime
+        return a.startTime.localeCompare(b.startTime);
+    })
+        .reduce((acc, slot) => {
+            const dateKey = dayjs(slot.startDate).format("YYYY-MM-DD");
+            if (!acc[dateKey]) acc[dateKey] = [];
+            acc[dateKey].push(slot);
+            return acc;
+        }, {});
+
+    // 2️⃣ Convert object into an array of [date, slots]
+    const groupedArray = Object.entries(groupedData);
+
+
+    const getOriginalFileName = (url: string): string => {
+        const lastSegment = url?.split('/')?.pop() || '';
+        const [, ...nameParts] = lastSegment?.split('-');
+        return decodeURIComponent(nameParts?.join('-'));
+    };
     return (
         <div className="min-h-screen bg-[#F9F8FC] p-4 md:p-8 font-sans">
             {/* Header Section */}
+            {/* {carrierId} */}
             <div className="p-3 bg-[#FFF7F1] rounded-xl">
                 <div className="flex items-center gap-6">
                     <img
-                        src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop&crop=face"
-                        alt="Emily Harrington"
+                        src={bookingDetails?.profileImage}
+                        alt={bookingDetails?.name}
                         width={140}
                         height={140}
                         className="rounded-xl object-cover "
                     />
                     <div className="space-y-1 w-full">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-semibold text-[#1E1E1E]">Emily Harrington <span className="text-gray-500">(Carer)</span></h2>
+                            <h2 className="text-xl font-semibold text-[#1E1E1E]">{bookingDetails?.name} <span className="text-gray-500">(Carer)</span></h2>
                             <div className="flex text-primary items-center gap-2">
                                 <Calendar size={18} />
                                 <a href='javascript:void(0);' className="rounded-xl text-primary underline">Edit Details</a>
                             </div>
                         </div>
-                        <p className="text-sm text-gray-500">Female | 28 Years</p>
-                        <p className="text-sm text-gray-500">Member No: 1239475605</p>
-                        <p className="text-sm text-gray-500">Joined: 28/07/2023</p>
-                        <a href="#" className="text-sm text-indigo-600 underline">View Documents</a>
+                        <p className="text-sm text-gray-500">{bookingDetails?.gender} | {dayjs().diff(dayjs(bookingDetails?.DOB), "year")} Years</p>
+                        <p className="text-sm text-gray-500">Member No: {bookingDetails?.carrierId}</p>
+                        <p className="text-sm text-gray-500">Joined: {dayjs(bookingDetails?.createdAt).format('DD/MM/YYYY')}</p>
+                        <div className='flex gap-3 items-center mt-3'>
+                            <div className="bg-[#69417E14] border-[#F2C7AC] p-2 rounded-full mb-2">
+                                <img src="/icons/phone.svg" alt="" />
+                            </div>
+                            <div className="bg-[#69417E14] border-[#F2C7AC] p-2 rounded-full mb-2">
+                                <img src="/icons/mail.svg" alt="" />
+                            </div>
+                        </div>
+                        {/* <a href="#" className="text-sm text-indigo-600 underline">View Documents</a> */}
                     </div>
                 </div>
 
@@ -90,6 +154,66 @@ const CarerProfilePage: React.FC<SideDrawerProps> = ({ OpenCalendarView }) => {
                         </div>
                     </div>
                 </div>
+
+                {/* Document Details */}
+                <div>
+                    <h3 className="text-base font-semibold text-gray-800 mb-2">Document Details</h3>
+                    <div className="p-5 rounded-2xl h-52 bg-[#81B29C1A] w-full">
+                        <div className='space-y-2.5'>
+                            {/* <p className="text-sm font-medium text-gray-900">Nexon, SUV</p> */}
+                            <p className="text-sm text-gray-600">Tax File Number:  {bookingDetails?.additionalDetails?.taxFileNumber ?? '-NA-'}</p>
+                            <p className="text-sm text-gray-600">ABN Number: {bookingDetails?.additionalDetails?.AbnNumber ?? '-NA-'}</p>
+                            <p className="text-sm text-gray-600">Workers Screening Check: {bookingDetails?.additionalDetails?.workersScreeningCheck ?? '-NA-'}</p>
+                            <p className="text-sm text-gray-600">Working with Children Check: {bookingDetails?.additionalDetails?.workingWithChildernCheck ?? '-NA-'}</p>
+                            <p className="text-sm text-gray-600">Police Check: {bookingDetails?.additionalDetails?.policeCheck ?? '-NA-'}</p>
+                            <p className="text-sm text-gray-600">First Aid: {bookingDetails?.additionalDetails?.firstAid ?? '-NA-'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Document Details */}
+                <div>
+                    <h3 className="text-base font-semibold text-gray-800 mb-2">Document Details</h3>
+                    <div className="p-5 rounded-2xl h-52 overflow-auto custom-scrollbar bg-[#81B29C1A] w-full space-y-3">
+                        {bookingDetails?.documents?.uploadPoliceCheck?.docId || bookingDetails?.documents?.uploadFirstAidCertificate?.docId ? (
+                            <div>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <img src="/icons/eye-icon.svg" alt="" />
+                                        <div className="">
+                                            <p className="block text-sm font-medium text-[#78777E]">{getOriginalFileName(bookingDetails?.documents?.uploadFirstAidCertificate?.docId)}</p>
+                                            <p className="block text-xs font-medium text-[#78777E]">{bookingDetails?.documents?.uploadFirstAidCertificate?.expiryDate}</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <a href={bookingDetails?.documents?.uploadFirstAidCertificate?.docId} target="_blank" rel="noopener noreferrer">
+                                            <img src="/icons/eye-icon.svg" alt="View" />
+                                        </a>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <img src="/icons/eye-icon.svg" alt="" />
+                                        <div className="">
+                                            <p className="block text-sm font-medium text-[#78777E]">{getOriginalFileName(bookingDetails?.documents?.uploadPoliceCheck?.docId)}</p>
+                                            <p className="block text-xs font-medium text-[#78777E]">{bookingDetails?.documents?.uploadPoliceCheck?.expiryDate}</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <a href={bookingDetails?.documents?.uploadPoliceCheck?.docId} target="_blank" rel="noopener noreferrer">
+                                            <img src="/icons/eye-icon.svg" alt="View" />
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+
+                            <div className='flex justify-center items-center text-[#78777E]'>No Documents available</div>
+                        )}
+
+
+                    </div>
+                </div>
             </div>
 
             {/* Shift Section */}
@@ -104,26 +228,43 @@ const CarerProfilePage: React.FC<SideDrawerProps> = ({ OpenCalendarView }) => {
 
                 {/* Shift List */}
                 <div className="space-y-8">
-                    {['Today', '26.06.2025', '26.11.2025'].map((date, index) => (
+                    {groupedArray.map(([date, slots], index) => (
                         <div key={index}>
-                            <div className='flex justify-center mb-3'>
+                            {/* Date Header */}
+                            <div className="flex justify-center mb-3">
                                 <div className="border-b-2 border-[#E2E2E2] w-[40%] text-center">
-                                    <p className="text-sm text-gray-500 font-semibold mb-5">{date}</p>
+                                    <p className="text-sm text-gray-500 font-semibold mb-5">
+                                        {dayjs(date).isSame(dayjs(), "day")
+                                            ? "Today"
+                                            : dayjs(date).format("DD.MM.YYYY")}
+                                    </p>
                                 </div>
                             </div>
+
+                            {/* Slots List */}
                             <div className="flex flex-wrap gap-4">
-                                {['09:00 - 10:00 am', '10:00 - 11:00 am', '10:00 - 11:00 am'].map((time, idx) => (
-                                    <div key={idx} className="flex items-center px-4 py-3 bg-purple-50 p-3 rounded-4xl border border-purple-100 shadow-md w-[calc(100%/3-12px)] gap-3">
+                                {(slots as any[]).map((slot, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="flex items-center px-4 py-3 bg-purple-50 p-3 rounded-full border border-purple-100 shadow-md w-[calc(100%/3-12px)] gap-3"
+                                    >
                                         <img
-                                            src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop&crop=face"
-                                            alt="Emily Harrington"
+                                            src={
+                                                slot?.clientProfileImage ||
+                                                "https://via.placeholder.com/40"
+                                            }
+                                            alt={slot.clientName}
                                             width={40}
                                             height={40}
                                             className="rounded-full"
                                         />
                                         <div>
-                                            <p className="text-sm font-semibold text-gray-800">Emily Harrington</p>
-                                            <p className="text-xs text-gray-500">{time}</p>
+                                            <p className="text-sm font-semibold text-gray-800">
+                                                {slot.clientName}
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                {slot.startTime} - {slot.endTime}
+                                            </p>
                                         </div>
                                     </div>
                                 ))}

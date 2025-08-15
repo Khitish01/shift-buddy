@@ -9,6 +9,7 @@ import { SideDrawer } from "./SIdeDrawer";
 import ChatComponent from "../chat/ChatComponent";
 import ChatDetails from "../chat/ChatDetails";
 import NotificationComponent from "../notification/NotificationComponent";
+import { Conversation } from "@/context/ChatSocketContext";
 
 const Header = () => {
     const router = useRouter();
@@ -20,13 +21,7 @@ const Header = () => {
     const [showNotification, setShowNotification] = useState<boolean>(false)
     const [drawerState, setDrawerState] = useState({
         isOpen: false,
-        selectedChat: null as null | {
-            id: number;
-            name: string;
-            avatar: string;
-            time: string;
-            unreadCount: number;
-        },
+        selectedChat: null as null | Conversation,
     });
 
     const openDrawer = () => {
@@ -59,7 +54,7 @@ const Header = () => {
 
 
     return (
-        <header className={`fixed top-0 right-0  bg-white border-b border-gray-200 px-6 py-4 z-40 transition-all duration-300 ease-in-out ${isOpen && !isMobile ? !isCollapse ? 'left-[17.5rem]' : 'left-[4.5rem]' : 'left-0'}`}>
+        <header className={`fixed top-0 right-0  bg-white border-b border-gray-200 px-6 py-4 z-40 transition-all duration-300 ease-in-out ${isOpen && !isMobile ? !isCollapse ? 'left-[15.5rem]' : 'left-[4.5rem]' : 'left-0'}`}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                     {/* <p className="text-xl font-semibold text-primary flex flex-col">
@@ -113,7 +108,7 @@ const Header = () => {
             <SideDrawer
                 isOpen={drawerState.isOpen}
                 onClose={closeDrawer}
-                avatar={drawerState.selectedChat?.avatar || ''}
+                avatar={drawerState.selectedChat?.profileImage || ''}
                 title={drawerState.selectedChat?.name || 'Chats'}
                 isBackButton={!!drawerState.selectedChat}
                 onBack={drawerState.selectedChat ? handleBackToChatList : undefined}

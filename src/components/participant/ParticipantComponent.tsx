@@ -10,160 +10,14 @@ import { SideDrawer } from "../common/SIdeDrawer";
 import { BookSlotContent } from "../scheduler/SlotBooking";
 import { BookingDetailsContent } from "../scheduler/BookingDetails";
 import { AddParticipant } from "./AddParticipant";
-// const sampleData = [
-//     {
-//         id: '000989',
-//         name: 'Liam Smith',
-//         totalIncome: 86789,
-//         totalShift: 568,
-//         jobType: 'Full-Time'
-//     },
-//     {
-//         id: '007890',
-//         name: 'Noah Johnson',
-//         totalIncome: 345,
-//         totalShift: 760,
-//         jobType: 'Part-Time'
-//     },
-//     {
-//         id: '005648',
-//         name: 'James Brown',
-//         totalIncome: 7890,
-//         totalShift: 23,
-//         jobType: 'Part-Time'
-//     },
-//     {
-//         id: '001234',
-//         name: 'Emma Wilson',
-//         totalIncome: 95000,
-//         totalShift: 480,
-//         jobType: 'Full-Time'
-//     },
-//     {
-//         id: '002456',
-//         name: 'Oliver Davis',
-//         totalIncome: 12500,
-//         totalShift: 320,
-//         jobType: 'Part-Time'
-//     },
-//     {
-//         id: '003789',
-//         name: 'Ava Miller',
-//         totalIncome: 78000,
-//         totalShift: 520,
-//         jobType: 'Full-Time'
-//     }
-// ];
+import { ParticipantProfile } from "./ParticipantDeatils";
 
-// const mockData = [
-//     {
-//         id: "20462",
-//         carerId: "#20462",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Matt Dickerson",
-//         joiningDate: "2022-05-13",
-//         totalShift: 189,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "18933",
-//         carerId: "#18933",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Wiktoria",
-//         joiningDate: "2022-05-22",
-//         totalShift: 263,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "45169",
-//         carerId: "#45169",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Trixie Byrd",
-//         joiningDate: "2022-06-15",
-//         totalShift: 45,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "34304",
-//         carerId: "#34304",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Brad Mason",
-//         joiningDate: "2022-09-06",
-//         totalShift: 86,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "17188",
-//         carerId: "#17188",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Sanderson",
-//         joiningDate: "2022-09-25",
-//         totalShift: 90,
-//         mobileNo: "9098765678",
-//         status: "inactive",
-//     },
-//     {
-//         id: "73003",
-//         carerId: "#73003",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Jun Redfern",
-//         joiningDate: "2022-10-04",
-//         totalShift: 13,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "58825",
-//         carerId: "#58825",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Miriam Kidd",
-//         joiningDate: "2022-10-17",
-//         totalShift: 177,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "44122",
-//         carerId: "#44122",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Dominic",
-//         joiningDate: "2022-10-24",
-//         totalShift: 245,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "89094",
-//         carerId: "#89094",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Shanice",
-//         joiningDate: "2022-11-01",
-//         totalShift: 679,
-//         mobileNo: "9098765678",
-//         status: "inactive",
-//     },
-//     {
-//         id: "85252",
-//         carerId: "#85252",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Poppy-Rose",
-//         joiningDate: "2022-11-22",
-//         totalShift: 387,
-//         mobileNo: "9098765678",
-//         status: "inactive",
-//     },
-// ]
-
-// type Employee = typeof sampleData[0];
 const ParticipantComponent = () => {
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
     const [search, setSearch] = useState<string>('')
+    const [selectedClient, setSelectedClient] = useState<any>()
     const [debouncedSearch, setDebouncedSearch] = useState(search);
     const [currentPage, setCurrentPage] = useState(1)
     const [pageSize, setPageSize] = useState(10)
@@ -178,14 +32,14 @@ const ParticipantComponent = () => {
     // Column definitions
     const columns: ColumnDefinition[] = [
         {
-            key: "_id",
+            key: "clientId",
             label: "Participant ID",
             type: "text",
             sortable: false,
             width: "120px",
         },
         {
-            key: "personalInfo.name",
+            key: "personalInfo.profileImage",
             label: "Img",
             type: "image",
             sortable: false,
@@ -253,7 +107,7 @@ const ParticipantComponent = () => {
         },
     ]
 
-    const openDrawer = (type: 'book' | 'details' | 'career', name: string = '') => {
+    const openDrawer = (type: 'book' | 'details' | 'career', name: string = '', profileImage: string = '') => {
         setDrawerState({
             isOpen: true,
             type,
@@ -262,8 +116,8 @@ const ParticipantComponent = () => {
                     ? ''
                     : type === 'book'
                         ? ''
-                        : 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop&crop=face',
-            title: type === 'career' ? '' : type === 'book' ? 'Add Participant' : name
+                        : profileImage,
+            title: type === 'career' ? '' : type === 'book' ? 'Add Participant' : name +' (Patient)'
         });
     };
     const closeDrawer = () => {
@@ -299,25 +153,28 @@ const ParticipantComponent = () => {
         };
     }, [search]);
 
-    useEffect(() => {
-        const getList = async () => {
-            loader.showLoader()
-            try {
-                const res = await apiCall<any>('POST', '/slot/v1/get_slot',
-                    {
-                        "startDate": "2025-05-25",
-                        "endDate": "2025-07-25"
-                    }
-                )
-                console.log(res);
-                setData(res?.data)
-                setTotalCount(res?.count)
-            } catch (error) {
-                console.error('Error setting role:', error)
-            } finally {
-                loader.hideLoader()
-            }
+    const getList = async () => {
+        loader.showLoader()
+        try {
+            const res = await apiCall<any>('POST', 'client/v1/client_list',
+                {
+                    "search": debouncedSearch,
+                    "sortBy": "createdAt",
+                    "sortOrder": "desc",
+                    "page": currentPage,
+                    "limit": pageSize
+                }
+            )
+            console.log(res);
+            setData(res?.data)
+            setTotalCount(res?.total)
+        } catch (error) {
+            console.error('Error setting role:', error)
+        } finally {
+            loader.hideLoader()
         }
+    }
+    useEffect(() => {
         getList()
     }, [currentPage, pageSize, debouncedSearch])
 
@@ -355,8 +212,11 @@ const ParticipantComponent = () => {
                 onPageSizeChange={handlePageSizeChange}
                 onSortChange={handleSortChange}
                 loading={loading}
-                emptyMessage="No Bookings found"
-                onRowClick={(row) =>  openDrawer('details', row.personalInfo.name)}
+                emptyMessage="No Participant found"
+                onRowClick={(row) => {
+                    setSelectedClient(row);
+                    openDrawer('details', row.personalInfo.name, row.personalInfo.profileImage);
+                }}
             // className="border rounded-lg"
             />
             <SideDrawer
@@ -365,7 +225,7 @@ const ParticipantComponent = () => {
                 avatar={drawerState.avatar}
                 title={drawerState.title}
             >
-                {drawerState.type === 'book' ? <AddParticipant /> : <BookingDetailsContent />}
+                {drawerState.type === 'book' ? <AddParticipant /> : <ParticipantProfile clientId={selectedClient.clientId} />}
             </SideDrawer>
 
         </div>

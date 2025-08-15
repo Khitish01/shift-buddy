@@ -11,6 +11,7 @@ import VehicleIcon from '@/icons/vehicle-icon.svg';
 import CalendarIcon from '@/icons/calendar-icon.svg';
 import ChatIcon from '@/icons/chat-icon.svg';
 import NotificationIcon from '@/icons/notification-icon.svg';
+import DocumentUploadIcon from '@/icons/document-upload.svg';
 
 export {
     CarrierIcon,
@@ -24,5 +25,6 @@ export {
     VehicleIcon,
     CalendarIcon,
     ChatIcon,
-    NotificationIcon
+    NotificationIcon,
+    DocumentUploadIcon
 };

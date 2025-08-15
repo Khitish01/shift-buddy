@@ -168,6 +168,7 @@ const BookingComponent = () => {
     const [pageSize, setPageSize] = useState(10)
     const [totalCount, setTotalCount] = useState(0)
     const [sortConfig, setSortConfig] = useState<SortConfig | null>(null)
+    const [selectedBooking, setSelectedBooking] = useState<string>('');
     const [drawerState, setDrawerState] = useState({
         isOpen: false,
         type: 'book', // 'book' or 'details' or 'career'
@@ -184,17 +185,18 @@ const BookingComponent = () => {
             width: "120px",
         },
         {
-            key: "personalInfo.name",
+            key: "clientName",
             label: "Percipient/ Client Name ",
             type: "text",
             sortable: false,
             width: "200px",
         },
         {
-            key: "name",
+            key: "carrierName",
             label: "Carer / Worker Name",
             type: "text",
             sortable: true,
+            width: "200px",
         },
         {
             key: "startDate",
@@ -209,13 +211,13 @@ const BookingComponent = () => {
             sortable: true,
         },
         {
-            key: "personalInfo.mobileNumber",
+            key: "clientPhone",
             label: "Parcipient Mobile",
             type: "text",
             sortable: false,
         },
         {
-            key: "status",
+            key: "slotStatusLabel",
             label: "Booking Status",
             type: "badge",
             sortable: false,
@@ -252,7 +254,7 @@ const BookingComponent = () => {
         },
     ]
 
-    const openDrawer = (type: 'book' | 'details' | 'career', name: string = '') => {
+    const openDrawer = (type: 'book' | 'details' | 'career', name: string = '', profileImage: string = '') => {
         setDrawerState({
             isOpen: true,
             type,
@@ -261,8 +263,8 @@ const BookingComponent = () => {
                     ? ''
                     : type === 'book'
                         ? ''
-                        : 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop&crop=face',
-            title: type === 'career' ? '' : type === 'book' ? 'Book Slot' : name
+                        : profileImage,
+            title: type === 'career' ? '' : type === 'book' ? 'Book Slot' : name + ' (Patient)'
         });
     };
     const closeDrawer = () => {
@@ -298,25 +300,30 @@ const BookingComponent = () => {
         };
     }, [search]);
 
-    useEffect(() => {
-        const getList = async () => {
-            loader.showLoader()
-            try {
-                const res = await apiCall<any>('POST', '/slot/v1/get_slot',
-                    {
-                        "startDate": "2025-05-25",
-                        "endDate": "2025-07-25"
-                    }
-                )
-                console.log(res);
-                setData(res?.data)
-                setTotalCount(res?.count)
-            } catch (error) {
-                console.error('Error setting role:', error)
-            } finally {
-                loader.hideLoader()
-            }
+    const getList = async () => {
+        loader.showLoader()
+        try {
+            const res = await apiCall<any>('POST', '/slot/v1/get_slot',
+                {
+                    // startDate: "2025-08-01",
+                    // endDate: "2025-08-30",
+                    page: currentPage,
+                    limit: pageSize,
+                    slotView: "list",
+                    sortBy: "createdAt",
+                    sortOrder: "asc"
+                }
+            )
+            console.log(res);
+            setData(res?.data)
+            setTotalCount(res?.count)
+        } catch (error) {
+            console.error('Error setting role:', error)
+        } finally {
+            loader.hideLoader()
         }
+    }
+    useEffect(() => {
         getList()
     }, [currentPage, pageSize, debouncedSearch])
 
@@ -355,7 +362,10 @@ const BookingComponent = () => {
                 onSortChange={handleSortChange}
                 loading={loading}
                 emptyMessage="No Bookings found"
-                onRowClick={(row) =>  openDrawer('details', row.personalInfo.name)}
+                onRowClick={(row) => {
+                    setSelectedBooking(row._id);
+                    openDrawer('details', row.clientName, row.clientProfileImage)
+                }}
             // className="border rounded-lg"
             />
             <SideDrawer
@@ -364,7 +374,10 @@ const BookingComponent = () => {
                 avatar={drawerState.avatar}
                 title={drawerState.title}
             >
-                {drawerState.type === 'book' ? <BookSlotContent /> : <BookingDetailsContent />}
+                {drawerState.type === 'book' ? <BookSlotContent onSuccess={() => {
+                    closeDrawer();
+                    getList();
+                }} /> : <BookingDetailsContent bookingId={selectedBooking} />}
             </SideDrawer>
 
         </div>

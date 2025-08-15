@@ -11,6 +11,10 @@ import {
   EventContentArg,
 } from "@fullcalendar/core";
 import { useRouter } from "next/navigation";
+import { useTopLoader } from "@/context/TopLoader";
+import { apiCall } from "@/lib/apiClient";
+import dayjs from "dayjs";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 // import { useModal } from "@/hooks/useModal";
 // import { Modal } from "@/components/ui/modal";
 
@@ -20,7 +24,12 @@ interface CalendarEvent extends EventInput {
   };
 }
 
-const CalendarPage: React.FC = () => {
+interface CarerProfileProps {
+  carrierId: string;
+  carrierName: string;
+}
+
+const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) => {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
     null
   );
@@ -81,11 +90,11 @@ const CalendarPage: React.FC = () => {
     setEventEndDate(event.end?.toISOString().split("T")[0] || "");
     setEventLevel(event.extendedProps.calendar);
     console.log(event);
-    const id = 10000;
-    const status = 'completed';
-    const date = '15/06/2025';
+    const id = carrierId;
+    const status = event.title.split('(')?.[0];
+    const date = dayjs(event.start).format('YYYY-MM-DD');
 
-    const url = `/admin/scheduler/${id}?status=${encodeURIComponent(status)}&date=${encodeURIComponent(date)}`;
+    const url = `/admin/scheduler/${id}?status=${encodeURIComponent(status)}&date=${encodeURIComponent(date)}&name=${encodeURIComponent(carrierName)}`;
 
     router.push(url);
     // router.push(`/admin/scheduler/${{ id: 10000, status: 'completed', date: '15/06/2025' }}`)
@@ -132,10 +141,102 @@ const CalendarPage: React.FC = () => {
     setSelectedEvent(null);
   };
 
+  const loader = useTopLoader();
+  const [bookingDetails, setBookingDetails] = useState<any>();
+  const statusToCalendar: any = {
+    cancelled: calendarsEvents.Danger,
+    completed: calendarsEvents.Success,
+    pending: calendarsEvents.Primary,
+    default: calendarsEvents.Warning,
+  };
+
+  const getBookingDetails = async () => {
+    loader.showLoader()
+    let payload = {
+      carrierId,
+      startDate: "2025-08-01",
+      endDate: "2025-08-31",
+      // page: "1",
+      // limit: "20",
+      slotView: "calendar",
+      // sortBy: "createdAt",
+      // sortOrder: "desc",
+    }
+    const res = await apiCall<any>('POST', `/slot/v1/get_carrier_slot`, payload)
+    console.log(res);
+    setBookingDetails(res.data);
+
+    const events = res?.data.map((item: any, index: number) => ({
+      id: String(index + 1),
+      title: `${item.status}(${item.count})`,
+      start: item.date,
+      extendedProps: { calendar: statusToCalendar[item.status] || statusToCalendar.default }
+    }));
+    setEvents(events)
+    loader.hideLoader()
+  }
+  useEffect(() => {
+    getBookingDetails()
+  }, [carrierId]);
+  // const calendarRef = useRef<FullCalendar | null>(null);
+  const [currentDate, setCurrentDate] = useState(dayjs());
+
+  const updateCurrentDate = () => {
+    if (calendarRef.current) {
+      setCurrentDate(dayjs(calendarRef.current.getApi().getDate()));
+    }
+  };
+
+  const handlePrev = () => {
+    if (calendarRef.current) {
+      calendarRef.current.getApi().prev();
+      updateCurrentDate();
+    }
+  };
+
+  const handleNext = () => {
+    if (calendarRef.current) {
+      calendarRef.current.getApi().next();
+      updateCurrentDate();
+    }
+  };
   return (
     <div className=" dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="custom-calendar">
+        {/* Custom header */}
+        <div className="flex justify-between items-center p-4">
+          <div className="flex gap-2">
+            <button
+              onClick={handlePrev}
+              className="px-2 py-1 rounded-sm border border-[#E4E7EC] hover:bg-[#F9FAFB"
+            >
+              <ChevronLeft />
+            </button>
+            <button
+              onClick={handleNext}
+              className="px-2 py-1 rounded-sm border border-[#E4E7EC] hover:bg-[#F9FAFB] "
+            >
+              <ChevronRight />
+            </button>
+          </div>
+          <div className="font-semibold text-xl">{carrierName}(carer)</div>
+          <div className="text-[#1D2939] font-semibold text-2xl">{currentDate.format("MMMM YYYY")}</div>
+        </div>
+
+        {/* FullCalendar without default header */}
         <FullCalendar
+          ref={calendarRef}
+          plugins={[dayGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          headerToolbar={false}
+          events={events}
+          selectable
+          datesSet={updateCurrentDate} // updates month/year on swipe or nav
+          select={handleDateSelect}
+          eventClick={handleEventClick}
+          eventContent={renderEventContent}
+        />
+        {/* <FullCalendar
           ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
@@ -155,126 +256,8 @@ const CalendarPage: React.FC = () => {
               //   click: openModal,
             },
           }}
-        />
+        /> */}
       </div>
-      {/* <Modal
-        isOpen={isOpen}
-        onClose={closeModal}
-        className="max-w-[700px] p-6 lg:p-10"
-      >
-        <div className="flex flex-col px-2 overflow-y-auto custom-scrollbar">
-          <div>
-            <h5 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-2xl">
-              {selectedEvent ? "Edit Event" : "Add Event"}
-            </h5>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Plan your next big moment: schedule or edit an event to stay on
-              track
-            </p>
-          </div>
-          <div className="mt-8">
-            <div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Event Title
-                </label>
-                <input
-                  id="event-title"
-                  type="text"
-                  value={eventTitle}
-                  onChange={(e) => setEventTitle(e.target.value)}
-                  className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                />
-              </div>
-            </div>
-            <div className="mt-6">
-              <label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
-                Event Color
-              </label>
-              <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-                {Object.entries(calendarsEvents).map(([key, value]) => (
-                  <div key={key} className="n-chk">
-                    <div
-                      className={`form-check form-check-${value} form-check-inline`}
-                    >
-                      <label
-                        className="flex items-center text-sm text-gray-700 form-check-label dark:text-gray-400"
-                        htmlFor={`modal${key}`}
-                      >
-                        <span className="relative">
-                          <input
-                            className="sr-only form-check-input"
-                            type="radio"
-                            name="event-level"
-                            value={key}
-                            id={`modal${key}`}
-                            checked={eventLevel === key}
-                            onChange={() => setEventLevel(key)}
-                          />
-                          <span className="flex items-center justify-center w-5 h-5 mr-2 border border-gray-300 rounded-full box dark:border-gray-700">
-                            <span
-                              className={`h-2 w-2 rounded-full bg-white ${
-                                eventLevel === key ? "block" : "hidden"
-                              }`}  
-                            ></span>
-                          </span>
-                        </span>
-                        {key}
-                      </label>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Enter Start Date
-              </label>
-              <div className="relative">
-                <input
-                  id="event-start-date"
-                  type="date"
-                  value={eventStartDate}
-                  onChange={(e) => setEventStartDate(e.target.value)}
-                  className="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-4 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                />
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Enter End Date
-              </label>
-              <div className="relative">
-                <input
-                  id="event-end-date"
-                  type="date"
-                  value={eventEndDate}
-                  onChange={(e) => setEventEndDate(e.target.value)}
-                  className="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-4 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 mt-6 modal-footer sm:justify-end">
-            <button
-              onClick={closeModal}
-              type="button"
-              className="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
-            >
-              Close
-            </button>
-            <button
-              onClick={handleAddOrUpdateEvent}
-              type="button"
-              className="btn btn-success btn-update-event flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
-            >
-              {selectedEvent ? "Update Changes" : "Add Event"}
-            </button>
-          </div>
-        </div>
-      </Modal> */}
     </div>
   );
 };

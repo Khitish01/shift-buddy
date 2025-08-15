@@ -663,7 +663,7 @@ export const AddParticipant: React.FC = () => {
 
                             {/* Address */}
                             <h3 className="text-lg font-medium text-gray-900 mt-6 mb-4">Address</h3>
-                            {['street', 'suburb', 'state', 'postCode'].map((field) => (
+                            {(Object.keys(formData.address) as (keyof typeof formData.address)[]).map((field) => (
                                 <div className="mb-4" key={field}>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">{field.charAt(0).toUpperCase() + field.slice(1)}</label>
                                     <input

@@ -6,6 +6,10 @@ import { Input } from "../ui/input";
 import { apiCall } from "@/lib/apiClient";
 import { useTopLoader } from "@/context/TopLoader";
 import { ColumnDefinition, DataTable, SortConfig, TableAction } from "../common/DataTable";
+import { SideDrawer } from "../common/SIdeDrawer";
+import { AddCarer } from "./AddCarer";
+import CarerProfilePage from "./CareerProfile";
+import CalendarPage from "./CarrerprofileDetails";
 // const sampleData = [
 //     {
 //         id: '000989',
@@ -175,7 +179,7 @@ const CarrierComponent = () => {
             width: "120px",
         },
         {
-            key: "img",
+            key: "profileImage",
             label: "Img",
             type: "image",
             sortable: false,
@@ -188,7 +192,7 @@ const CarrierComponent = () => {
             sortable: true,
         },
         {
-            key: "joiningDate",
+            key: "createdAt",
             label: "Joining Date",
             type: "date",
             sortable: true,
@@ -276,28 +280,61 @@ const CarrierComponent = () => {
         };
     }, [search]);
 
-    useEffect(() => {
-        const getList = async () => {
-            loader.showLoader()
-            try {
-                const res = await apiCall<any>('POST', '/carrier/v1/carrier_list', {
-                    "search": search,
-                    "sortBy": "",
-                    "sortOrder": "",
-                    "page": currentPage,
-                    "limit": pageSize
-                })
-                console.log(res);
-                setData(res?.data)
-                setTotalCount(res?.total)
-            } catch (error) {
-                console.error('Error setting role:', error)
-            } finally {
-                loader.hideLoader()
-            }
+    const getList = async () => {
+        loader.showLoader()
+        try {
+            const res = await apiCall<any>('POST', '/carrier/v1/carrier_list', {
+                "search": search,
+                "sortBy": "",
+                "sortOrder": "",
+                "page": currentPage,
+                "limit": pageSize
+            })
+            console.log(res);
+            setData(res?.data)
+            setTotalCount(res?.total)
+        } catch (error) {
+            console.error('Error setting role:', error)
+        } finally {
+            loader.hideLoader()
         }
+    }
+    useEffect(() => {
         getList()
     }, [currentPage, pageSize, debouncedSearch])
+    const [drawerState, setDrawerState] = useState({
+        isOpen: false,
+        type: 'book', // 'book' or 'details' or 'career'
+        avatar: '',
+        title: ''
+    });
+    const closeCalenderDrawer = () => {
+        // setDrawerState(prev => ({ ...prev, isOpen: false }));
+
+        setCalenderDrawer(false)
+
+    };
+    const [selectedCarrier, setSelectedCarrier] = useState<any>();
+    const [calenderDrawer, setCalenderDrawer] = useState<boolean>(false);
+    const openDrawer = (type: 'book' | 'details' | 'career', name: string = '', profileImage: string = '') => {
+        setDrawerState({
+            isOpen: true,
+            type,
+            avatar:
+                type === 'career'
+                    ? ''
+                    : type === 'book'
+                        ? ''
+                        : profileImage,
+            title: type === 'career' ? '' : type === 'book' ? 'Staff/Carer Onboarding' : name
+        });
+    };
+    const closeDrawer = () => {
+        setDrawerState(prev => ({ ...prev, isOpen: false }));
+
+        // setCalenderDrawer(false)
+
+    };
 
     return (
         // <main className="pt-24 pl-20 p-6 w-[calc(100vw-1rem)]">
@@ -310,7 +347,7 @@ const CarrierComponent = () => {
                     <Input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
                     <button className="bg-primary w-[75%] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-900"
                         style={{ boxShadow: '0px 1px 2px 0px #1018280D' }}
-                    // onClick={() => openDrawer('book')}
+                        onClick={() => openDrawer('book')}
                     >
                         <Plus size={16} />
                         <span>Add Carrier</span>
@@ -360,9 +397,34 @@ const CarrierComponent = () => {
                 onSortChange={handleSortChange}
                 loading={loading}
                 emptyMessage="No carers found"
-                onRowClick={(row) => console.log("Row clicked:", row)}
+                onRowClick={(row) => {
+                    console.log("Row clicked:", row)
+                    setSelectedCarrier(row)
+                    openDrawer('career')
+                }}
             // className="border rounded-lg"
             />
+
+            <SideDrawer
+                isOpen={drawerState.isOpen}
+                onClose={closeDrawer}
+                avatar={drawerState.avatar}
+                title={drawerState.title}
+            >
+                {drawerState.type === 'book' ? <AddCarer onSuccess={() => {
+                    closeDrawer();
+                    getList();
+                }} /> : <CarerProfilePage carrierId={selectedCarrier.carrierId} OpenCalendarView={() => setCalenderDrawer(true)} />}
+            </SideDrawer>
+            <SideDrawer
+                isOpen={calenderDrawer}
+                onClose={closeCalenderDrawer}
+                avatar={''}
+                title={''}
+                width={'75%'}
+            >
+                <CalendarPage carrierId={selectedCarrier?._id} carrierName={selectedCarrier?.name} />
+            </SideDrawer>
 
         </div>
 

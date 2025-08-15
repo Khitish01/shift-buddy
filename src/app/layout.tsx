@@ -6,6 +6,7 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import ConfirmationPopup from "@/components/common/ConfirmationPopup";
 import { PopupProvider } from "@/context/PopupContext";
 import { Toaster } from "react-hot-toast";
+import { ChatSocketProvider } from "@/context/ChatSocketContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,9 +36,11 @@ export default function RootLayout({
         <TopLoaderProvider>
           <PopupProvider>
             <SidebarProvider>
+               <ChatSocketProvider>
               {children}
               <Toaster position="bottom-right" />
               <ConfirmationPopup />
+              </ChatSocketProvider>
             </SidebarProvider>
           </PopupProvider>
         </TopLoaderProvider>

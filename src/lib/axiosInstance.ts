@@ -18,7 +18,6 @@ axiosInstance.interceptors.request.use(
             // console.log(fromSession);
 
             const fromCookies = Cookies.get('accessToken');
-            console.log(fromCookies);
             // accessToken = fromCookies || fromSession ? JSON.parse(fromSession) : '';
             accessToken = fromCookies || ''
         }

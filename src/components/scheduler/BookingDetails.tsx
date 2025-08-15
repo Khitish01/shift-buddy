@@ -1,8 +1,16 @@
-import { useState } from "react";
+'use client'
+import { useEffect, useState } from "react";
 import Progressbar from "./ProgressBar";
-
-export const BookingDetailsContent: React.FC = () => {
+import { apiCall } from "@/lib/apiClient";
+import dayjs from "dayjs";
+import { useTopLoader } from "@/context/TopLoader";
+interface BookingDetailsContentProps {
+    bookingId: string;
+    // onSuccess: () => void;
+}
+export const BookingDetailsContent: React.FC<BookingDetailsContentProps> = ({ bookingId }) => {
     const [activeTab, setActiveTab] = useState("Personal & Medical Info");
+    const loader = useTopLoader();
     const sampleNotes = [
         {
             id: "1",
@@ -41,20 +49,35 @@ export const BookingDetailsContent: React.FC = () => {
         },
     ];
 
+    const [bookingDetails, setBookingDetails] = useState<any>();
+
+    const getBookingDetails = async () => {
+        loader.showLoader()
+        const res = await apiCall<any>('GET', `slot/v1/get_slot_details/${bookingId}`)
+        console.log(res);
+        setBookingDetails(res.data);
+        loader.hideLoader()
+    }
+    useEffect(() => {
+        getBookingDetails()
+    }, [bookingId])
+    const getOriginalFileName = (url: string): string => {
+        try {
+            const lastSegment = url.split('/').pop(); // Get '1751132493819-Resume-Khitish-Mangal%20%281%29.pdf'
+            const [, ...nameParts] = lastSegment?.split('-') ?? []; // Remove the timestamp
+            const fileName = nameParts.join('-'); // Rejoin remaining parts
+            return decodeURIComponent(fileName); // Decode URL-encoded characters
+        } catch (err) {
+            return 'Document';
+        }
+    };
+
+    const calculateAge = (dobString: string) => {
+        return dayjs().diff(dayjs(dobString), "year");
+    };
+
     return (
         <div className="p-6">
-            {/* Header */}
-            {/* <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4 mb-6 pb-4">
-          <img
-            src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop&crop=face"
-            alt="Emily Harrington"
-            className="w-12 h-12 rounded-full"
-          />
-          <h3 className="text-lg font-semibold text-gray-900">Emily Harrington</h3>
-        </div>
-        <button className="text-xl font-semibold text-gray-400">&times;</button>
-      </div> */}
 
             {/* Tabs */}
             <div className="flex space-x-1 mb-6 border-b border-gray-300">
@@ -72,130 +95,195 @@ export const BookingDetailsContent: React.FC = () => {
                 ))}
             </div>
 
-            {activeTab == 'Personal & Medical Info' && (
-                <> < div className="bg-gradient-to-l to-[#EFDBF4] from-[#E0E9F7] rounded-full p-4 flex items-center justify-between  mb-6">
+            {(activeTab == 'Personal & Medical Info' || activeTab == 'Progress Note') && (
+                < div className="bg-gradient-to-l to-[#EFDBF4] from-[#E0E9F7] rounded-full p-4 flex items-center justify-between  mb-6">
                     <div className="flex-1">
                         <p className="font-bold text-sm">Carer Details:</p>
                     </div>
                     <div className="flex flex-1 items-center space-x-4">
                         <img
-                            src="https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop&crop=face"
+                            src={bookingDetails?.carrierId?.profileImage}
                             alt="Kriti Saren"
                             className="w-14 h-14 rounded-full"
                         />
                         <div>
-                            <p className="font-semibold text-sm text-gray-800">Kriti Saren | F, 28</p>
-                            <p className="text-sm text-gray-600">yessieklein@gmail.com</p>
-                            <p className="text-sm text-gray-600">Member No. 1239475605</p>
-                            <p className="text-sm text-primary font-medium">0898120987</p>
+                            <p className="font-semibold text-sm text-gray-800">{bookingDetails?.carrierId?.name} | {bookingDetails?.carrierId?.gender.charAt(0).toUpperCase()}, {dayjs().diff(dayjs(bookingDetails?.carrierId?.DOB), "year")}</p>
+                            <p className="text-sm text-gray-600">{bookingDetails?.carrierId?.email}</p>
+                            <p className="text-sm text-gray-600">Member No. {bookingDetails?.carrierId?.carrierId}</p>
+                            <p className="text-sm text-primary font-medium">{bookingDetails?.carrierId?.mobileNumber}</p>
                         </div>
                     </div>
                 </div>
+            )}
 
-                    <div className="grid grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                            <p className="font-bold text-sm">Medical info</p>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">Diagnoses</label>
-                                <input type="text" value="None" readOnly className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+            {activeTab == 'Personal & Medical Info' && (
+                <>
+                    <div className="grid grid-cols-2 gap-8 rounded-xl bg-[#DCB8F014] p-6">
+                        <div className="space-y-7">
+                            {/* <p className="font-bold text-sm">Medical info</p> */}
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Scheduled Visit Time</p>
+                                <p className="block text-sm font-medium text-black">{dayjs(bookingDetails?.startDate).format('DD/MM/YYYY')}</p>
                             </div>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">Allergies</label>
-                                <input type="text" value="None" readOnly className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Duration</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.startTime + ' - ' + bookingDetails?.endTime}</p>
                             </div>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">Medications with Dosage & Timing</label>
-                                <input type="text" value="IBM 60 - Morning" readOnly className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Type of Service</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.personalInfo.typeOfCare != '' ? bookingDetails?.personalInfo.typeOfCare : '-'}</p>
                             </div>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">Mobility Notes</label>
-                                <input type="text" value="None" readOnly className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Important Participant Notes</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.personalInfo.clientNotes != '' ? bookingDetails?.personalInfo.clientNotes : '-'}</p>
                             </div>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">Emergency Plan</label>
-                                <input type="text" value="Dose 30" readOnly className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Shift Information</p>
+                                <p className="block text-sm font-medium text-black">Bring a valid ID and your insurance card</p>
                             </div>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">Assign Carer</label>
-                                <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                                    <option>Erman Watson</option>
-                                    <option>John Smith</option>
-                                    <option>Michael Johnson</option>
-                                </select>
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Scheduled Visit Time</p>
+                                <p className="block text-sm font-medium text-black">{dayjs(bookingDetails?.startDate).format('DD/MM/YYYY')}</p>
                             </div>
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Duration</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.startTime + ' - ' + bookingDetails?.endTime}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Type of Service</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.personalInfo.typeOfCare != '' ? bookingDetails?.personalInfo.typeOfCare : '-'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Important Participant Notes</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.personalInfo.clientNotes != '' ? bookingDetails?.personalInfo.clientNotes : '-'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Shift Information</p>
+                                <p className="block text-sm font-medium text-black">Bring a valid ID and your insurance card</p>
+                            </div>
+
+
+
                         </div>
 
-                        <div className="space-y-4">
-                            <p className="font-bold text-sm">Contact</p>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">Contact Number & Relation</label>
-                                <input type="text" value="0989891019" readOnly className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">Family Member/Carer Name</label>
-                                <input type="text" value="Father" readOnly className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-                            </div>
+                        <div className="space-y-7">
+                            {/* <p className="font-bold text-sm">Medical info</p> */}
+                            {(bookingDetails?.documents?.medicalDoc?.length > 0 || bookingDetails?.documents?.complianceDoc?.length > 0) && (
+                                <div className="mb-7">
+                                    {[...(bookingDetails?.documents?.medicalDoc || []), ...(bookingDetails?.documents?.complianceDoc || [])].map((docUrl, index) => {
+                                        const getOriginalFileName = (url: string): string => {
+                                            const lastSegment = url.split('/').pop() || '';
+                                            const [, ...nameParts] = lastSegment.split('-');
+                                            return decodeURIComponent(nameParts.join('-'));
+                                        };
 
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Medical Document</label>
-                                <div className="flex space-x-2">
-                                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium flex items-center">
-                                        Scan.png <button className="ml-2">&times;</button>
-                                    </span>
-                                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium flex items-center">
-                                        Report.png <button className="ml-2">&times;</button>
-                                    </span>
+                                        return (
+                                            <div key={index} className="flex justify-between items-center mb-2">
+                                                <div className="space-y-1">
+                                                    <p className="block text-sm font-medium text-[#78777E]">{getOriginalFileName(docUrl)}</p>
+                                                </div>
+                                                <div>
+                                                    <a href={docUrl} target="_blank" rel="noopener noreferrer">
+                                                        <img src="/icons/eye-icon.svg" alt="View" />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                                <button className="mt-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm hover:bg-orange-200">
-                                    Add Document
-                                </button>
+                            )}
+                            {/* <div className="flex justify-between items-center">
+                                <div className="space-y-1">
+                                    <p className="block text-sm font-medium text-[#78777E]">Prescription.jpg</p>
+                                    
+                                </div>
+                                <div>
+                                    <img src="/icons/eye-icon.svg" alt="" />
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <div className="space-y-1">
+                                    <p className="block text-sm font-medium text-[#78777E]">Prescription.pdf</p>
+                                    
+                                </div>
+                                <div>
+                                    <img src="/icons/eye-icon.svg" alt="" />
+                                </div>
+                            </div> */}
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Family Member / Medical Emergency Contact</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.relationInfo?.relativeName != '' ? bookingDetails?.relationInfo?.relativeName : '-'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Emergency Contact Phone Number</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.relationInfo?.relativeNumber != '' ? bookingDetails?.relationInfo?.relativeNumber : '-'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Emergency Contact Relationship</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.relationInfo?.relativeRelation != '' ? bookingDetails?.relationInfo?.relativeRelation : '-'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Diagnoses or Disability</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.medicalInfo?.diagnoses != '' ? bookingDetails?.medicalInfo?.diagnoses : '-'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Allergies</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.medicalInfo?.allergy.length > 0 ? bookingDetails?.medicalInfo?.allergy.join(',') : '-'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Medications with Dosage & Timing</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.medicalInfo?.medicationAndTime.length > 0 ? bookingDetails?.medicalInfo?.medicationAndTime.join(',') : '-'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Mobility Notes</p>
+                                <p className="block text-sm font-medium text-black">{bookingDetails?.medicalInfo?.mobilityNotes != '' ? bookingDetails?.medicalInfo?.mobilityNotes : '-'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="block text-sm font-medium text-[#78777E]">Restrictive Practices</p>
+                                <p className="block text-sm font-medium text-black">-</p>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">Repeat</label>
-                                <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                                    <option value="daily">Daily</option>
-                                    <option value="weekly">Weekly on the day</option>
-                                    <option value="monthly">Monthly on the day</option>
-                                    <option value="weekday">Every weekday(Monday to Friday)</option>
-                                    <option value="once">Does not repeat</option>
-                                </select>
-                            </div>
+
                         </div>
                     </div>
                 </>
-            )}
-            {activeTab == 'Track' && (
-                <>
-                    <div className="bg-[#FDF9FF] px-4 py-2 mb-4">
-                        <h2 className="text-lg font-semibold text-gray-900 text-center">
-                            Track Treatment - ID09876
-                        </h2>
-                    </div>
-                    <Progressbar currentStatus={4} taskId="ID09876" />
-                </>
-            )}
-            {activeTab == 'Progress Note' && (
-                <>
-                    <div className="bg-[#FDF9FF] px-4 py-2 mb-4">
-                        <h2 className="text-lg font-semibold text-gray-900 text-center">
-                            Track Treatment - ID09876
-                        </h2>
-                    </div>
-                    <div className="space-y-4 max-h-[500px] overflow-auto">
-                        {sampleNotes.map((note: any, index: number) => (
-                            <div key={index} className="bg-[#FDF9FF] p-4">
-                                <div className="flex justify-between text-sm text-gray-500 mb-1">
-                                    <span>{note.time}</span>
-                                    <span>{note.date}</span>
+            )
+            }
+            {
+                activeTab == 'Track' && (
+                    <>
+                        <div className="bg-[#FDF9FF] px-4 py-2 mb-4">
+                            <h2 className="text-lg font-semibold text-gray-900 text-center">
+                                Track Treatment - ID09876
+                            </h2>
+                        </div>
+                        <Progressbar currentStatus={4} taskId="ID09876" />
+                    </>
+                )
+            }
+            {
+                activeTab == 'Progress Note' && (
+                    <>
+                        <div className="bg-[#FDF9FF] px-4 py-2 mb-4">
+                            <h2 className="text-lg font-semibold text-gray-900 text-center">
+                                Track Treatment - ID09876
+                            </h2>
+                        </div>
+                        <div className="space-y-4 max-h-[500px] overflow-auto">
+                            {sampleNotes.map((note: any, index: number) => (
+                                <div key={index} className="bg-[#FDF9FF] p-4">
+                                    <div className="flex justify-between text-sm text-gray-500 mb-1">
+                                        <span>{note.time}</span>
+                                        <span>{note.date}</span>
+                                    </div>
+                                    <p className="font-semibold mb-2">{note.author}</p>
+                                    <p className="text-sm text-gray-700 whitespace-pre-line">{note.content}</p>
                                 </div>
-                                <p className="font-semibold mb-2">{note.author}</p>
-                                <p className="text-sm text-gray-700 whitespace-pre-line">{note.content}</p>
-                            </div>
-                        ))}
-                    </div>
-                </>
-            )}
+                            ))}
+                        </div>
+                    </>
+                )
+            }
 
 
 

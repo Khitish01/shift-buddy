@@ -54,7 +54,7 @@ const SideBar = () => {
                             ? 'w-full opacity-100 rounded-none px-4'
                             : isCollapse
                                 ? 'w-20 opacity-100 px-2 items-center rounded-br-3xl rounded-tr-3xl'
-                                : 'w-72 opacity-100 px-4 rounded-br-3xl rounded-tr-3xl'
+                                : 'w-64 opacity-100 px-4 rounded-br-3xl rounded-tr-3xl'
                         : 'w-0 opacity-0'
                     }`}
             >
@@ -164,7 +164,7 @@ const SideBar = () => {
 
                 {/* Collapse Toggle Button (Desktop only) */}
                 {!isMobile && (
-                    <div className={`fixed bottom-10 transition-all duration-300 ease-in-out ${isCollapse ? 'left-[3.8rem]' : 'left-[16.8rem]'}`}>
+                    <div className={`fixed bottom-10 transition-all duration-300 ease-in-out ${isCollapse ? 'left-[3.8rem]' : 'left-[14.8rem]'}`}>
                         <button
                             className="bg-[#F2C7AC] font-bold h-10 w-10 flex items-center justify-center rounded-full"
                             onClick={collapse}

@@ -7,11 +7,23 @@ import { useEffect, useRef, useState } from "react";
 import { DateInput } from "../common/date-input";
 import dayjs from "dayjs";
 
-export const BookSlotContent: React.FC = () => {
+interface BookSlotContentProps {
+    // isOpen: boolean;
+    onSuccess: () => void;
+    // title: string;
+    // avatar: string
+    // children: React.ReactNode;
+    // width?: string;
+    // onBack?: () => void; // optional back button handler
+    // isBackButton?: boolean
+}
+
+export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) => {
     const { showPopup, updatePopupStatus } = usePopup();
     const [repeatModes, setRepeatModes] = useState<any[]>([])
     const [activeTab, setActiveTab] = useState('personal');
     const [allergyInput, setAllergyInput] = useState("");
+    const [clientId, setClientId] = useState('');
     const [allergyTags, setAllergyTags] = useState(["POIJ", "IBM-N"]);
     const [medication, setMedication] = useState("");
     const [medicationTags, setMedicationTags] = useState(['IBM 60 - M', 'IBM 100-N']);
@@ -289,80 +301,186 @@ export const BookSlotContent: React.FC = () => {
 
     }, [formData.repeatId, formData.customSlotArray, formData.startDate, formData.endDate, formData.startTime, formData.endTime])
 
-    const uploadDocuments = async () => {
+    // Function to generate slots
+    const generateSlots = (duration: any, selectedDate: any) => {
+        const durationMinutes =
+            duration === "30mins" ? 30 : duration === "1hour" ? 60 : 120;
 
-        showPopup('Uploading', "Documents are Uploading"); // Optional message & duration
-        try {
+        const startOfDay = dayjs(selectedDate).hour(0).minute(0); // 00:00
+        const endOfDay = dayjs(selectedDate).add(1, "day").hour(0).minute(0); // next day 00:00
+        const now = dayjs();
 
-            if (documents.length > 0) {
-                const formData = new FormData();
-                for (let file of documents) {
+        const generatedSlots = [];
+        let current = startOfDay;
 
-                    formData.append('file', file);
-                }
-                const res = await apiCall<any>('POST', '/doc/v1/upload_doc', formData)
-                console.log('medical documents', res);
-                setFormData(prev => ({
-                    ...prev,
-                    documents: {
-                        ...prev.documents,
-                        medicalDoc: res.documentId
-                    }
-                }));
+        while (current.isBefore(endOfDay)) {
+            const slotStart = current;
+            const slotEnd = current.add(durationMinutes, "minute");
 
+            if (slotEnd.isAfter(endOfDay)) break; // Don't exceed 24 hours
+
+            // ✅ Skip past slots if today
+            if (selectedDate === now.format("YYYY-MM-DD") && slotStart.isBefore(now)) {
+                current = slotEnd;
+                continue;
             }
 
-            if (complianceDocuments.length > 0) {
-                const formData = new FormData();
-                for (let file of complianceDocuments) {
-
-                    formData.append('file', file);
-                }
-                const res = await apiCall<any>('POST', '/doc/v1/upload_doc', formData)
-                console.log('compliance documents', res);
-                setFormData(prev => ({
-                    ...prev,
-                    documents: {
-                        ...prev.documents,
-                        complianceDoc: res.documentId
-                    }
-                }));
-
-            }
-
-
-            // console.log(res)
-        } catch (error) {
-            console.error('Error setting role:', error)
-        } finally {
-            // loader.hideLoader()
-            updatePopupStatus('success', 'Booking Confirmed!', "Your booking has been confirmed!", 4000); // Optional message & duration
+            generatedSlots.push(
+                `${slotStart.format("HH:mm")}-${slotEnd.format("HH:mm")}`
+            );
+            current = slotEnd;
         }
+
+        return generatedSlots;
+    };
+
+    const [slots, setSlots] = useState([]);
+
+    useEffect(() => {
+        const newSlots: any = generateSlots(formData.duration, formData.startDate);
+        setSlots(newSlots);
+        console.log(newSlots);
+
+
+        if (newSlots.length > 0) {
+            const [start, end] = newSlots[0].split("-");
+            setFormData((prev) => ({ ...prev, startTime: start, endTime: end }));
+        } else {
+            // No slots available for today
+            setFormData((prev) => ({ ...prev, startTime: "", endTime: "" }));
+        }
+    }, [formData.duration, formData.startDate]);
+
+    const mapApiDataToForm = (apiData: any) => {
+        return {
+            clientId: apiData.clientId || '',
+            carrierId: formData.carrierId,
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+            startTime: formData.startTime,
+            endTime: formData.endTime,
+            duration: formData.duration,
+            repeatId: formData.repeatId,
+            dayOfWeek: formData.dayOfWeek,
+            dayOfMonth: formData.dayOfMonth,
+            customSlotArray: formData.customSlotArray,
+            personalInfo: {
+                name: apiData.personalInfo?.name || '',
+                gender: apiData.personalInfo?.gender || '',
+                dob: apiData.personalInfo?.dob ? dayjs(apiData.personalInfo.dob).format('YYYY-MM-DD') : '',
+                clientNotes: apiData.personalInfo?.clientNotes || '',
+                profileImage: apiData.personalInfo?.profileImage || '',
+                typeOfCare: apiData.personalInfo?.typeOfCare || '',
+                email: apiData.personalInfo?.email || '',
+                mobileNumber: apiData.personalInfo?.mobileNumber || ''
+            },
+            relationInfo: {
+                relativeName: apiData.relationInfo?.relativeName || '',
+                relativeRelation: apiData.relationInfo?.relativeRelation || '',
+                relativeNumber: apiData.relationInfo?.relativeNumber || ''
+            },
+            address: {
+                street: apiData.address?.street || '',
+                suburb: apiData.address?.suburb || '',
+                state: apiData.address?.state || '',
+                postCode: apiData.address?.postCode || ''
+            },
+            ndis: {
+                ndisNumber: apiData.ndis?.ndisNumber || '89000000122',
+                ndisType: apiData.ndis?.ndisType || 'NDIS Participant (NDIS)'
+            },
+            documents: {
+                medicalDoc: apiData.documents?.medicalDoc || [],
+                complianceDoc: apiData.documents?.complianceDoc || []
+            },
+            medicalInfo: {
+                diagnoses: apiData.medicalInfo?.diagnoses || '',
+                allergy: apiData.medicalInfo?.allergy || [],
+                medicationAndTime: apiData.medicalInfo?.medicationAndTime || [],
+                mobilityNotes: apiData.medicalInfo?.mobilityNotes || '',
+                emergencyPlan: apiData.medicalInfo?.emergencyPlan || ''
+            }
+        };
+    };
+
+    const getClientDetails = async () => {
+        const res = await apiCall<any>('GET', `/client/v1/get_client/${clientId}`)
+        const mappedData = mapApiDataToForm(res.data);
+        setFormData(mappedData);
+        console.log(res);
+
     }
 
-    const handleBooking = async () => {
-        // After booking logic
 
-        showPopup('Booking Processing', "Your booking has been initiated"); // Optional message & duration
 
-        // loader.showLoader()
+    const uploadDocuments = async () => {
+        const updatedData: any = { ...formData }; // local copy
 
         try {
-            await uploadDocuments();
-            const res = await apiCall<any>('POST', '/client/v1/create_client', formData)
-            console.log(res)
+            // Upload medical documents (1 API call)
+            if (documents.length > 0) {
+                const formDataMedical = new FormData();
+                documents.forEach(file => formDataMedical.append("file", file));
+
+                const res = await apiCall<any>("POST", "/doc/v1/upload_doc", formDataMedical);
+                updatedData.documents = {
+                    ...updatedData.documents,
+                    medicalDoc: res.documentId ?? [],
+                };
+            }
+
+            // Upload compliance documents (1 API call)
+            if (complianceDocuments.length > 0) {
+                const formDataCompliance = new FormData();
+                complianceDocuments.forEach(file => formDataCompliance.append("file", file));
+
+                const res = await apiCall<any>("POST", "/doc/v1/upload_doc", formDataCompliance);
+                updatedData.documents = {
+                    ...updatedData.documents,
+                    complianceDoc: res.documentId ?? [],
+                };
+            }
+
+            // Upload profile image (1 API call)
+            if (profileImage) {
+                const formDataProfile = new FormData();
+                formDataProfile.append("file", profileImage);
+
+                const res = await apiCall<any>("POST", "/doc/v1/upload_doc", formDataProfile);
+                updatedData.personalInfo = {
+                    ...updatedData.personalInfo,
+                    profileImage: Array.isArray(res.documentId) ? res.documentId[0] : res.documentId,
+                };
+            }
+
+            return updatedData;
         } catch (error) {
-            console.error('Error setting role:', error)
-        } finally {
-            // loader.hideLoader()
-            updatePopupStatus('success', 'Booking Confirmed!', "Your booking has been confirmed!", 4000); // Optional message & duration
+            console.error("Error uploading documents:", error);
+            updatePopupStatus("error", "Upload Failed!", "Your documents upload has failed!", 4000);
+            throw error;
         }
+    };
 
 
+    const handleBooking = async () => {
+        showPopup("Booking Processing", "Your booking has been initiated");
 
-        // setTimeout(() => {
-        //     updatePopupStatus('success', 'Booking Confirmed!', "Your booking has been confirmed!", 4000); // Optional message & duration
-        // }, 1000)
+        try {
+            updatePopupStatus("loading", "Uploading", "Documents are Uploading");
+
+            // Upload files and get the complete form data
+            const updatedFormData = await uploadDocuments();
+
+            // Create client
+            const res = await apiCall<any>("POST", "/client/v1/create_client", updatedFormData);
+            console.log(res);
+
+            updatePopupStatus("success", "Booking Confirmed!", "Your booking has been confirmed!", 4000);
+            onSuccess();
+        } catch (error) {
+            console.error("Error booking:", error);
+            updatePopupStatus("error", "Booking Error!", "Your booking has not been confirmed!", 4000);
+        }
     };
 
     return (
@@ -375,11 +493,13 @@ export const BookSlotContent: React.FC = () => {
                 <div className="flex space-x-2">
                     <input
                         type="text"
-                        value={formData.clientId}
-                        onChange={(e) => handleInputChange('clientId', e.target.value)}
+                        value={clientId}
+                        onChange={(e) => setClientId(e.target.value)}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                     />
-                    <button className="px-8 py-1 bg-[#F2C7AC] text-primary text-sm rounded-full hover:bg-orange-300 transition-colors">
+                    <button className="px-8 py-1 bg-[#F2C7AC] text-primary text-sm rounded-full hover:bg-orange-300 transition-colors"
+                        onClick={getClientDetails}
+                    >
                         Enter
                     </button>
                 </div>
@@ -416,17 +536,6 @@ export const BookSlotContent: React.FC = () => {
                         Compliance Documents
                     </button>
                 </div>
-                {/* Delete Icon */}
-                {/* <div className="flex justify-end">
-                    <button className="text-red-500 hover:text-red-700">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="3,6 5,6 21,6"></polyline>
-                            <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
-                            <line x1="10" y1="11" x2="10" y2="17"></line>
-                            <line x1="14" y1="11" x2="14" y2="17"></line>
-                        </svg>
-                    </button>
-                </div> */}
             </div>
 
 
@@ -532,7 +641,16 @@ export const BookSlotContent: React.FC = () => {
                                     }}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                                 >
-                                    <option value="09:30-10:00">9:30am - 10:00am</option>
+                                    {/* <option value="09:30-10:00">9:30am - 10:00am</option> */}
+                                    {slots.length > 0 ? (
+                                        slots.map((slot, idx) => (
+                                            <option key={idx} value={slot}>
+                                                {slot} {/* ✅ 24-hour format */}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option>No slots available</option>
+                                    )}
                                 </select>
                             </div>
 
@@ -635,11 +753,14 @@ export const BookSlotContent: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
                                 <select
                                     value={formData.personalInfo.gender}
-                                    onChange={(e) =>
+                                    onChange={(e) => {
+                                        console.log(e.target.value);
+
                                         handleInputChange('personalInfo', {
                                             ...formData.personalInfo,
                                             gender: e.target.value
                                         })
+                                    }
                                     }
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                                 >
@@ -781,7 +902,7 @@ export const BookSlotContent: React.FC = () => {
 
                             {/* Address */}
                             <h3 className="text-lg font-medium text-gray-900 mt-6 mb-4">Address</h3>
-                            {['street', 'suburb', 'state', 'postCode'].map((field) => (
+                            {(Object.keys(formData.address) as (keyof typeof formData.address)[]).map((field) => (
                                 <div className="mb-4" key={field}>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">{field.charAt(0).toUpperCase() + field.slice(1)}</label>
                                     <input

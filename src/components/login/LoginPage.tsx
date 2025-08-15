@@ -11,6 +11,7 @@ import { apiCall } from '@/lib/apiClient';
 import { showErrorToast, showSucessToast } from '@/lib/toast';
 import { usePopup } from '@/context/PopupContext';
 import Cookies from 'js-cookie'
+import { useChatSocket } from '@/context/ChatSocketContext';
 
 interface LoginPageProps {
     onLogin: () => void;
@@ -23,6 +24,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     const router = useRouter()
     const loader = useTopLoader()
     const { showPopup, updatePopupStatus } = usePopup();
+    const { fetchConversations } = useChatSocket(); // ✅ use context
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         // console.log('logged in....');
@@ -50,6 +52,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                 sameSite: 'Lax',
             });
             console.log(res);
+            // fetchConversations();
             // showSucessToast('Login Successfull')
             // showPopup('Booking Processed', "Your booking has been initiated"); // Optional message & duration
 
@@ -57,27 +60,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             // updatePopupStatus('success', 'SUCCESS', "Login Successfull", 4000); // Optional message & duration
             // showPopup('SUCCESS', "Login Successfull");
             // }, 1000)
+
+            
             router.push(res?.user?.role)
-            // onLogin();
-
-            // const response = await login(role)
-            // const response = await fetch('/api/set-role-cookie', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({ role }),
-            // })
-
-            // const result = await response.json()
-            // if (result.success) {
-            //     // alert('Role cookie set successfully')
-            //     router.push(`/${role}`)
-            //     onLogin();
-            //     // optionally redirect user or update state
-            // } else {
-            //     alert('Failed to set cookie')
-            // }
         } catch (error: any) {
             console.error('API error:', error.response?.data || error.message);
             showErrorToast(error?.response?.data?.msg || 'Something went wrong');
@@ -107,8 +92,8 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
             {/* Right side - Login form */}
             <div className=" bg-white flex items-center justify-center p-10 absolute top-11 md:top-0 right-[-25px] md:right-0 w-[80%] md:w-[35%] h-[70%] md:h-[80%] rounded-3xl" style={{ transform: 'translate(-20%, 15%)' }}>
-                <div className="w-full h-full">
-                    <div className="mb-8  ">
+                <div className="w-full h-full relative">
+                    <div className="mb-8">
                         <p className="text-black mb-2 text-xs md:text-lg">Welcome to <span className="text-primary font-semibold">ShiftBuddy</span></p>
                         <h1 className="text-xl md:text-4xl font-semibold text-gray-900">Sign up</h1>
                         <p className='mt-2 text-[#5B5B5B] text-[14px]'>Empowering Providers. Simplifying Care. Compliance with ease. Log in to get started.</p>
@@ -153,7 +138,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                             </div>
                         </div>
 
-                        <div className='flex justify-end mt-7'>
+                        <div className='absolute right-0 bottom-0'>
                             <Button
                                 type="submit"
                                 className=" w-40 md:w-60 h-12 bg-primary hover:bg-[#715581] text-white font-medium rounded-lg mt-8 cursor-pointer"

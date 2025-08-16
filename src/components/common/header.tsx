@@ -9,14 +9,14 @@ import { SideDrawer } from "./SIdeDrawer";
 import ChatComponent from "../chat/ChatComponent";
 import ChatDetails from "../chat/ChatDetails";
 import NotificationComponent from "../notification/NotificationComponent";
-import { Conversation } from "@/context/ChatSocketContext";
+import { Conversation, useChatSocket } from "@/context/ChatSocketContext";
 
 const Header = () => {
     const router = useRouter();
     const path = usePathname();
     const { isOpen, isCollapse, toggle, collapse } = useSidebar();
     const isMobile = useIsMobile();
-
+    const { unreadCount } = useChatSocket();
 
     const [showNotification, setShowNotification] = useState<boolean>(false)
     const [drawerState, setDrawerState] = useState({
@@ -86,7 +86,12 @@ const Header = () => {
                     //  onClick={() => router.push('/admin/chat')}
                     >
                         <ChatIcon className='w-6 h-6' />
-                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full text-xs text-white flex items-center justify-center">1</span>
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full text-xs text-white flex items-center justify-center">
+                                {unreadCount}
+                            </span>
+                        )}
+                        {/* <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full text-xs text-white flex items-center justify-center">1</span> */}
                     </button>
                     <button className="p-1 rounded-md hover:text-primary relative text-black"
                         onClick={() => setShowNotification(true)}

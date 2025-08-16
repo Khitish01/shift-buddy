@@ -1,12 +1,13 @@
 'use client'
 import { usePopup } from "@/context/PopupContext";
 import { useTopLoader } from "@/context/TopLoader";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall } from "@/lib/apiCall";
 import { Calendar, Clock, FileText, Plus, Search, Upload, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DateInput } from "../common/date-input";
 import dayjs from "dayjs";
 import { DocumentUploadIcon } from "@/app/images";
+import { adminClient } from "@/lib/apiClient";
 
 interface CarerProps {
     onSuccess: () => void;
@@ -199,7 +200,7 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
 
                 formData.append('file', documentsPolicyCheck);
                 // }
-                const res = await apiCall<any>('POST', '/doc/v1/upload_doc', formData)
+                const res = await apiCall<any>(adminClient,'POST', '/doc/v1/upload_doc', formData)
                 console.log('medical documents', res);
                 updatedData.documents = {
                     ...updatedData.documents,
@@ -221,7 +222,7 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
 
                 formData.append('file', documentsFirstAid);
                 // }
-                const res = await apiCall<any>('POST', '/doc/v1/upload_doc', formData)
+                const res = await apiCall<any>(adminClient,'POST', '/doc/v1/upload_doc', formData)
                 console.log('compliance documents', res);
                 updatedData.documents = {
                     ...updatedData.documents,
@@ -237,7 +238,7 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                 const formDataProfile = new FormData();
                 formDataProfile.append("file", profileImage);
 
-                const res = await apiCall<any>("POST", "/doc/v1/upload_doc", formDataProfile);
+                const res = await apiCall<any>(adminClient,"POST", "/doc/v1/upload_doc", formDataProfile);
                 updatedData.profileImage = Array.isArray(res.documentId) ? res.documentId[0] : res.documentId
             }
 
@@ -262,7 +263,7 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
             const updatedFormData = await uploadDocuments();
             delete updatedFormData.confirmPass
             delete updatedFormData.vehicle
-            const res = await apiCall<any>('POST', '/carrier/v1/create_carrier', updatedFormData)
+            const res = await apiCall<any>(adminClient,'POST', '/carrier/v1/create_carrier', updatedFormData)
             console.log(res)
             updatePopupStatus('success', 'Booking Confirmed!', "Your booking has been confirmed!", 4000); // Optional message & duration
             onSuccess();

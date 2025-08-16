@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { Ban, Edit, Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { Input } from "../ui/input";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall } from "@/lib/apiCall";
 import { useTopLoader } from "@/context/TopLoader";
 import { ColumnDefinition, DataTable, SortConfig, TableAction } from "../common/DataTable";
 import { SideDrawer } from "../common/SIdeDrawer";
 import { AddCarer } from "./AddCarer";
 import CarerProfilePage from "./CareerProfile";
 import CalendarPage from "./CarrerprofileDetails";
+import { adminClient } from "@/lib/apiClient";
 // const sampleData = [
 //     {
 //         id: '000989',
@@ -283,7 +284,7 @@ const CarrierComponent = () => {
     const getList = async () => {
         loader.showLoader()
         try {
-            const res = await apiCall<any>('POST', '/carrier/v1/carrier_list', {
+            const res = await apiCall<any>(adminClient,'POST', '/carrier/v1/carrier_list', {
                 "search": search,
                 "sortBy": "",
                 "sortOrder": "",

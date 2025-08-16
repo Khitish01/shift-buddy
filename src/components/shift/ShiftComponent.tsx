@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Ban, Edit, Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { Input } from "../ui/input";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall } from "@/lib/apiCall";
 import { useTopLoader } from "@/context/TopLoader";
 import { ColumnDefinition, DataTable, SortConfig, TableAction } from "../common/DataTable";
 import { SideDrawer } from "../common/SIdeDrawer";
@@ -12,6 +12,7 @@ import { BookingDetailsContent } from "../scheduler/BookingDetails";
 import AddCarerModal from "./AddCarerModal";
 import AddShiftModal from "./AddShiftModal";
 import { usePopup } from "@/context/PopupContext";
+import { adminClient } from "@/lib/apiClient";
 // const sampleData = [
 //     {
 //         id: '000989',
@@ -333,7 +334,7 @@ const ShiftComponent = () => {
         const getList = async () => {
             loader.showLoader()
             try {
-                const res = await apiCall<any>('POST', '/slot/v1/get_slot',
+                const res = await apiCall<any>(adminClient, 'POST', '/slot/v1/get_slot',
                     {
                         "startDate": "2025-05-25",
                         "endDate": "2025-07-25"
@@ -417,7 +418,8 @@ const ShiftComponent = () => {
                 avatar={drawerState.avatar}
                 title={drawerState.title}
             >
-                {drawerState.type === 'book' ? <BookSlotContent /> : <BookingDetailsContent />}
+                {drawerState.type === 'book' ? <BookSlotContent onSuccess={() => console.log('')
+                } /> : <BookingDetailsContent bookingId="" />}
             </SideDrawer>
 
             <AddCarerModal show={showCarerModal} onClose={() => {

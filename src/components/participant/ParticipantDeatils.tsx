@@ -1,9 +1,10 @@
 'use client'
 import { useEffect, useState } from "react";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall } from "@/lib/apiCall";
 import dayjs from "dayjs";
 import { useTopLoader } from "@/context/TopLoader";
 import Progressbar from "../scheduler/ProgressBar";
+import { adminClient } from "@/lib/apiClient";
 interface BookingDetailsContentProps {
     clientId: string;
     // onSuccess: () => void;
@@ -41,7 +42,7 @@ export const ParticipantProfile: React.FC<BookingDetailsContentProps> = ({ clien
 
     const getPatientDetails = async () => {
         loader.showLoader()
-        const res = await apiCall<any>('GET', `/client/v1/get_client/${clientId}`)
+        const res = await apiCall<any>(adminClient,'GET', `/client/v1/get_client/${clientId}`)
         console.log(res);
         setBookingDetails(res.data);
         loader.hideLoader()
@@ -53,7 +54,7 @@ export const ParticipantProfile: React.FC<BookingDetailsContentProps> = ({ clien
             "page": "1",
             "limit": "15"
         }
-        const res = await apiCall<any>('POST', `/client/v1/get_client_history`,payload)
+        const res = await apiCall<any>(adminClient,'POST', `/client/v1/get_client_history`,payload)
         console.log(res);
         setBookingHistorty(res.data);
         loader.hideLoader()

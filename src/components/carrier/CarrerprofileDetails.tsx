@@ -12,9 +12,10 @@ import {
 } from "@fullcalendar/core";
 import { useRouter } from "next/navigation";
 import { useTopLoader } from "@/context/TopLoader";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall } from "@/lib/apiCall";
 import dayjs from "dayjs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { adminClient } from "@/lib/apiClient";
 // import { useModal } from "@/hooks/useModal";
 // import { Modal } from "@/components/ui/modal";
 
@@ -162,7 +163,7 @@ const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) =
       // sortBy: "createdAt",
       // sortOrder: "desc",
     }
-    const res = await apiCall<any>('POST', `/slot/v1/get_carrier_slot`, payload)
+    const res = await apiCall<any>(adminClient,'POST', `/slot/v1/get_carrier_slot`, payload)
     console.log(res);
     setBookingDetails(res.data);
 

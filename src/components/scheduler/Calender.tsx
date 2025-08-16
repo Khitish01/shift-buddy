@@ -13,7 +13,8 @@ import CalendarPage from "../carrier/CarrerprofileDetails";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useTopLoader } from "@/context/TopLoader";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall } from "@/lib/apiCall";
+import { adminClient } from "@/lib/apiClient";
 dayjs.extend(isSameOrBefore);
 
 
@@ -196,7 +197,7 @@ const Calender = () => {
         if (slots[slots.length - 1] !== end.format('HH:mm')) {
             slots.push(end.format('HH:mm'));
         }
-        console.log(slots);
+        // console.log(slots);
 
         return slots;
     };
@@ -216,7 +217,7 @@ const Calender = () => {
             sortOrder: 'asc'
         }
         try {
-            const res = await apiCall<any>('POST', '/slot/v1/get_slot', payload)
+            const res = await apiCall<any>(adminClient,'POST', '/slot/v1/get_slot', payload)
             console.log(res);
             setScheduleData(res?.data)
             // setTotalCount(res?.total)
@@ -241,7 +242,7 @@ const Calender = () => {
             carrierId: id
         }
         try {
-            const res = await apiCall<any>('POST', '/slot/v1/get_carrier_slot_with_status', payload)
+            const res = await apiCall<any>(adminClient,'POST', '/slot/v1/get_carrier_slot_with_status', payload)
             console.log(res);
             setScheduleData(res?.data)
             // setTotalCount(res?.total)
@@ -269,7 +270,7 @@ const Calender = () => {
                 date: dayjs(selectedDayCalender).format('YYYY-MM-DD'),
                 carrierType: activeTab
             }
-            const res = await apiCall<any>('POST', '/carrier/v1/get_today_carrier', payload)
+            const res = await apiCall<any>(adminClient,'POST', '/carrier/v1/get_today_carrier', payload)
             console.log(res);
             setAssignee(res?.data)
             // setTotalCount(res?.total)
@@ -366,7 +367,6 @@ const Calender = () => {
                                         {(() => {
                                             const filtered = scheduleData.filter(item => item.startTime === time);
                                             const count = filtered.length;
-                                            console.log(count);
 
 
                                             const getWidthClass = () => {

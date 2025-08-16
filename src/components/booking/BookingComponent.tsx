@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { Ban, Edit, Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { Input } from "../ui/input";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall } from "@/lib/apiCall";
 import { useTopLoader } from "@/context/TopLoader";
 import { ColumnDefinition, DataTable, SortConfig, TableAction } from "../common/DataTable";
 import { SideDrawer } from "../common/SIdeDrawer";
 import { BookSlotContent } from "../scheduler/SlotBooking";
 import { BookingDetailsContent } from "../scheduler/BookingDetails";
+import dayjs from "dayjs";
+import { adminClient } from "@/lib/apiClient";
 // const sampleData = [
 //     {
 //         id: '000989',
@@ -303,15 +305,15 @@ const BookingComponent = () => {
     const getList = async () => {
         loader.showLoader()
         try {
-            const res = await apiCall<any>('POST', '/slot/v1/get_slot',
+            const res = await apiCall<any>(adminClient,'POST', '/slot/v1/get_slot',
                 {
-                    // startDate: "2025-08-01",
-                    // endDate: "2025-08-30",
+                    startDate: dayjs().subtract(2,"month").format('YYYY-MM-DD'),
+                    endDate: dayjs().add(2,"month").format('YYYY-MM-DD'),
                     page: currentPage,
                     limit: pageSize,
                     slotView: "list",
                     sortBy: "createdAt",
-                    sortOrder: "asc"
+                    sortOrder: "desc"
                 }
             )
             console.log(res);

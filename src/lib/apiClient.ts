@@ -1,20 +1,16 @@
-// lib/apiClient.ts
-import axiosInstance from './axiosInstance';
+import createAxios from "./createAxios";
 
-type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
-export const apiCall = async <T>(
-    method: Method,
-    url: string,
-    data?: any,
-    config?: any
-): Promise<T> => {
-    const response = await axiosInstance({
-        method,
-        url,
-        data,
-        ...config,
-    });
+export const adminClient = createAxios(
+    process.env.NEXT_PUBLIC_ADMIN_API_BASE_URL || "http://localhost:4000"
+);
 
-    return response.data;
-};
+
+export const carerClient = createAxios(
+    process.env.NEXT_PUBLIC_CARER_API_BASE_URL || "http://localhost:4001"
+);
+
+
+// export const fileClient = createAxios(
+//     process.env.NEXT_PUBLIC_FILE_URL || "http://localhost:6000"
+// );

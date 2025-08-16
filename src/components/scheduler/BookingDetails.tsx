@@ -1,9 +1,10 @@
 'use client'
 import { useEffect, useState } from "react";
 import Progressbar from "./ProgressBar";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall } from "@/lib/apiCall";
 import dayjs from "dayjs";
 import { useTopLoader } from "@/context/TopLoader";
+import { adminClient, carerClient } from "@/lib/apiClient";
 interface BookingDetailsContentProps {
     bookingId: string;
     // onSuccess: () => void;
@@ -50,10 +51,11 @@ export const BookingDetailsContent: React.FC<BookingDetailsContentProps> = ({ bo
     ];
 
     const [bookingDetails, setBookingDetails] = useState<any>();
+    const [progressNotes, setProgressNotes] = useState<any[]>([]);
 
     const getBookingDetails = async () => {
         loader.showLoader()
-        const res = await apiCall<any>('GET', `slot/v1/get_slot_details/${bookingId}`)
+        const res = await apiCall<any>(adminClient, 'GET', `slot/v1/get_slot_details/${bookingId}`)
         console.log(res);
         setBookingDetails(res.data);
         loader.hideLoader()
@@ -71,6 +73,23 @@ export const BookingDetailsContent: React.FC<BookingDetailsContentProps> = ({ bo
             return 'Document';
         }
     };
+
+    useEffect(() => {
+        if (activeTab == 'Progress Note') {
+            getProgressNotes()
+        }
+    }, [activeTab])
+
+    const getProgressNotes = async () => {
+        loader.showLoader()
+        const res = await apiCall<any>(carerClient, 'GET', `/slot/v1/get_slot_Track/${bookingId}`)
+        console.log(res);
+        const progress = res.data.filter((x: any) => x.trackId.trackName == 'Progress Report')
+        console.log(progress);
+        
+        setProgressNotes(progress);
+        loader.hideLoader()
+    }
 
     const calculateAge = (dobString: string) => {
         return dayjs().diff(dayjs(dobString), "year");
@@ -254,32 +273,39 @@ export const BookingDetailsContent: React.FC<BookingDetailsContentProps> = ({ bo
                     <>
                         <div className="bg-[#FDF9FF] px-4 py-2 mb-4">
                             <h2 className="text-lg font-semibold text-gray-900 text-center">
-                                Track Treatment - ID09876
+                                Track Treatment - {bookingDetails?._id}
                             </h2>
                         </div>
-                        <Progressbar currentStatus={4} taskId="ID09876" />
+                        <Progressbar currentStatus={1} taskId={bookingDetails?._id} />
                     </>
                 )
             }
             {
                 activeTab == 'Progress Note' && (
                     <>
-                        <div className="bg-[#FDF9FF] px-4 py-2 mb-4">
+                        {/* <div className="bg-[#FDF9FF] px-4 py-2 mb-4">
                             <h2 className="text-lg font-semibold text-gray-900 text-center">
                                 Track Treatment - ID09876
                             </h2>
-                        </div>
+                        </div> */}
                         <div className="space-y-4 max-h-[500px] overflow-auto">
-                            {sampleNotes.map((note: any, index: number) => (
-                                <div key={index} className="bg-[#FDF9FF] p-4">
-                                    <div className="flex justify-between text-sm text-gray-500 mb-1">
-                                        <span>{note.time}</span>
-                                        <span>{note.date}</span>
+                            {progressNotes.length > 0 ? (
+                                progressNotes.map((note: any, index: number) => (
+                                    <div key={index} className="bg-[#FDF9FF] p-4">
+                                        <div className="flex justify-between text-sm text-gray-500 mb-1">
+                                            <span>{dayjs(note?.createdAt).format("hh:mm A")}</span>
+                                            <span>{dayjs(note?.createdAt).format("DD/MM/YYYY")}</span>
+                                        </div>
+                                        <p className="font-semibold mb-2">{bookingDetails?.carrierId?.name}</p>
+                                        <p className="text-sm text-gray-700 whitespace-pre-line">{note?.note}</p>
                                     </div>
-                                    <p className="font-semibold mb-2">{note.author}</p>
-                                    <p className="text-sm text-gray-700 whitespace-pre-line">{note.content}</p>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                <p className="text-sm text-gray-400 italic text-center py-4">
+                                    No progress notes available
+                                </p>
+                            )}
+
                         </div>
                     </>
                 )

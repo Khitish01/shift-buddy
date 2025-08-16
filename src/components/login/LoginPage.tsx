@@ -7,11 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTopLoader } from '@/context/TopLoader';
-import { apiCall } from '@/lib/apiClient';
+import { apiCall } from '@/lib/apiCall';
 import { showErrorToast, showSucessToast } from '@/lib/toast';
 import { usePopup } from '@/context/PopupContext';
 import Cookies from 'js-cookie'
 import { useChatSocket } from '@/context/ChatSocketContext';
+import { adminClient } from '@/lib/apiClient';
 
 interface LoginPageProps {
     onLogin: () => void;
@@ -36,7 +37,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                 email,
                 password
             }
-            const res = await apiCall<any>('POST', '/admin/v1/login', payload)
+            const res = await apiCall<any>(adminClient,'POST', '/admin/v1/login', payload)
             // sessionStorage.setItem('accessToken', JSON.stringify(res.accessToken))
             // Cookies.set('accessToken', res.accessToken, { path: '/', secure: true, sameSite: 'Lax' })
             Cookies.set('accessToken', res.accessToken, {

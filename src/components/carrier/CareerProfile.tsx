@@ -7,9 +7,10 @@ import { SideDrawer } from '../common/SIdeDrawer';
 import CalendarPage from './CarrerprofileDetails';
 import { useEffect, useState } from 'react';
 import { useTopLoader } from '@/context/TopLoader';
-import { apiCall } from '@/lib/apiClient';
+import { apiCall } from '@/lib/apiCall';
 import dayjs from 'dayjs';
 import { DocumentUploadIcon } from '@/app/images';
+import { adminClient } from '@/lib/apiClient';
 interface CarerProfileProps {
     carrierId: string;
     OpenCalendarView: () => void;
@@ -29,14 +30,14 @@ const CarerProfilePage: React.FC<CarerProfileProps> = ({ carrierId, OpenCalendar
 
     const getBookingDetails = async () => {
         loader.showLoader()
-        const res = await apiCall<any>('POST', `/carrier/v1/carrier_details`, { carrierId })
+        const res = await apiCall<any>(adminClient,'POST', `/carrier/v1/carrier_details`, { carrierId })
         console.log(res);
         setBookingDetails(res.data);
         loader.hideLoader()
     }
     const getUpcomingBooking = async () => {
         loader.showLoader()
-        const res = await apiCall<any>('POST', `/slot/v1/get_upcoming_slots`, { carrierId: bookingDetails?._id, limit: 10 })
+        const res = await apiCall<any>(adminClient,'POST', `/slot/v1/get_upcoming_slots`, { carrierId: bookingDetails?._id, limit: 10 })
         console.log(res);
         setUpcomingBookings(res.data);
         loader.hideLoader()

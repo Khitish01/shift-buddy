@@ -1,11 +1,17 @@
 'use client'
 import { usePopup } from "@/context/PopupContext";
 import { useTopLoader } from "@/context/TopLoader";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall } from "@/lib/apiCall";
 import { Calendar, Clock, FileText, Plus, Search, Upload, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DateInput } from "../common/date-input";
 import dayjs from "dayjs";
+import { ValidatedInput } from "../ui/ValidatedInput";
+import { fieldSchemas } from "@/lib/validationSchemas";
+import { ValidatedSelect } from "../ui/ValidatedSelect";
+import z from "zod";
+import PlacesAutocomplete from "../common/PlacesAutocomplete";
+import { adminClient } from "@/lib/apiClient";
 
 interface BookSlotContentProps {
     // isOpen: boolean;
@@ -21,12 +27,13 @@ interface BookSlotContentProps {
 export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) => {
     const { showPopup, updatePopupStatus } = usePopup();
     const [repeatModes, setRepeatModes] = useState<any[]>([])
+    const [ndisTypes, setNdisTypes] = useState<any[]>([])
     const [activeTab, setActiveTab] = useState('personal');
     const [allergyInput, setAllergyInput] = useState("");
     const [clientId, setClientId] = useState('');
-    const [allergyTags, setAllergyTags] = useState(["POIJ", "IBM-N"]);
+    const [allergyTags, setAllergyTags] = useState<string[]>([]);
     const [medication, setMedication] = useState("");
-    const [medicationTags, setMedicationTags] = useState(['IBM 60 - M', 'IBM 100-N']);
+    const [medicationTags, setMedicationTags] = useState<string[]>([]);
     const [profileImage, setProfileImage] = useState<File>();
     const documentRef = useRef<HTMLInputElement | null>(null);
     const complianceDocumentRef = useRef<HTMLInputElement | null>(null);
@@ -35,14 +42,15 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
     const loader = useTopLoader();
     const [multipleValue, setMultipleValue] = useState<string[]>([])
     const [carerList, setCarerList] = useState<any[]>([])
+    const durationInMinutes = 30;
     const [formData, setFormData] = useState({
         clientId: '',
         carrierId: '',
         startDate: dayjs().format('YYYY-MM-DD'),
         endDate: dayjs().format('YYYY-MM-DD'),
-        startTime: '09:30',
-        endTime: '10:00',
-        duration: '30mins',
+        startTime: dayjs().format("HH:mm"),
+        endTime: dayjs().add(durationInMinutes, "minute").format("HH:mm"),
+        duration: `${durationInMinutes}mins`,
         repeatId: '',
         dayOfWeek: dayjs().day(), //weekday number
         dayOfMonth: dayjs().get('D'), //date of month
@@ -66,22 +74,23 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
             street: '',
             suburb: '',
             state: '',
-            postCode: ''
+            postCode: '',
+            locationUrl: ''
         },
         ndis: {
-            ndisNumber: '89000000122',
-            ndisType: 'NDIS Participant (NDIS)'
+            ndisNumber: '',
+            ndisType: ''
         },
         documents: {
             medicalDoc: [],
             complianceDoc: []
         },
         medicalInfo: {
-            diagnoses: 'sdfsdfs',
+            diagnoses: '',
             allergy: allergyTags,
             medicationAndTime: medicationTags,
-            mobilityNotes: 'asfasfasf',
-            emergencyPlan: 'gfghdfhdf'
+            mobilityNotes: '',
+            emergencyPlan: ''
         }
     });
     const [showAll, setShowAll] = useState(false);
@@ -100,7 +109,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
     const getRepeatMode = async () => {
         loader.showLoader()
         try {
-            const res = await apiCall<any>('GET', '/master/v1/get_repeat_mode')
+            const res = await apiCall<any>(adminClient,'GET', '/master/v1/get_repeat_mode')
             console.log(res);
             setRepeatModes(res?.data)
             // setTotalCount(res?.total)
@@ -110,9 +119,22 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
             loader.hideLoader()
         }
     }
+    const getNdisType = async () => {
+        loader.showLoader()
+        try {
+            const res = await apiCall<any>(adminClient,'GET', '/master/v1/get_ndis')
+            console.log(res);
+            setNdisTypes(res?.data)
+            // setTotalCount(res?.total)
+        } catch (error) {
+            console.error('Error setting role:', error)
+        } finally {
+            loader.hideLoader()
+        }
+    }
     useEffect(() => {
         getRepeatMode()
-
+        getNdisType()
     }, [])
     useEffect(() => {
         console.log(repeatModes.filter((x: any) => x.repeatType == 'Does not repeat')?.[0]?._id);
@@ -284,7 +306,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
             customSlotArray: formData.customSlotArray //provide the dates if repest Id is custom
         }
         try {
-            const res = await apiCall<any>('POST', '/carrier/v1/check_carrier_availability', payload)
+            const res = await apiCall<any>(adminClient,'POST', '/carrier/v1/check_carrier_availability', payload)
             console.log(res);
             setCarerList(res?.data)
             // setTotalCount(res?.total)
@@ -383,7 +405,8 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                 street: apiData.address?.street || '',
                 suburb: apiData.address?.suburb || '',
                 state: apiData.address?.state || '',
-                postCode: apiData.address?.postCode || ''
+                postCode: apiData.address?.postCode || '',
+                locationUrl: apiData.address?.locationUrl || '',
             },
             ndis: {
                 ndisNumber: apiData.ndis?.ndisNumber || '89000000122',
@@ -404,8 +427,10 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
     };
 
     const getClientDetails = async () => {
-        const res = await apiCall<any>('GET', `/client/v1/get_client/${clientId}`)
+        const res = await apiCall<any>(adminClient,'GET', `/client/v1/get_client/${clientId}`)
         const mappedData = mapApiDataToForm(res.data);
+        setAllergyTags(mappedData.medicalInfo.allergy)
+        setMedicationTags(mappedData.medicalInfo.medicationAndTime)
         setFormData(mappedData);
         console.log(res);
 
@@ -422,7 +447,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                 const formDataMedical = new FormData();
                 documents.forEach(file => formDataMedical.append("file", file));
 
-                const res = await apiCall<any>("POST", "/doc/v1/upload_doc", formDataMedical);
+                const res = await apiCall<any>(adminClient,"POST", "/doc/v1/upload_doc", formDataMedical);
                 updatedData.documents = {
                     ...updatedData.documents,
                     medicalDoc: res.documentId ?? [],
@@ -434,7 +459,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                 const formDataCompliance = new FormData();
                 complianceDocuments.forEach(file => formDataCompliance.append("file", file));
 
-                const res = await apiCall<any>("POST", "/doc/v1/upload_doc", formDataCompliance);
+                const res = await apiCall<any>(adminClient,"POST", "/doc/v1/upload_doc", formDataCompliance);
                 updatedData.documents = {
                     ...updatedData.documents,
                     complianceDoc: res.documentId ?? [],
@@ -446,7 +471,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                 const formDataProfile = new FormData();
                 formDataProfile.append("file", profileImage);
 
-                const res = await apiCall<any>("POST", "/doc/v1/upload_doc", formDataProfile);
+                const res = await apiCall<any>(adminClient,"POST", "/doc/v1/upload_doc", formDataProfile);
                 updatedData.personalInfo = {
                     ...updatedData.personalInfo,
                     profileImage: Array.isArray(res.documentId) ? res.documentId[0] : res.documentId,
@@ -463,16 +488,17 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
 
 
     const handleBooking = async () => {
+        // if (!profileImage) return;
         showPopup("Booking Processing", "Your booking has been initiated");
 
         try {
             updatePopupStatus("loading", "Uploading", "Documents are Uploading");
-
             // Upload files and get the complete form data
             const updatedFormData = await uploadDocuments();
+            updatedFormData['status'] = true;
 
             // Create client
-            const res = await apiCall<any>("POST", "/client/v1/create_client", updatedFormData);
+            const res = await apiCall<any>(adminClient,"POST", "/client/v1/create_client", updatedFormData);
             console.log(res);
 
             updatePopupStatus("success", "Booking Confirmed!", "Your booking has been confirmed!", 4000);
@@ -576,31 +602,26 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
 
                             {/* Type of Care */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Type of Care</label>
-                                {/* <Search className="absolute left-3 top-10 transform -translate-y-1/2 text-gray-400" size={16} /> */}
-                                <input
-                                    type="text"
-                                    placeholder="Type to search"
+                                <ValidatedSelect
+                                    label="Type of Care"
                                     value={formData.personalInfo.typeOfCare}
-                                    onChange={(e) =>
-                                        handleInputChange('personalInfo', {
-                                            ...formData.personalInfo,
-                                            typeOfCare: e.target.value
-                                        })
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    onChange={(val) => handleInputChange("personalInfo", { ...formData.personalInfo, typeOfCare: val })}
+                                    schema={fieldSchemas["personalInfo.typeOfCare"]}
+                                    path="personalInfo.typeOfCare"
+                                    icon={<Search className="h-5 w-5" />}   // ✅ icon injected
+                                    options={[
+                                        { label: "Select a type of care", value: "" },
+                                        { value: "fever", label: "Fever" },
+                                        { value: "blood_sample", label: "Blood Sample" },
+                                        { value: "urine_sample", label: "Urine Sample" },
+                                    ]}
                                 />
+
                             </div>
 
                             {/* Scheduled Visit Time */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Scheduled Visit Time</label>
-                                {/* <input
-                                    type="date"
-                                    value={formData.startDate}
-                                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                /> */}
                                 <DateInput
                                     value={formData.startDate}
                                     onChange={(value) => {
@@ -611,62 +632,61 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                                     selectionMode={'single'}
                                     readonly={true}
                                     placeholder={"Click to select date via calendar"}
+                                    schema={fieldSchemas["startDate"]}
                                 />
                             </div>
 
 
                             {/* Duration */}
                             <div className="mb-4 relative">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
-                                <Clock className="absolute left-3 top-12 h-5 w-5 transform -translate-y-1/2 text-gray-400" size={16} />
-                                <select
+                                <ValidatedSelect
+                                    label="Duration"
                                     value={formData.duration}
-                                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                >
-                                    <option value="30mins">30mins</option>
-                                    <option value="1hour">1 hour</option>
-                                    <option value="2hours">2 hours</option>
-                                </select>
+                                    onChange={(val) => setFormData({ ...formData, duration: val })}
+                                    schema={fieldSchemas["duration"]}
+                                    path="duration"
+                                    icon={<Clock className="h-5 w-5" />}   // ✅ icon injected
+                                    options={[
+                                        { label: "30mins", value: "30mins" },
+                                        { label: "1 hour", value: "1hour" },
+                                        { label: "2 hours", value: "2hours" },
+                                    ]}
+                                />
                             </div>
 
                             {/* Select Time */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Select Time</label>
-                                <select
+                                <ValidatedSelect
+                                    label="Select Time"
                                     value={`${formData.startTime}-${formData.endTime}`}
-                                    onChange={(e) => {
-                                        const [start, end] = e.target.value.split('-');
+                                    onChange={(val) => {
+                                        const [start, end] = val.split("-");
                                         setFormData({ ...formData, startTime: start, endTime: end });
                                     }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                >
-                                    {/* <option value="09:30-10:00">9:30am - 10:00am</option> */}
-                                    {slots.length > 0 ? (
-                                        slots.map((slot, idx) => (
-                                            <option key={idx} value={slot}>
-                                                {slot} {/* ✅ 24-hour format */}
-                                            </option>
-                                        ))
-                                    ) : (
-                                        <option>No slots available</option>
-                                    )}
-                                </select>
+                                    schema={fieldSchemas["timeSlot"]}
+                                    path="timeSlot"
+                                    options={
+                                        slots.length > 0
+                                            ? slots.map((slot: string) => ({ label: slot, value: slot }))
+                                            : [{ label: "No slots available", value: "" }]
+                                    }
+                                />
                             </div>
 
                             {/* Repeat */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Repeat</label>
-                                <select
+                                <ValidatedSelect
+                                    label="Repeat"
                                     value={formData.repeatId}
-                                    onChange={(e) => setFormData({ ...formData, repeatId: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                >
-                                    {repeatModes.map((mode: any, index: number) => (
-                                        <option key={index} value={mode._id}>{mode.repeatType}</option>
+                                    onChange={(val) => setFormData({ ...formData, repeatId: val })}
+                                    schema={fieldSchemas["repeatId"]}
+                                    path="repeatId"
+                                    options={repeatModes.map((mode: any) => ({
+                                        label: mode.repeatType,
+                                        value: mode._id,
+                                    }))}
+                                />
 
-                                    ))}
-                                </select>
                             </div>
 
                             {formData.repeatId != '6854576f74ae23c01c0faf1a' && formData.repeatId != '685c39a134947853141c3e5f' && (
@@ -680,6 +700,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                                         selectionMode={'single'}
                                         readonly={true}
                                         placeholder={"Click to select date via calendar"}
+                                        schema={fieldSchemas["endDate"]}
                                     />
 
                                 </div>
@@ -695,13 +716,11 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                                         selectionMode={'multiple'}
                                         readonly={true}
                                         placeholder={"Click to select date via calendar"}
+                                        schema={fieldSchemas["customSlotArray"]}
                                     />
 
                                     {formData.customSlotArray.length > 0 && (
                                         <div className="pt-4">
-                                            {/* <p className="text-sm text-gray-600 mb-2">
-                                                Selected dates: {formData.customSlotArray.length}
-                                            </p> */}
                                             <div className="flex flex-wrap gap-1">
                                                 {(showAll ? formData.customSlotArray : formData.customSlotArray.slice(0, 2)).map((date, index) => (
                                                     <span
@@ -734,57 +753,40 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
 
                             {/* Name */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                                <input
-                                    type="text"
+                                <ValidatedInput
+                                    label="Name"
                                     value={formData.personalInfo.name}
-                                    onChange={(e) =>
-                                        handleInputChange('personalInfo', {
-                                            ...formData.personalInfo,
-                                            name: e.target.value
-                                        })
+                                    onChange={(val) =>
+                                        handleInputChange("personalInfo", { ...formData.personalInfo, name: val })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["personalInfo.name"]}
+                                    path="personalInfo.name"
                                 />
                             </div>
 
                             {/* Gender */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                                <select
-                                    value={formData.personalInfo.gender}
-                                    onChange={(e) => {
-                                        console.log(e.target.value);
 
-                                        handleInputChange('personalInfo', {
-                                            ...formData.personalInfo,
-                                            gender: e.target.value
-                                        })
+                                <ValidatedSelect
+                                    label="Gender"
+                                    value={formData.personalInfo.gender}
+                                    onChange={(val) =>
+                                        handleInputChange("personalInfo", { ...formData.personalInfo, gender: val })
                                     }
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                >
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
-                                </select>
+                                    schema={fieldSchemas["personalInfo.gender"]}
+                                    path="personalInfo.gender"
+                                    options={[
+                                        { label: "Select gender", value: "" },
+                                        { label: "Male", value: "Male" },
+                                        { label: "Female", value: "Female" },
+                                        { label: "Other", value: "Other" },
+                                    ]}
+                                />
                             </div>
 
                             {/* Date of Birth */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-                                {/* <input
-                                    type="date"
-                                    value={formData.personalInfo.dob}
-                                    onChange={(e) =>
-                                        handleInputChange('personalInfo', {
-                                            ...formData.personalInfo,
-                                            dob: e.target.value
-                                        })
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                /> */}
-
                                 <DateInput
                                     value={formData.personalInfo.dob}
                                     onChange={(value) => handleInputChange('personalInfo', {
@@ -796,6 +798,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                                     selectionMode={'single'}
                                     readonly={true}
                                     placeholder={"Click to select date via calendar"}
+                                    schema={fieldSchemas["personalInfo.dob"]}
                                 />
                             </div>
 
@@ -822,134 +825,183 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
 
                             {/* Email */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Email ID</label>
-                                <input
+                                <ValidatedInput
+                                    label="Email ID"
                                     type="email"
                                     value={formData.personalInfo.email}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('personalInfo', {
                                             ...formData.personalInfo,
-                                            email: e.target.value
+                                            email: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["personalInfo.email"]}
+                                    path="personalInfo.email"
                                 />
                             </div>
 
                             {/* Phone No */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Phone No.</label>
-                                <input
+                                <ValidatedInput
+                                    label="Phone No."
                                     type="tel"
                                     value={formData.personalInfo.mobileNumber}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('personalInfo', {
                                             ...formData.personalInfo,
-                                            mobileNumber: e.target.value
+                                            mobileNumber: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["personalInfo.mobileNumber"]}
+                                    path="personalInfo.mobileNumber"
                                 />
                             </div>
 
                             {/* Family Member Name */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Family Member Name</label>
-                                <input
+                                <ValidatedInput
+                                    label="Family Member Name"
                                     type="text"
                                     value={formData.relationInfo.relativeName}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('relationInfo', {
                                             ...formData.relationInfo,
-                                            relativeName: e.target.value
+                                            relativeName: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["relationInfo.relativeName"]}
+                                    path="relationInfo.relativeName"
                                 />
                             </div>
 
                             {/* Contact Number */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Contact Number</label>
-                                <input
+                                <ValidatedInput
+                                    label="Emergency Contact Number"
                                     type="tel"
                                     value={formData.relationInfo.relativeNumber}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('relationInfo', {
                                             ...formData.relationInfo,
-                                            relativeNumber: e.target.value
+                                            relativeNumber: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["relationInfo.relativeNumber"]}
+                                    path="relationInfo.relativeNumber"
                                 />
                             </div>
 
                             {/* Relation */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Family Member Relation</label>
-                                <input
+                                <ValidatedInput
+                                    label="Family Member Relation"
                                     type="text"
                                     value={formData.relationInfo.relativeRelation}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('relationInfo', {
                                             ...formData.relationInfo,
-                                            relativeRelation: e.target.value
+                                            relativeRelation: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["relationInfo.relativeRelation"]}
+                                    path="relationInfo.relativeRelation"
                                 />
                             </div>
 
                             {/* Address */}
                             <h3 className="text-lg font-medium text-gray-900 mt-6 mb-4">Address</h3>
-                            {(Object.keys(formData.address) as (keyof typeof formData.address)[]).map((field) => (
-                                <div className="mb-4" key={field}>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">{field.charAt(0).toUpperCase() + field.slice(1)}</label>
-                                    <input
-                                        type="text"
-                                        value={formData.address[field]}
-                                        onChange={(e) =>
-                                            handleInputChange('address', {
-                                                ...formData.address,
-                                                [field]: e.target.value
-                                            })
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                    />
-                                </div>
-                            ))}
+                            {/* {(Object.keys(formData.address) as (keyof typeof formData.address)[]).map((field) => ( */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Street</label>
+                                <PlacesAutocomplete formData={formData} setFormData={setFormData} />
+                            </div>
+                            <div className="mb-4" >
+                                {/* <PlacesAutocomplete /> */}
+
+                                <ValidatedInput
+
+                                    label="Suburb"
+                                    type="text"
+                                    value={formData.address.suburb}
+                                    onChange={(val) =>
+                                        handleInputChange("address", {
+                                            ...formData.address,
+                                            suburb: val,
+                                        })
+                                    }
+                                    schema={fieldSchemas['address.suburb']}   // ✅ schema lookup
+                                    path={'address.suburb'}                   // ✅ pass correct path
+                                />
+                            </div>
+                            <div className="mb-4" >
+                                <ValidatedInput
+
+                                    label="State"
+                                    type="text"
+                                    value={formData.address.state}
+                                    onChange={(val) =>
+                                        handleInputChange("address", {
+                                            ...formData.address,
+                                            state: val,
+                                        })
+                                    }
+                                    schema={fieldSchemas['address.state']}   // ✅ schema lookup
+                                    path={'address.state'}                   // ✅ pass correct path
+                                />
+                            </div>
+                            <div className="mb-4" >
+                                <ValidatedInput
+
+                                    label="Postal Code"
+                                    type="text"
+                                    value={formData.address.postCode}
+                                    onChange={(val) =>
+                                        handleInputChange("address", {
+                                            ...formData.address,
+                                            postCode: val,
+                                        })
+                                    }
+                                    schema={fieldSchemas['address.postCode']}   // ✅ schema lookup
+                                    path={'address.postCode'}                   // ✅ pass correct path
+                                />
+                            </div>
+                            {/* ))} */}
 
                             {/* NDIS */}
                             <h3 className="text-lg font-medium text-gray-900 mt-6 mb-4">NDIS</h3>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">NDIS Number</label>
-                                <input
+                                <ValidatedInput
+                                    label="NDIS Number"
                                     type="text"
                                     value={formData.ndis.ndisNumber}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('ndis', {
                                             ...formData.ndis,
-                                            ndisNumber: e.target.value
+                                            ndisNumber: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["ndis.ndisNumber"]}
+                                    path="ndis.ndisNumber"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">NDIS Type</label>
-                                <select
+                                <ValidatedSelect
+                                    label="NDIS Type"
                                     value={formData.ndis.ndisType}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('ndis', {
                                             ...formData.ndis,
-                                            ndisType: e.target.value
+                                            ndisType: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                >
-                                    <option value="NDIS Participant (NDIS)">NDIS Participant (NDIS)</option>
-                                </select>
+                                    schema={fieldSchemas["ndis.ndisType"]}
+                                    path="ndis.ndisType"
+                                    options={[{ label: "Select NDIS Type", value: "" },].concat(ndisTypes.map((ndis: any) => ({
+                                        label: ndis.ndisType,
+                                        value: ndis._id,
+                                    })))}
+                                />
                             </div>
                         </div>
                     </div>
@@ -972,12 +1024,26 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
 
                         {/* Diagnoses */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Diagnoses</label>
+                            {/* <label className="block text-sm font-medium text-gray-700 mb-2">Diagnoses</label>
                             <input
                                 type="text"
                                 value={formData.medicalInfo.diagnoses}
                                 onChange={(e) => handleInputChange("diagnoses", e.target.value)}
                                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
+                            /> */}
+
+                            <ValidatedInput
+                                label="Diagnoses"
+                                type="text"
+                                value={formData.medicalInfo.diagnoses}
+                                onChange={(val) =>
+                                    handleInputChange("medicalInfo", {
+                                        ...formData.medicalInfo,
+                                        diagnoses: val,
+                                    })
+                                }
+                                schema={fieldSchemas["medicalInfo.diagnoses"]}
+                                path="medicalInfo.diagnoses"
                             />
                         </div>
 
@@ -994,12 +1060,20 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                                     <Plus size={16} />
                                 </button>
                             </label>
-                            <input
+                            {/* <input
                                 type="text"
                                 value={allergyInput}
                                 onChange={(e) => setAllergyInput(e.target.value)}
                                 placeholder="Type allergies"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                            /> */}
+                            <ValidatedInput
+                                label=""
+                                type="text"
+                                value={allergyInput}
+                                onChange={setAllergyInput}
+                                schema={z.string().optional()} // only validate tags list, not typing
+                                path="medicalInfo.allergies"
                             />
                             <div className="flex flex-wrap gap-2 mt-2">
                                 {allergyTags.map((tag, index) => (
@@ -1031,11 +1105,19 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                                 </button>
                             </label>
                             {/* <label className="block text-sm font-medium text-gray-700 mb-2">Medications with Dosage & Timing</label> */}
-                            <input
+                            {/* <input
                                 type="text"
                                 value={medication}
                                 onChange={(e) => setMedication(e.target.value)}
                                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
+                            /> */}
+                            <ValidatedInput
+                                label=""
+                                type="text"
+                                value={medication}
+                                onChange={setMedication}
+                                schema={z.string().optional()} // same logic: validate tags array, not typing
+                                path="medicalInfo.medications"
                             />
                             <div className="flex flex-wrap gap-2 mt-2">
                                 {medicationTags.map((tag, i) => (
@@ -1051,29 +1133,55 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
 
                         {/* Mobility Notes */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Mobility Notes</label>
+                            {/* <label className="block text-sm font-medium text-gray-700 mb-2">Mobility Notes</label>
                             <input
                                 type="text"
                                 value={formData.medicalInfo.mobilityNotes}
                                 onChange={(e) => handleInputChange("mobilityNotes", e.target.value)}
                                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
+                            /> */}
+                            <ValidatedInput
+                                label="Mobility Notes"
+                                type="text"
+                                value={formData.medicalInfo.mobilityNotes}
+                                onChange={(val) =>
+                                    handleInputChange("medicalInfo", {
+                                        ...formData.medicalInfo,
+                                        mobilityNotes: val,
+                                    })
+                                }
+                                schema={fieldSchemas["medicalInfo.mobilityNotes"]}
+                                path="medicalInfo.mobilityNotes"
                             />
                         </div>
 
                         {/* Emergency Plan */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Plan</label>
+                            {/* <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Plan</label>
                             <input
                                 type="text"
                                 value={formData.medicalInfo.emergencyPlan}
                                 onChange={(e) => handleInputChange("emergencyPlan", e.target.value)}
                                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
+                            /> */}
+                            <ValidatedInput
+                                label="Emergency Plan"
+                                type="text"
+                                value={formData.medicalInfo.emergencyPlan}
+                                onChange={(val) =>
+                                    handleInputChange("medicalInfo", {
+                                        ...formData.medicalInfo,
+                                        emergencyPlan: val,
+                                    })
+                                }
+                                schema={fieldSchemas["medicalInfo.emergencyPlan"]}
+                                path="medicalInfo.emergencyPlan"
                             />
                         </div>
 
                         {/* Carer */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Carer</label>
+                            {/* <label className="block text-sm font-medium text-gray-700 mb-2">Carer</label>
                             <select
                                 value={formData.carrierId}
                                 onChange={(e) => setFormData({ ...formData, carrierId: e.target.value })}
@@ -1084,7 +1192,19 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                                     <option key={index} value={carer?._id}>{carer?.name}</option>
 
                                 ))}
-                            </select>
+                            </select> */}
+                            <ValidatedSelect
+                                label="Carer"
+                                value={formData.carrierId}
+                                onChange={(val) => setFormData({ ...formData, carrierId: val })}
+                                schema={fieldSchemas["carrierId"]}
+                                path="carrierId"
+                                options={carerList.map((carer: any) => ({
+                                    label: carer?.name,
+                                    value: carer?._id,
+                                }))}
+                                placeholder="Select Carer"
+                            />
                         </div>
                     </div>
 

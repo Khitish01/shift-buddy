@@ -1,11 +1,12 @@
 'use client'
 import { usePopup } from "@/context/PopupContext";
 import { useTopLoader } from "@/context/TopLoader";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall } from "@/lib/apiCall";
 import { Calendar, Clock, FileText, Plus, Search, Upload, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DateInput } from "../common/date-input";
 import dayjs from "dayjs";
+import { adminClient } from "@/lib/apiClient";
 
 export const AddParticipant: React.FC = () => {
     const { showPopup, updatePopupStatus } = usePopup();
@@ -300,7 +301,7 @@ export const AddParticipant: React.FC = () => {
 
                     formData.append('file', file);
                 }
-                const res = await apiCall<any>('POST', '/doc/v1/upload_doc', formData)
+                const res = await apiCall<any>(adminClient,'POST', '/doc/v1/upload_doc', formData)
                 console.log('medical documents', res);
                 setFormData(prev => ({
                     ...prev,
@@ -318,7 +319,7 @@ export const AddParticipant: React.FC = () => {
 
                     formData.append('file', file);
                 }
-                const res = await apiCall<any>('POST', '/doc/v1/upload_doc', formData)
+                const res = await apiCall<any>(adminClient,'POST', '/doc/v1/upload_doc', formData)
                 console.log('compliance documents', res);
                 setFormData(prev => ({
                     ...prev,
@@ -349,7 +350,7 @@ export const AddParticipant: React.FC = () => {
 
         try {
             await uploadDocuments();
-            const res = await apiCall<any>('POST', '/client/v1/create_client', formData)
+            const res = await apiCall<any>(adminClient,'POST', '/client/v1/create_client', formData)
             console.log(res)
         } catch (error) {
             console.error('Error setting role:', error)

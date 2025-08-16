@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Ban, Edit, Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { Input } from "../ui/input";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall } from "@/lib/apiCall";
 import { useTopLoader } from "@/context/TopLoader";
 import { ColumnDefinition, DataTable, SortConfig, TableAction } from "../common/DataTable";
 import { SideDrawer } from "../common/SIdeDrawer";
@@ -11,6 +11,7 @@ import { BookSlotContent } from "../scheduler/SlotBooking";
 import { BookingDetailsContent } from "../scheduler/BookingDetails";
 import { AddParticipant } from "./AddParticipant";
 import { ParticipantProfile } from "./ParticipantDeatils";
+import { adminClient } from "@/lib/apiClient";
 
 const ParticipantComponent = () => {
     const [data, setData] = useState<any[]>([]);
@@ -156,7 +157,7 @@ const ParticipantComponent = () => {
     const getList = async () => {
         loader.showLoader()
         try {
-            const res = await apiCall<any>('POST', 'client/v1/client_list',
+            const res = await apiCall<any>(adminClient,'POST', 'client/v1/client_list',
                 {
                     "search": debouncedSearch,
                     "sortBy": "createdAt",

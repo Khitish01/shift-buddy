@@ -10,6 +10,7 @@ import ChatComponent from "../chat/ChatComponent";
 import ChatDetails from "../chat/ChatDetails";
 import NotificationComponent from "../notification/NotificationComponent";
 import { Conversation, useChatSocket } from "@/context/ChatSocketContext";
+import AdminProfile from "../profile/AdminProfile";
 
 const Header = () => {
     const router = useRouter();
@@ -19,6 +20,7 @@ const Header = () => {
     const { unreadCount } = useChatSocket();
 
     const [showNotification, setShowNotification] = useState<boolean>(false)
+    const [showProfile, setShowProfile] = useState<boolean>(false)
     const [drawerState, setDrawerState] = useState({
         isOpen: false,
         selectedChat: null as null | Conversation,
@@ -35,6 +37,7 @@ const Header = () => {
 
     const closeDrawer = () => {
         setShowNotification(false)
+        setShowProfile(false)
         setDrawerState(prev => ({ ...prev, isOpen: false, selectedChat: null }));
     };
 
@@ -101,7 +104,7 @@ const Header = () => {
                     </button>
 
                     {/* User Avatar */}
-                    <div className="w-8 h-8 rounded-full bg-gray-300 overflow-hidden">
+                    <div className="w-8 h-8 rounded-full bg-gray-300 overflow-hidden" onClick={() => setShowProfile(true)}>
                         <img
                             src="https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face"
                             alt="User"
@@ -132,6 +135,15 @@ const Header = () => {
 
             >
                 <NotificationComponent />
+            </SideDrawer>
+            <SideDrawer
+                isOpen={showProfile}
+                onClose={closeDrawer}
+                avatar={''}
+                title={'Profile'}
+
+            >
+                <AdminProfile />
             </SideDrawer>
         </header>
     );

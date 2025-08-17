@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { Ban, Edit, Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import { Ban, CircleX, Edit, Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { Input } from "../ui/input";
 import { apiCall } from "@/lib/apiCall";
 import { useTopLoader } from "@/context/TopLoader";
@@ -11,156 +11,11 @@ import { BookSlotContent } from "../scheduler/SlotBooking";
 import { BookingDetailsContent } from "../scheduler/BookingDetails";
 import dayjs from "dayjs";
 import { adminClient } from "@/lib/apiClient";
-// const sampleData = [
-//     {
-//         id: '000989',
-//         name: 'Liam Smith',
-//         totalIncome: 86789,
-//         totalShift: 568,
-//         jobType: 'Full-Time'
-//     },
-//     {
-//         id: '007890',
-//         name: 'Noah Johnson',
-//         totalIncome: 345,
-//         totalShift: 760,
-//         jobType: 'Part-Time'
-//     },
-//     {
-//         id: '005648',
-//         name: 'James Brown',
-//         totalIncome: 7890,
-//         totalShift: 23,
-//         jobType: 'Part-Time'
-//     },
-//     {
-//         id: '001234',
-//         name: 'Emma Wilson',
-//         totalIncome: 95000,
-//         totalShift: 480,
-//         jobType: 'Full-Time'
-//     },
-//     {
-//         id: '002456',
-//         name: 'Oliver Davis',
-//         totalIncome: 12500,
-//         totalShift: 320,
-//         jobType: 'Part-Time'
-//     },
-//     {
-//         id: '003789',
-//         name: 'Ava Miller',
-//         totalIncome: 78000,
-//         totalShift: 520,
-//         jobType: 'Full-Time'
-//     }
-// ];
-
-// const mockData = [
-//     {
-//         id: "20462",
-//         carerId: "#20462",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Matt Dickerson",
-//         joiningDate: "2022-05-13",
-//         totalShift: 189,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "18933",
-//         carerId: "#18933",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Wiktoria",
-//         joiningDate: "2022-05-22",
-//         totalShift: 263,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "45169",
-//         carerId: "#45169",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Trixie Byrd",
-//         joiningDate: "2022-06-15",
-//         totalShift: 45,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "34304",
-//         carerId: "#34304",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Brad Mason",
-//         joiningDate: "2022-09-06",
-//         totalShift: 86,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "17188",
-//         carerId: "#17188",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Sanderson",
-//         joiningDate: "2022-09-25",
-//         totalShift: 90,
-//         mobileNo: "9098765678",
-//         status: "inactive",
-//     },
-//     {
-//         id: "73003",
-//         carerId: "#73003",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Jun Redfern",
-//         joiningDate: "2022-10-04",
-//         totalShift: 13,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "58825",
-//         carerId: "#58825",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Miriam Kidd",
-//         joiningDate: "2022-10-17",
-//         totalShift: 177,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "44122",
-//         carerId: "#44122",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Dominic",
-//         joiningDate: "2022-10-24",
-//         totalShift: 245,
-//         mobileNo: "9098765678",
-//         status: "active",
-//     },
-//     {
-//         id: "89094",
-//         carerId: "#89094",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Shanice",
-//         joiningDate: "2022-11-01",
-//         totalShift: 679,
-//         mobileNo: "9098765678",
-//         status: "inactive",
-//     },
-//     {
-//         id: "85252",
-//         carerId: "#85252",
-//         img: "/placeholder.svg?height=40&width=40",
-//         name: "Poppy-Rose",
-//         joiningDate: "2022-11-22",
-//         totalShift: 387,
-//         mobileNo: "9098765678",
-//         status: "inactive",
-//     },
-// ]
-
-// type Employee = typeof sampleData[0];
+import { showSucessToast } from "@/lib/toast";
+import { ConfirmModal } from "../common/ConfirmModal";
+import { usePopup } from "@/context/PopupContext";
 const BookingComponent = () => {
+    const [open, setOpen] = useState(false);
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -177,6 +32,7 @@ const BookingComponent = () => {
         avatar: '',
         title: ''
     });
+    const { showPopup, updatePopupStatus } = usePopup();
     // Column definitions
     const columns: ColumnDefinition[] = [
         {
@@ -243,30 +99,38 @@ const BookingComponent = () => {
             id: "edit",
             label: "Edit",
             icon: <Edit className="h-4 w-4" />,
-            onClick: (row) => console.log("Edit", row),
+            onClick: (row) => {
+                setSelectedBooking(row._id)
+                // setOpen(true)
+                openDrawer('edit', row.clientName, row.clientProfileImage)
+            },
             variant: "ghost",
         },
         {
             id: "delete",
             label: "Delete",
-            icon: <Trash2 className="h-4 w-4" />,
-            onClick: (row) => console.log("Delete", row),
+            icon: <CircleX className="h-4 w-4" />,
+            onClick: (row) => {
+                setOpen(true)
+                setSelectedBooking(row._id)
+
+            },
             variant: "ghost",
             className: "text-destructive hover:text-destructive",
         },
     ]
 
-    const openDrawer = (type: 'book' | 'details' | 'career', name: string = '', profileImage: string = '') => {
+    const openDrawer = (type: 'book' | 'details' | 'edit', name: string = '', profileImage: string = '') => {
         setDrawerState({
             isOpen: true,
             type,
             avatar:
-                type === 'career'
+                type === 'edit'
                     ? ''
                     : type === 'book'
                         ? ''
                         : profileImage,
-            title: type === 'career' ? '' : type === 'book' ? 'Book Slot' : name + ' (Patient)'
+            title: type === 'edit' ? 'Edit Slot' : type === 'book' ? 'Book Slot' : name + ' (Patient)'
         });
     };
     const closeDrawer = () => {
@@ -302,13 +166,37 @@ const BookingComponent = () => {
         };
     }, [search]);
 
+    const handleCancelBooking = async (slotId: string) => {
+        loader.showLoader()
+        try {
+            const res = await apiCall<any>(adminClient, 'POST', '/slot/v1/update_slot_status',
+                {
+                    slotId,
+                    status: "cancel"
+                }
+            )
+            console.log(res);
+            // showSucessToast(res?.msg)
+            showPopup("Booking cancelled", "Your booking has been Cancelled");
+            updatePopupStatus("success", "Booking cancelled", "Your booking has been Cancelled", 4000);
+            getList()
+
+            // setData(res?.data)
+            // setTotalCount(res?.count)
+        } catch (error) {
+            console.error('Error setting role:', error)
+        } finally {
+            loader.hideLoader()
+        }
+    }
+
     const getList = async () => {
         loader.showLoader()
         try {
-            const res = await apiCall<any>(adminClient,'POST', '/slot/v1/get_slot',
+            const res = await apiCall<any>(adminClient, 'POST', '/slot/v1/get_slot',
                 {
-                    startDate: dayjs().subtract(2,"month").format('YYYY-MM-DD'),
-                    endDate: dayjs().add(2,"month").format('YYYY-MM-DD'),
+                    startDate: dayjs().subtract(2, "month").format('YYYY-MM-DD'),
+                    endDate: dayjs().add(2, "month").format('YYYY-MM-DD'),
                     page: currentPage,
                     limit: pageSize,
                     slotView: "list",
@@ -351,7 +239,12 @@ const BookingComponent = () => {
             <DataTable
                 data={data}
                 columns={columns}
-                actions={actions}
+                actions={(row) => {
+                    if (row.slotStatusLabel === "overdue" || row.slotStatusLabel === "cancel") {
+                        return [] // no actions for these rows
+                    }
+                    return actions // otherwise show default actions
+                }}
                 sortable={true}
                 paginated={true}
                 currentPage={currentPage}
@@ -379,8 +272,30 @@ const BookingComponent = () => {
                 {drawerState.type === 'book' ? <BookSlotContent onSuccess={() => {
                     closeDrawer();
                     getList();
+                }} /> : drawerState.type == 'edit' ? <BookSlotContent slotId={selectedBooking} onSuccess={() => {
+                    closeDrawer();
+                    getList();
                 }} /> : <BookingDetailsContent bookingId={selectedBooking} />}
             </SideDrawer>
+
+            <ConfirmModal
+                open={open}
+                title="Are you sure to cancel?"
+                message={
+                    <>
+                        This action <strong>cannot be undone</strong>. This will permanently cancel your slot.
+                    </>
+                }
+                confirmText="Confirm"
+                cancelText="Cancel"
+                tone="danger"
+                onConfirm={() => {
+                    // alert("Deleted!");
+                    handleCancelBooking(selectedBooking)
+                    setOpen(false);
+                }}
+                onCancel={() => setOpen(false)}
+            />
 
         </div>
 

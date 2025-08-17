@@ -36,7 +36,7 @@ export interface SortConfig {
 export interface DataTableProps {
     data: any[]
     columns: ColumnDefinition[]
-    actions?: TableAction[]
+    actions?: TableAction[] | ((row: any) => TableAction[])
     sortable?: boolean
     paginated?: boolean
     currentPage: number
@@ -153,10 +153,12 @@ export function DataTable({
                         {displayValue}
                     </Badge>
                 )
-            case "actions":
+            case "actions": {
+                const rowActions = typeof actions === "function" ? actions(row) : actions
+
                 return (
                     <div className="flex items-center gap-1">
-                        {actions.map((action, idx) => (
+                        {rowActions.map((action, idx) => (
                             <Button
                                 key={idx}
                                 variant={action.variant || "ghost"}
@@ -173,6 +175,7 @@ export function DataTable({
                         ))}
                     </div>
                 )
+            }
             case "date":
                 return new Date(value).toLocaleDateString()
             case "number":

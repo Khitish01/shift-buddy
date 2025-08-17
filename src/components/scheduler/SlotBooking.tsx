@@ -16,7 +16,7 @@ import { adminClient } from "@/lib/apiClient";
 interface BookSlotContentProps {
     // isOpen: boolean;
     onSuccess: () => void;
-    // title: string;
+    slotId?: string;
     // avatar: string
     // children: React.ReactNode;
     // width?: string;
@@ -24,7 +24,7 @@ interface BookSlotContentProps {
     // isBackButton?: boolean
 }
 
-export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) => {
+export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSuccess }) => {
     const { showPopup, updatePopupStatus } = usePopup();
     const [repeatModes, setRepeatModes] = useState<any[]>([])
     const [ndisTypes, setNdisTypes] = useState<any[]>([])
@@ -40,7 +40,8 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
     const [documents, setDocuments] = useState<File[]>([]);
     const [complianceDocuments, setComplianceDocuments] = useState<File[]>([]);
     const loader = useTopLoader();
-    const [multipleValue, setMultipleValue] = useState<string[]>([])
+    // const [multipleValue, setMultipleValue] = useState<string[]>([])
+    // const [slotDetails, setSlotDetails] = useState<any>()
     const [carerList, setCarerList] = useState<any[]>([])
     const durationInMinutes = 30;
     const [formData, setFormData] = useState({
@@ -109,7 +110,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
     const getRepeatMode = async () => {
         loader.showLoader()
         try {
-            const res = await apiCall<any>(adminClient,'GET', '/master/v1/get_repeat_mode')
+            const res = await apiCall<any>(adminClient, 'GET', '/master/v1/get_repeat_mode')
             console.log(res);
             setRepeatModes(res?.data)
             // setTotalCount(res?.total)
@@ -122,7 +123,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
     const getNdisType = async () => {
         loader.showLoader()
         try {
-            const res = await apiCall<any>(adminClient,'GET', '/master/v1/get_ndis')
+            const res = await apiCall<any>(adminClient, 'GET', '/master/v1/get_ndis')
             console.log(res);
             setNdisTypes(res?.data)
             // setTotalCount(res?.total)
@@ -175,6 +176,8 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
 
 
 
+
+
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newFiles = Array.from(event.target.files || []);
         const uniqueFiles = newFiles.filter(
@@ -222,6 +225,24 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
         //         medicalDoc: updatedDocuments
         //     }
         // }));
+    };
+    const handleRemoveMedicalDoc = (docUrl: string) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            documents: {
+                ...prev.documents,
+                medicalDoc: prev.documents.medicalDoc.filter((item: string) => item !== docUrl),
+            },
+        }));
+    };
+    const handleRemoveComplianceDoc = (docUrl: string) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            documents: {
+                ...prev.documents,
+                complianceDoc: prev.documents.complianceDoc.filter((item: string) => item !== docUrl),
+            },
+        }));
     };
     const handleComplianceRemove = (fileName: string) => {
         const updatedComplianceDocs = complianceDocuments.filter((doc) => doc.name !== fileName);
@@ -306,7 +327,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
             customSlotArray: formData.customSlotArray //provide the dates if repest Id is custom
         }
         try {
-            const res = await apiCall<any>(adminClient,'POST', '/carrier/v1/check_carrier_availability', payload)
+            const res = await apiCall<any>(adminClient, 'POST', '/carrier/v1/check_carrier_availability', payload)
             console.log(res);
             setCarerList(res?.data)
             // setTotalCount(res?.total)
@@ -426,8 +447,9 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
         };
     };
 
+
     const getClientDetails = async () => {
-        const res = await apiCall<any>(adminClient,'GET', `/client/v1/get_client/${clientId}`)
+        const res = await apiCall<any>(adminClient, 'GET', `/client/v1/get_client/${clientId}`)
         const mappedData = mapApiDataToForm(res.data);
         setAllergyTags(mappedData.medicalInfo.allergy)
         setMedicationTags(mappedData.medicalInfo.medicationAndTime)
@@ -435,6 +457,81 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
         console.log(res);
 
     }
+
+    const mapApiDataToFormForEdit = (apiData: any) => {
+        return {
+            clientId: apiData?.clientId,
+            carrierId: apiData.carrierId?._id,
+            startDate: apiData?.startDate,
+            endDate: apiData?.endDate,
+            startTime: apiData?.startTime,
+            endTime: apiData?.endTime,
+            duration: apiData?.duration,
+            repeatId: apiData?.repeatId,
+            dayOfWeek: apiData?.dayOfWeek,
+            dayOfMonth: apiData?.dayOfMonth,
+            customSlotArray: apiData?.customSlotArray,
+            personalInfo: {
+                name: apiData.personalInfo?.name || '',
+                gender: apiData.personalInfo?.gender || '',
+                dob: apiData.personalInfo?.dob ? dayjs(apiData.personalInfo.dob).format('YYYY-MM-DD') : '',
+                clientNotes: apiData.personalInfo?.clientNotes || '',
+                profileImage: apiData.personalInfo?.profileImage || '',
+                typeOfCare: apiData.personalInfo?.typeOfCare || '',
+                email: apiData.personalInfo?.email || '',
+                mobileNumber: apiData.personalInfo?.mobileNumber || ''
+            },
+            relationInfo: {
+                relativeName: apiData.relationInfo?.relativeName || '',
+                relativeRelation: apiData.relationInfo?.relativeRelation || '',
+                relativeNumber: apiData.relationInfo?.relativeNumber || ''
+            },
+            address: {
+                street: apiData.address?.street,
+                suburb: apiData.address?.suburb,
+                state: apiData.address?.state,
+                postCode: apiData.address?.postCode,
+                locationUrl: apiData.address?.locationUrl,
+            },
+            ndis: {
+                ndisNumber: apiData.ndis?.ndisNumber,
+                ndisType: apiData.ndis?.ndisType
+            },
+            documents: {
+                medicalDoc: apiData.documents?.medicalDoc || [],
+                complianceDoc: apiData.documents?.complianceDoc || []
+            },
+            medicalInfo: {
+                diagnoses: apiData.medicalInfo?.diagnoses || '',
+                allergy: apiData.medicalInfo?.allergy || [],
+                medicationAndTime: apiData.medicalInfo?.medicationAndTime || [],
+                mobilityNotes: apiData.medicalInfo?.mobilityNotes || '',
+                emergencyPlan: apiData.medicalInfo?.emergencyPlan || ''
+            }
+        };
+    };
+
+    const getSlotDetails = async () => {
+        loader.showLoader()
+        try {
+            const res = await apiCall<any>(adminClient, 'GET', `/slot/v1/get_slot_details/${slotId}`)
+            console.log(res);
+            // setSlotDetails(res?.data)
+            const mappedData = mapApiDataToFormForEdit(res.data);
+            setAllergyTags(mappedData.medicalInfo.allergy)
+            setMedicationTags(mappedData.medicalInfo.medicationAndTime)
+            setFormData(mappedData);
+            // setTotalCount(res?.total)
+        } catch (error) {
+            console.error('Error setting role:', error)
+        } finally {
+            loader.hideLoader()
+        }
+    }
+
+    useEffect(() => {
+        getSlotDetails()
+    }, [slotId])
 
 
 
@@ -447,10 +544,10 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                 const formDataMedical = new FormData();
                 documents.forEach(file => formDataMedical.append("file", file));
 
-                const res = await apiCall<any>(adminClient,"POST", "/doc/v1/upload_doc", formDataMedical);
+                const res = await apiCall<any>(adminClient, "POST", "/doc/v1/upload_doc", formDataMedical);
                 updatedData.documents = {
                     ...updatedData.documents,
-                    medicalDoc: res.documentId ?? [],
+                    medicalDoc: [...formData.documents.medicalDoc, ...res.documentId],
                 };
             }
 
@@ -459,10 +556,10 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                 const formDataCompliance = new FormData();
                 complianceDocuments.forEach(file => formDataCompliance.append("file", file));
 
-                const res = await apiCall<any>(adminClient,"POST", "/doc/v1/upload_doc", formDataCompliance);
+                const res = await apiCall<any>(adminClient, "POST", "/doc/v1/upload_doc", formDataCompliance);
                 updatedData.documents = {
                     ...updatedData.documents,
-                    complianceDoc: res.documentId ?? [],
+                    complianceDoc: [...formData.documents.complianceDoc, ...res.documentId],
                 };
             }
 
@@ -471,7 +568,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                 const formDataProfile = new FormData();
                 formDataProfile.append("file", profileImage);
 
-                const res = await apiCall<any>(adminClient,"POST", "/doc/v1/upload_doc", formDataProfile);
+                const res = await apiCall<any>(adminClient, "POST", "/doc/v1/upload_doc", formDataProfile);
                 updatedData.personalInfo = {
                     ...updatedData.personalInfo,
                     profileImage: Array.isArray(res.documentId) ? res.documentId[0] : res.documentId,
@@ -497,11 +594,22 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
             const updatedFormData = await uploadDocuments();
             updatedFormData['status'] = true;
 
-            // Create client
-            const res = await apiCall<any>(adminClient,"POST", "/client/v1/create_client", updatedFormData);
-            console.log(res);
+            if (slotId) {
 
-            updatePopupStatus("success", "Booking Confirmed!", "Your booking has been confirmed!", 4000);
+                updatedFormData['allSlot'] = "false";
+                updatedFormData['slotId'] = slotId;
+
+                const res = await apiCall<any>(adminClient, "POST", "/slot/v1/update_slot", updatedFormData);
+                console.log(res);
+                updatePopupStatus("success", "Booking Updated!", "Your booking has been updated!", 4000);
+            } else {
+
+                const res = await apiCall<any>(adminClient, "POST", "/client/v1/create_client", updatedFormData);
+                console.log(res);
+                updatePopupStatus("success", "Booking Confirmed!", "Your booking has been confirmed!", 4000);
+            }
+            // Create client
+
             onSuccess();
         } catch (error) {
             console.error("Error booking:", error);
@@ -582,21 +690,28 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                                     onClick={handleClick}
                                     className="block"
                                 >
-                                    {!profileImage ? (
+                                    {!profileImage && !formData.personalInfo.profileImage ? (
+                                        // --- Upload UI ---
                                         <div
-                                            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block">
+                                            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block"
+                                        >
                                             <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                                             <p className="text-sm text-gray-600">Click to Upload</p>
                                             <p className="text-xs text-gray-500">(Max file size: 25 MB)</p>
                                         </div>
-
                                     ) : (
+                                        // --- Image Preview ---
                                         <img
-                                            src={previewUrl}
+                                            src={
+                                                profileImage
+                                                    ? previewUrl // newly uploaded in Add/Edit
+                                                    : formData.personalInfo.profileImage // existing image in Edit
+                                            }
                                             alt="Preview"
                                             className="h-36 w-36 object-contain"
                                         />
                                     )}
+
                                 </label>
                             </div>
 
@@ -1217,6 +1332,25 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Medical Document</label>
                                     <div className="flex flex-wrap gap-2 mb-2">
+                                        {formData.documents.medicalDoc.map((url: string, index: number) => {
+                                            // Extract filename from URL
+                                            const fileName = url.split("/").pop() || "unknown-file";
+
+                                            return (
+                                                <span
+                                                    key={index}
+                                                    className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium"
+                                                >
+                                                    📄 {fileName}
+                                                    <button
+                                                        onClick={() => handleRemoveMedicalDoc(url)}
+                                                        className="ml-2 text-blue-600 hover:text-blue-800"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </span>
+                                            );
+                                        })}
                                         {documents.map((file, index) => (
                                             <span key={index} className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
                                                 📄 {file.name}
@@ -1258,6 +1392,25 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ onSuccess }) =
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">Medical Document</label>
                             <div className="flex flex-wrap gap-2 mb-2">
+                                {formData.documents.complianceDoc.map((url: string, index: number) => {
+                                    // Extract filename from URL
+                                    const fileName = url.split("/").pop() || "unknown-file";
+
+                                    return (
+                                        <span
+                                            key={index}
+                                            className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium"
+                                        >
+                                            📄 {fileName}
+                                            <button
+                                                onClick={() => handleRemoveComplianceDoc(url)}
+                                                className="ml-2 text-blue-600 hover:text-blue-800"
+                                            >
+                                                ×
+                                            </button>
+                                        </span>
+                                    );
+                                })}
                                 {complianceDocuments.map((file, index) => (
                                     <span key={index} className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
                                         📄 {file.name}

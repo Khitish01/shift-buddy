@@ -11,6 +11,8 @@ import { AddCarer } from "./AddCarer";
 import CarerProfilePage from "./CareerProfile";
 import CalendarPage from "./CarrerprofileDetails";
 import { adminClient } from "@/lib/apiClient";
+import { ConfirmModal } from "../common/ConfirmModal";
+import { usePopup } from "@/context/PopupContext";
 // const sampleData = [
 //     {
 //         id: '000989',
@@ -170,6 +172,10 @@ const CarrierComponent = () => {
     const [pageSize, setPageSize] = useState(10)
     const [totalCount, setTotalCount] = useState(0)
     const [sortConfig, setSortConfig] = useState<SortConfig | null>(null)
+
+    // const [selectedCarrier, setselectedCarrier] = useState<any>();
+    const [open, setOpen] = useState(false);
+    const { showPopup, updatePopupStatus } = usePopup();
     // Column definitions
     const columns: ColumnDefinition[] = [
         {
@@ -234,25 +240,32 @@ const CarrierComponent = () => {
         {
             id: "view",
             label: "View",
-            icon: <Eye className="h-4 w-4" />,
-            onClick: (row) => console.log("View", row),
+            icon: <Ban className="h-4 w-4 text-gray-500" />,
+            onClick: (row) => {
+                setOpen(true)
+                setSelectedCarrier(row)
+            },
             variant: "ghost",
         },
         {
             id: "edit",
             label: "Edit",
-            icon: <Edit className="h-4 w-4" />,
-            onClick: (row) => console.log("Edit", row),
+            icon: <Edit className="h-4 w-4 " />,
+            onClick: (row) => {
+                setSelectedCarrier(row)
+                // setOpen(true)
+                openDrawer('edit')
+            },
             variant: "ghost",
         },
-        {
-            id: "delete",
-            label: "Delete",
-            icon: <Trash2 className="h-4 w-4" />,
-            onClick: (row) => console.log("Delete", row),
-            variant: "ghost",
-            className: "text-destructive hover:text-destructive",
-        },
+        // {
+        //     id: "delete",
+        //     label: "Delete",
+        //     icon: <Trash2 className="h-4 w-4" />,
+        //     onClick: (row) => console.log("Delete", row),
+        //     variant: "ghost",
+        //     className: "text-destructive hover:text-destructive",
+        // },
     ]
     const handlePageChange = (page: number) => {
         setCurrentPage(page)
@@ -266,6 +279,27 @@ const CarrierComponent = () => {
     const handleSortChange = (newSortConfig: SortConfig | null) => {
         setSortConfig(newSortConfig)
         setCurrentPage(1) // Reset to first page when sorting changes
+    }
+
+    const handleStatusUpdate = async (carrierId: string) => {
+
+        loader.showLoader()
+        try {
+            const res = await apiCall<any>(adminClient, 'POST', '/carrier/v1/update_carrier_status', { carrierId })
+
+            console.log(res);
+
+            showPopup(`Carer ${selectedCarrier.status ? 'Deactivated' : 'Activated'}`, `This carer has been ${selectedCarrier.status ? 'deactivated' : 'activated'}`);
+            updatePopupStatus("success", `Carer ${selectedCarrier.status ? 'Deactivated' : 'Activated'}`, `This carer has been ${selectedCarrier.status ? 'deactivated' : 'activated'}`, 4000);
+            getList()
+
+        } catch (error) {
+            console.error('Error setting role:', error)
+            showPopup(`Something went wrong`, `This carer has not been ${selectedCarrier.status ? 'deactivated' : 'activated'}`);
+            updatePopupStatus("error", `Something went wrong`, `This carer has not been ${selectedCarrier.status ? 'deactivated' : 'activated'}`, 4000);
+        } finally {
+            loader.hideLoader()
+        }
     }
 
 
@@ -284,7 +318,7 @@ const CarrierComponent = () => {
     const getList = async () => {
         loader.showLoader()
         try {
-            const res = await apiCall<any>(adminClient,'POST', '/carrier/v1/carrier_list', {
+            const res = await apiCall<any>(adminClient, 'POST', '/carrier/v1/carrier_list', {
                 "search": search,
                 "sortBy": "",
                 "sortOrder": "",
@@ -305,7 +339,7 @@ const CarrierComponent = () => {
     }, [currentPage, pageSize, debouncedSearch])
     const [drawerState, setDrawerState] = useState({
         isOpen: false,
-        type: 'book', // 'book' or 'details' or 'career'
+        type: 'create', // 'create' or 'edit' or 'career'
         avatar: '',
         title: ''
     });
@@ -317,17 +351,17 @@ const CarrierComponent = () => {
     };
     const [selectedCarrier, setSelectedCarrier] = useState<any>();
     const [calenderDrawer, setCalenderDrawer] = useState<boolean>(false);
-    const openDrawer = (type: 'book' | 'details' | 'career', name: string = '', profileImage: string = '') => {
+    const openDrawer = (type: 'create' | 'edit' | 'career', name: string = '', profileImage: string = '') => {
         setDrawerState({
             isOpen: true,
             type,
             avatar:
                 type === 'career'
                     ? ''
-                    : type === 'book'
+                    : type === 'create'
                         ? ''
                         : profileImage,
-            title: type === 'career' ? '' : type === 'book' ? 'Staff/Carer Onboarding' : name
+            title: type === 'career' ? '' : type === 'create' ? 'Staff/Carer Onboarding' : 'Edit Staff/Carer'
         });
     };
     const closeDrawer = () => {
@@ -348,7 +382,7 @@ const CarrierComponent = () => {
                     <Input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
                     <button className="bg-primary w-[75%] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-900"
                         style={{ boxShadow: '0px 1px 2px 0px #1018280D' }}
-                        onClick={() => openDrawer('book')}
+                        onClick={() => openDrawer('create')}
                     >
                         <Plus size={16} />
                         <span>Add Carrier</span>
@@ -356,32 +390,6 @@ const CarrierComponent = () => {
                 </div>
             </div>
 
-            {/* <DataTable
-                data={data}
-                columns={columns}
-                actions={[]}
-                searchable={false}
-                searchPlaceholder="Search employees..."
-                sortable={true}
-                pagination={true} // Pagination is enabled
-                pageSize={5}
-                loading={loading}
-                emptyMessage="No employees found. Add some employees to get started."
-                className="bg-white rounded-lg p-4"
-            /> */}
-
-            {/* <DataTable
-                data={data}
-                columns={columns}
-                actions={actions}
-                sortable={true}
-                paginated={true}
-                pageSize={5}
-                pageSizeOptions={[5, 10, 20, 50]}
-                onRowClick={(row) => console.log("Row clicked:", row)}
-                emptyMessage="No carers found"
-                currentPage={1}
-                totalCount={3} /> */}
             <DataTable
                 data={data}
                 columns={columns}
@@ -412,10 +420,13 @@ const CarrierComponent = () => {
                 avatar={drawerState.avatar}
                 title={drawerState.title}
             >
-                {drawerState.type === 'book' ? <AddCarer onSuccess={() => {
+                {drawerState.type === 'create' ? <AddCarer onSuccess={() => {
                     closeDrawer();
                     getList();
-                }} /> : <CarerProfilePage carrierId={selectedCarrier.carrierId} OpenCalendarView={() => setCalenderDrawer(true)} />}
+                }} /> : drawerState.type == 'edit' ? <AddCarer carerId={selectedCarrier?.carrierId} onSuccess={() => {
+                    closeDrawer();
+                    getList();
+                }} /> : <CarerProfilePage carrierId={selectedCarrier.carrierId} OpenEditView={() => openDrawer('edit')} OpenCalendarView={() => setCalenderDrawer(true)} />}
             </SideDrawer>
             <SideDrawer
                 isOpen={calenderDrawer}
@@ -426,6 +437,25 @@ const CarrierComponent = () => {
             >
                 <CalendarPage carrierId={selectedCarrier?._id} carrierName={selectedCarrier?.name} />
             </SideDrawer>
+
+            <ConfirmModal
+                open={open}
+                title={`Are you sure to ${selectedCarrier?.status ? 'Deactivate' : 'Activate'}?`}
+                message={
+                    <>
+                        {/* This action <strong>cannot be undone</strong>. This will permanently cancel your slot. */}
+                    </>
+                }
+                confirmText="Confirm"
+                cancelText="Cancel"
+                tone="danger"
+                onConfirm={() => {
+                    // alert("Deleted!");
+                    handleStatusUpdate(selectedCarrier._id)
+                    setOpen(false);
+                }}
+                onCancel={() => setOpen(false)}
+            />
 
         </div>
 

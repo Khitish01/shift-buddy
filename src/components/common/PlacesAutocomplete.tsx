@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { LoadScript, StandaloneSearchBox } from "@react-google-maps/api";
+import { StandaloneSearchBox } from "@react-google-maps/api";
 
-const libraries: ("places")[] = ["places"];
 
 export default function StreetAutocomplete({ formData, setFormData }: any) {
     const [searchBox, setSearchBox] = useState<google.maps.places.SearchBox | null>(null);
@@ -28,6 +27,7 @@ export default function StreetAutocomplete({ formData, setFormData }: any) {
         let suburb = "";
         let state = "";
         let postCode = "";
+        let postalCode = "";
 
         place.address_components.forEach((component) => {
             const types = component.types;
@@ -45,6 +45,7 @@ export default function StreetAutocomplete({ formData, setFormData }: any) {
             }
             if (types.includes("postal_code")) {
                 postCode = component.long_name;
+                postalCode = component.long_name;
             }
         });
 
@@ -60,6 +61,7 @@ export default function StreetAutocomplete({ formData, setFormData }: any) {
                 suburb,
                 state,
                 postCode,
+                postalCode,
                 locationUrl: place.place_id
                     ? `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
                     : place?.url,
@@ -68,25 +70,21 @@ export default function StreetAutocomplete({ formData, setFormData }: any) {
     };
 
     return (
-        <LoadScript
-            googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_API_KEY as string}
-            libraries={libraries}
-        >
-            <StandaloneSearchBox onLoad={onLoad} onPlacesChanged={onPlacesChanged}>
-                <input
-                    type="text"
-                    placeholder="Enter street"
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none 
+
+        <StandaloneSearchBox onLoad={onLoad} onPlacesChanged={onPlacesChanged}>
+            <input
+                type="text"
+                placeholder="Enter street"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none 
           ${error ? "border-red-500" : "border-gray-300 focus:border-purple-500"}`}
-                    value={formData.address.street}
-                    onChange={(e) =>
-                        setFormData((prev: any) => ({
-                            ...prev,
-                            address: { ...prev.address, street: e.target.value },
-                        }))
-                    }
-                />
-            </StandaloneSearchBox>
-        </LoadScript>
+                value={formData.address.street}
+                onChange={(e) =>
+                    setFormData((prev: any) => ({
+                        ...prev,
+                        address: { ...prev.address, street: e.target.value },
+                    }))
+                }
+            />
+        </StandaloneSearchBox>
     );
 }

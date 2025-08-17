@@ -44,7 +44,7 @@ const BookingComponent = () => {
         },
         {
             key: "clientName",
-            label: "Percipient/ Client Name ",
+            label: "Participant/ Client Name ",
             type: "text",
             sortable: false,
             width: "200px",
@@ -70,7 +70,7 @@ const BookingComponent = () => {
         },
         {
             key: "clientPhone",
-            label: "Parcipient Mobile",
+            label: "Participant Mobile",
             type: "text",
             sortable: false,
         },
@@ -185,6 +185,8 @@ const BookingComponent = () => {
             // setTotalCount(res?.count)
         } catch (error) {
             console.error('Error setting role:', error)
+            showPopup(`Something went wrong`, `Your booking has not been Cancelled`);
+            updatePopupStatus("error", `Something went wrong`, `Your booking has not been Cancelled`, 4000);
         } finally {
             loader.hideLoader()
         }

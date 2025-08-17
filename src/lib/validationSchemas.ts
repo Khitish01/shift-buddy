@@ -40,4 +40,26 @@ export const fieldSchemas: Record<string, z.ZodTypeAny> = {
     "address.postCode": z.string().regex(/^[0-9]{4,6}$/, "Postcode must be 4–6 digits"),
     "ndis.ndisNumber": z.string().min(5, "NDIS number is required"),
     "ndis.ndisType": z.string().min(1, "NDIS type is required"),
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    "carer.shiftTiming": z.string().min(1, "Shift timing is required"),
+    "carer.employementType": z.string().min(1, "Employement Type is required"),
+    "additionalDetails.taxFileNumber": z.string().min(1, "Tax File no. is required"),
+    "additionalDetails.AbnNumber": z.string().min(1, "ABN no. is required"),
+    "additionalDetails.workersScreeningCheck": z.string().min(1, "Worker Screening Check is required"),
+    "additionalDetails.workingWithChildernCheck": z.string().min(1, "Select Worker Childern Check"),
+    "additionalDetails.policeCheck": z.string().min(1, "Select Policy check"),
+    "additionalDetails.firstAid": z.string().min(1, "Select First Aid"),
+    "vehicle": z.string().min(1, "Select Vehicle"),
+    "createEmail": z.string().email("Invalid email"),
+    "receiverEmail": z.string().email("Invalid email"),
+    "password": z.string().min(6, "Password is required"),
+    "confirmPass": z.string().min(6, "Confirm Password is required"),
 };

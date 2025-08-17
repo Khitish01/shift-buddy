@@ -1377,8 +1377,8 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
 
                         {/* Book Button */}
                         <div className="flex justify-end">
-                            <button onClick={uploadDocuments} className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-purple-800">
-                                Book Slot
+                            <button onClick={() => setActiveTab('complianceDoc')} className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-purple-800">
+                                Continue
                             </button>
                         </div>
                     </div>

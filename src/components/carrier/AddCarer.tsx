@@ -8,83 +8,24 @@ import { DateInput } from "../common/date-input";
 import dayjs from "dayjs";
 import { DocumentUploadIcon } from "@/app/images";
 import { adminClient } from "@/lib/apiClient";
+import { fieldSchemas } from "@/lib/validationSchemas";
+import { ValidatedInput } from "../ui/ValidatedInput";
+import { ValidatedSelect } from "../ui/ValidatedSelect";
+import PlacesAutocomplete from "../common/PlacesAutocomplete";
 
 interface CarerProps {
     onSuccess: () => void;
+    carerId?: string;
 }
 
-export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
+export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
     const { showPopup, updatePopupStatus } = usePopup();
-    const [repeatModes, setRepeatModes] = useState<any[]>([])
     const [activeTab, setActiveTab] = useState('personal');
-    const [allergyInput, setAllergyInput] = useState("");
-    const [allergyTags, setAllergyTags] = useState(["POIJ", "IBM-N"]);
-    const [medication, setMedication] = useState("");
-    const [medicationTags, setMedicationTags] = useState(['IBM 60 - M', 'IBM 100-N']);
     const [profileImage, setProfileImage] = useState<File>();
-    const documentRef = useRef<HTMLInputElement | null>(null);
-    const complianceDocumentRef = useRef<HTMLInputElement | null>(null);
     const [documentsPolicyCheck, setDocumentsPolicyCheck] = useState<File | null>();
     const [documentsFirstAid, setDocumentsFirstAid] = useState<File | null>();
+    const [ndisTypes, setNdisTypes] = useState<any[]>([])
     const loader = useTopLoader();
-    // const [formData, setFormData] = useState({
-    //     clientId: '',
-    //     // carrierId: '',
-    //     // startDate: dayjs().format('YYYY-MM-DD'),
-    //     createEmail: '',
-    //     password: '',
-    //     confirmPass: '',
-    //     vehicle: '10:00',
-    //     employmentType: '',
-    //     shiftTiming: '',
-    //     // dayOfWeek: dayjs().day(), //weekday number
-    //     // dayOfMonth: dayjs().get('D'), //date of month
-    //     // customSlotArray: [] as string[],
-    //     personalInfo: {
-    //         name: '',
-    //         gender: '',
-    //         dob: '',
-    //         // clientNotes: '',
-    //         profileImage: '',
-    //         typeOfCare: '',
-    //         email: '',
-    //         mobileNumber: ''
-    //     },
-    //     relationInfo: {
-    //         relativeName: '',
-    //         relativeRelation: '',
-    //         relativeNumber: ''
-    //     },
-    //     address: {
-    //         street: '',
-    //         suburb: '',
-    //         state: '',
-    //         postCode: ''
-    //     },
-    //     ndis: {
-    //         ndisNumber: '89000000122',
-    //         ndisType: 'NDIS Participant (NDIS)'
-    //     },
-    //     documents: {
-    //         medicalDoc: [],
-    //         complianceDoc: []
-    //     },
-    //     additionalDetails: {
-    //         taxFileNumber: "test",
-    //         AbnNumber: "test",
-    //         workersScreeningCheck: "test",
-    //         workingWithChildernCheck: "test",
-    //         policeCheck: "test",
-    //         firstAid: "test"
-    //     },
-    //     medicalInfo: {
-    //         diagnoses: 'sdfsdfs',
-    //         allergy: allergyTags,
-    //         medicationAndTime: medicationTags,
-    //         mobilityNotes: 'asfasfasf',
-    //         emergencyPlan: 'gfghdfhdf'
-    //     }
-    // });
     const [formData, setFormData] = useState({
         profileImage: "",
         email: "",
@@ -102,8 +43,8 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
         contactDetails: {
 
             emergencyContactNumber: "",
-            FamilyMemberName: "",
-            familymemberRelation: ""
+            familyMemberName: "",
+            familyMemberRelation: ""
         },
         address: {
             street: "",
@@ -135,11 +76,85 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
         }
 
     });
-    const [showAll, setShowAll] = useState(false);
+    const [carerDetails, setCarerDetails] = useState<any>();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const fileInputPolicyCheckRef = useRef<HTMLInputElement>(null);
     const fileInputFirstAidRef = useRef<HTMLInputElement>(null);
+
+
+    const mapApiDataToFormForEdit = (apiData: any) => {
+        return {
+            profileImage: apiData?.profileImage,
+            email: apiData?.email,
+            mobileNumber: apiData?.mobileNumber,
+            DOB: dayjs(apiData?.DOB).format('YYYY-MM-DD'),
+            name: apiData?.name,
+            gender: apiData?.gender,
+            receiverEmail: apiData?.receiverEmail,
+            createEmail: apiData?.createEmail,
+            password: apiData?.password,
+            confirmPass: apiData?.password,
+            shiftTiming: apiData?.shiftTiming,
+            employementType: apiData?.employementType,
+            vehicle: apiData?.vehicle,
+            contactDetails: {
+
+                emergencyContactNumber: apiData?.contactDetails?.emergencyContactNumber,
+                familyMemberName: apiData?.contactDetails?.familyMemberName,
+                familyMemberRelation: apiData?.contactDetails?.familyMemberRelation
+            },
+            address: {
+                street: apiData?.address?.street,
+                suburb: apiData?.address?.suburb,
+                state: apiData?.address?.state,
+                postalCode: apiData?.address?.postalCode
+            },
+            ndis: {
+                ndisNumber: apiData?.ndis?.ndisNumber,
+                ndisType: apiData?.ndis?.ndisType
+            },
+            additionalDetails: {
+                taxFileNumber: apiData?.additionalDetails?.taxFileNumber,
+                AbnNumber: apiData?.additionalDetails?.AbnNumber,
+                workersScreeningCheck: apiData?.additionalDetails?.workersScreeningCheck,
+                workingWithChildernCheck: apiData?.additionalDetails?.workingWithChildernCheck,
+                policeCheck: apiData?.additionalDetails?.policeCheck,
+                firstAid: apiData?.additionalDetails?.firstAid
+            },
+            documents: {
+                uploadPoliceCheck: {
+                    docId: apiData?.documents?.uploadPoliceCheck?.docId,
+                    expiryDate: apiData?.documents?.uploadPoliceCheck?.expiryDate
+                },
+                uploadFirstAidCertificate: {
+                    docId: apiData?.documents?.uploadFirstAidCertificate?.docId,
+                    expiryDate: apiData?.documents?.uploadFirstAidCertificate?.expiryDate
+                }
+            }
+
+        };
+    };
+
+    const getCarerDetails = async () => {
+        loader.showLoader()
+        try {
+            const res = await apiCall<any>(adminClient, 'POST', `/carrier/v1/carrier_details`, { carrierId: carerId })
+            console.log(res);
+            // setSlotDetails(res?.data)
+            const mappedData = mapApiDataToFormForEdit(res.data);
+            setFormData(mappedData);
+            // setTotalCount(res?.total)
+        } catch (error) {
+            console.error('Error setting role:', error)
+        } finally {
+            loader.hideLoader()
+        }
+    }
+
+    useEffect(() => {
+        getCarerDetails()
+    }, [carerId])
     const handleInputChange = (section: string, updatedValue: any) => {
         setFormData((prev) => ({
             ...prev,
@@ -187,7 +202,23 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
             setDocumentsPolicyCheck(newFiles);
         }
     }
-
+    const getNdisType = async () => {
+        loader.showLoader()
+        try {
+            const res = await apiCall<any>(adminClient, 'GET', '/master/v1/get_ndis')
+            console.log(res);
+            setNdisTypes(res?.data)
+            // setTotalCount(res?.total)
+        } catch (error) {
+            console.error('Error setting role:', error)
+        } finally {
+            loader.hideLoader()
+        }
+    }
+    useEffect(() => {
+        // getRepeatMode()
+        getNdisType()
+    }, [])
 
     const uploadDocuments = async () => {
         const updatedData: any = { ...formData }; // local copy
@@ -200,7 +231,7 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
 
                 formData.append('file', documentsPolicyCheck);
                 // }
-                const res = await apiCall<any>(adminClient,'POST', '/doc/v1/upload_doc', formData)
+                const res = await apiCall<any>(adminClient, 'POST', '/doc/v1/upload_doc', formData)
                 console.log('medical documents', res);
                 updatedData.documents = {
                     ...updatedData.documents,
@@ -222,7 +253,7 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
 
                 formData.append('file', documentsFirstAid);
                 // }
-                const res = await apiCall<any>(adminClient,'POST', '/doc/v1/upload_doc', formData)
+                const res = await apiCall<any>(adminClient, 'POST', '/doc/v1/upload_doc', formData)
                 console.log('compliance documents', res);
                 updatedData.documents = {
                     ...updatedData.documents,
@@ -238,7 +269,7 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                 const formDataProfile = new FormData();
                 formDataProfile.append("file", profileImage);
 
-                const res = await apiCall<any>(adminClient,"POST", "/doc/v1/upload_doc", formDataProfile);
+                const res = await apiCall<any>(adminClient, "POST", "/doc/v1/upload_doc", formDataProfile);
                 updatedData.profileImage = Array.isArray(res.documentId) ? res.documentId[0] : res.documentId
             }
 
@@ -263,9 +294,17 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
             const updatedFormData = await uploadDocuments();
             delete updatedFormData.confirmPass
             delete updatedFormData.vehicle
-            const res = await apiCall<any>(adminClient,'POST', '/carrier/v1/create_carrier', updatedFormData)
-            console.log(res)
-            updatePopupStatus('success', 'Booking Confirmed!', "Your booking has been confirmed!", 4000); // Optional message & duration
+            if (carerId) {
+                updatedFormData["carrierId"] = carerId
+
+                const res = await apiCall<any>(adminClient, 'POST', '/carrier/v1/update_carrier', updatedFormData)
+                updatePopupStatus('success', 'Carer Updated!', "Carer has been updated successfully!", 4000); // Optional message & duration
+            } else {
+
+                const res = await apiCall<any>(adminClient, 'POST', '/carrier/v1/create_carrier', updatedFormData)
+                updatePopupStatus('success', 'Carer Onboarded!', "Carer has been onboarded successfully!", 4000); // Optional message & duration
+            }
+            // console.log(res)
             onSuccess();
         } catch (error) {
             console.error('Error setting role:', error)
@@ -329,16 +368,26 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Upload Pic</label>
                                     <input type="file" onChange={handleProfileChange} hidden ref={fileInputRef} />
                                     <label onClick={handleClick} className="block">
-                                        {!profileImage ? (
-                                            <div className="border-2 flex flex-col justify-center items-center border-dashed border-gray-300 rounded-lg p-6  cursor-pointer">
-                                                <div className="bg-[#F5F5F5] p-3 rounded-full mb-2 ">
-                                                    <DocumentUploadIcon />
-                                                </div>
+                                        {!profileImage && !formData.profileImage ? (
+                                            // --- Upload UI ---
+                                            <div
+                                                className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block"
+                                            >
+                                                <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                                                 <p className="text-sm text-gray-600">Click to Upload</p>
-                                                <p className="text-xs text-gray-500">(Max. File size: 25 MB)</p>
+                                                <p className="text-xs text-gray-500">(Max file size: 25 MB)</p>
                                             </div>
                                         ) : (
-                                            <img src={previewUrl} alt="Preview" className="h-36 w-36 object-contain" />
+                                            // --- Image Preview ---
+                                            <img
+                                                src={
+                                                    profileImage
+                                                        ? previewUrl // newly uploaded in Add/Edit
+                                                        : formData.profileImage // existing image in Edit
+                                                }
+                                                alt="Preview"
+                                                className="h-36 w-36 object-contain"
+                                            />
                                         )}
                                     </label>
                                 </div>
@@ -354,12 +403,13 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                         selectionMode={'single'}
                                         readonly={true}
                                         placeholder="Click to select date via calendar"
+                                        schema={fieldSchemas["personalInfo.dob"]}
                                     />
                                 </div>
 
                                 {/* Name */}
                                 <div className="">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
                                     <input
                                         type="text"
                                         value={formData.name}
@@ -367,12 +417,21 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                             setFormData({ ...formData, name: e.target.value })
                                         }
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    /> */}
+                                    <ValidatedInput
+                                        label="Name"
+                                        value={formData.name}
+                                        onChange={(val) =>
+                                            setFormData({ ...formData, name: val })
+                                        }
+                                        schema={fieldSchemas["personalInfo.name"]}
+                                        path="personalInfo.name"
                                     />
                                 </div>
 
                                 {/* Gender */}
                                 <div className="">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
                                     <select
                                         value={formData.gender}
                                         onChange={(e) =>
@@ -383,12 +442,27 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                         <option value="Other">Other</option>
-                                    </select>
+                                    </select> */}
+                                    <ValidatedSelect
+                                        label="Gender"
+                                        value={formData.gender}
+                                        onChange={(val) =>
+                                            setFormData({ ...formData, gender: val })
+                                        }
+                                        schema={fieldSchemas["personalInfo.gender"]}
+                                        path="personalInfo.gender"
+                                        options={[
+                                            { label: "Select gender", value: "" },
+                                            { label: "Male", value: "Male" },
+                                            { label: "Female", value: "Female" },
+                                            { label: "Other", value: "Other" },
+                                        ]}
+                                    />
                                 </div>
 
                                 {/* Shift Timing */}
                                 <div className="">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Shift Timing</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">Shift Timing</label>
                                     <select
                                         value={formData.shiftTiming}
                                         onChange={(e) =>
@@ -397,12 +471,27 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                                     >
                                         <option value="Morning Shift">Morning Shift</option>
-                                    </select>
+                                    </select> */}
+
+                                    <ValidatedSelect
+                                        label="Shift Timing"
+                                        value={formData.shiftTiming}
+                                        onChange={(val) =>
+                                            setFormData({ ...formData, shiftTiming: val })
+                                        }
+                                        schema={fieldSchemas["carer.shiftTiming"]}
+                                        path="carer.shiftTiming"
+                                        options={[
+                                            { label: "Select Shift Timing", value: "" },
+                                            { label: "Morning Shift", value: "Morning Shift" },
+
+                                        ]}
+                                    />
                                 </div>
 
                                 {/* Employment Type */}
                                 <div className="">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Employment Type</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">Employment Type</label>
                                     <select
                                         value={formData.employementType}
                                         onChange={(e) =>
@@ -411,13 +500,28 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                                     >
                                         <option value="Full Time">Full Time</option>
-                                    </select>
+                                    </select> */}
+
+                                    <ValidatedSelect
+                                        label="Employment Type"
+                                        value={formData.employementType}
+                                        onChange={(val) =>
+                                            setFormData({ ...formData, employementType: val })
+                                        }
+                                        schema={fieldSchemas["carer.employementType"]}
+                                        path="carer.employementType"
+                                        options={[
+                                            { label: "Select Employment Type", value: "" },
+                                            { label: "Full Time", value: "Full Time" },
+
+                                        ]}
+                                    />
                                 </div>
 
                                 {/* NDIS */}
                                 <h3 className="text-lg font-medium text-gray-900 mt-6 ">NDIS</h3>
                                 <div className="">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">NDIS No.</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">NDIS No.</label>
                                     <input
                                         type="text"
                                         value={formData.ndis.ndisNumber}
@@ -425,10 +529,20 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                             handleInputChange('ndis', { ...formData.ndis, ndisNumber: e.target.value })
                                         }
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    /> */}
+
+                                    <ValidatedInput
+                                        label="NDIS No."
+                                        value={formData.ndis.ndisNumber}
+                                        onChange={(val) =>
+                                            handleInputChange('ndis', { ...formData.ndis, ndisNumber: val })
+                                        }
+                                        schema={fieldSchemas["ndis.ndisNumber"]}
+                                        path="ndis.ndisNumber"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">NDIS types</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">NDIS types</label>
                                     <select
                                         value={formData.ndis.ndisType}
                                         onChange={(e) =>
@@ -437,7 +551,22 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                                     >
                                         <option value="NDIS Participant (NDIS)">NDIS Participant (NDIS)</option>
-                                    </select>
+                                    </select> */}
+
+
+                                    <ValidatedSelect
+                                        label="NDIS types"
+                                        value={formData.ndis.ndisType}
+                                        onChange={(val) =>
+                                            handleInputChange('ndis', { ...formData.ndis, ndisType: val })
+                                        }
+                                        schema={fieldSchemas["ndis.ndisType"]}
+                                        path="ndis.ndisType"
+                                        options={[{ label: "Select NDIS Type", value: "" },].concat(ndisTypes.map((ndis: any) => ({
+                                            label: ndis.ndisType,
+                                            value: ndis._id,
+                                        })))}
+                                    />
                                 </div>
                             </div>
 
@@ -447,7 +576,7 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
 
                                 {/* Email */}
                                 <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Email ID</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">Email ID</label>
                                     <input
                                         type="email"
                                         value={formData.email}
@@ -455,12 +584,22 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                             setFormData({ ...formData, email: e.target.value })
                                         }
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    /> */}
+                                    <ValidatedInput
+                                        label="Email ID"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(val) =>
+                                            setFormData({ ...formData, email: val })
+                                        }
+                                        schema={fieldSchemas["personalInfo.email"]}
+                                        path="personalInfo.email"
                                     />
                                 </div>
 
                                 {/* Phone */}
                                 <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone No.</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">Phone No.</label>
                                     <input
                                         type="tel"
                                         value={formData.mobileNumber}
@@ -468,12 +607,22 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                             setFormData({ ...formData, mobileNumber: e.target.value })
                                         }
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                        /> */}
+                                    <ValidatedInput
+                                        label="Phone No."
+                                        type="tel"
+                                        value={formData.mobileNumber}
+                                        onChange={(val) =>
+                                            setFormData({ ...formData, mobileNumber: val })
+                                        }
+                                        schema={fieldSchemas["personalInfo.mobileNumber"]}
+                                        path="personalInfo.mobileNumber"
                                     />
                                 </div>
 
                                 {/* Emergency Contact */}
                                 <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Contact Number</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Contact Number</label>
                                     <input
                                         type="tel"
                                         value={formData.contactDetails.emergencyContactNumber}
@@ -481,38 +630,66 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                             handleInputChange('contactDetails', { ...formData.contactDetails, emergencyContactNumber: e.target.value })
                                         }
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                        /> */}
+                                    <ValidatedInput
+                                        label="Emergency Contact Number"
+                                        type="tel"
+                                        value={formData.contactDetails.emergencyContactNumber}
+                                        onChange={(val) =>
+                                            handleInputChange('contactDetails', { ...formData.contactDetails, emergencyContactNumber: val })
+                                        }
+                                        schema={fieldSchemas["relationInfo.relativeNumber"]}
+                                        path="relationInfo.relativeNumber"
                                     />
                                 </div>
 
                                 {/* Family Member Name */}
                                 <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Family Member Name</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">Family Member Name</label>
                                     <input
                                         type="text"
-                                        value={formData.contactDetails.FamilyMemberName}
+                                        value={formData.contactDetails.familyMemberName}
                                         onChange={(e) =>
-                                            handleInputChange('relationInfo', { ...formData.contactDetails, FamilyMemberName: e.target.value })
+                                            handleInputChange('relationInfo', { ...formData.contactDetails, familyMemberName: e.target.value })
                                         }
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    /> */}
+                                    <ValidatedInput
+                                        label="Family Member Name"
+                                        value={formData.contactDetails.familyMemberName}
+                                        onChange={(val) =>
+                                            handleInputChange('contactDetails', { ...formData.contactDetails, familyMemberName: val })
+                                        }
+                                        schema={fieldSchemas["relationInfo.relativeName"]}
+                                        path="relationInfo.relativeName"
                                     />
                                 </div>
 
                                 {/* Family Member Relation */}
                                 <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Family Member Relation</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">Family Member Relation</label>
                                     <input
                                         type="text"
-                                        value={formData.contactDetails.familymemberRelation}
+                                        value={formData.contactDetails.familyMemberRelation}
                                         onChange={(e) =>
-                                            handleInputChange('relationInfo', { ...formData.contactDetails, familymemberRelation: e.target.value })
+                                            handleInputChange('relationInfo', { ...formData.contactDetails, familyMemberRelation: e.target.value })
                                         }
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    /> */}
+                                    <ValidatedInput
+                                        label="Family Member Relation"
+                                        value={formData.contactDetails.familyMemberRelation}
+                                        onChange={(val) =>
+                                            handleInputChange('contactDetails', { ...formData.contactDetails, familyMemberRelation: val })
+                                        }
+                                        schema={fieldSchemas["relationInfo.relativeRelation"]}
+                                        path="relationInfo.relativeRelation"
                                     />
                                 </div>
 
                                 {/* Address */}
                                 <h3 className="text-lg font-medium text-gray-900 mt-6 mb-4">Adress</h3>
-                                {(Object.keys(formData.address) as (keyof typeof formData.address)[]).map((field) => (
+                                {/* {(Object.keys(formData.address) as (keyof typeof formData.address)[]).map((field) => (
                                     <div className="mb-4" key={field}>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             {field.charAt(0).toUpperCase() + field.slice(1)}
@@ -529,7 +706,64 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                                         />
                                     </div>
-                                ))}
+                                ))} */}
+
+                                {/* {(Object.keys(formData.address) as (keyof typeof formData.address)[]).map((field) => ( */}
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Street</label>
+                                    <PlacesAutocomplete formData={formData} setFormData={setFormData} />
+                                </div>
+                                <div className="mb-4" >
+                                    {/* <PlacesAutocomplete /> */}
+
+                                    <ValidatedInput
+
+                                        label="Suburb"
+                                        type="text"
+                                        value={formData.address.suburb}
+                                        onChange={(val) =>
+                                            handleInputChange("address", {
+                                                ...formData.address,
+                                                suburb: val,
+                                            })
+                                        }
+                                        schema={fieldSchemas['address.suburb']}   // ✅ schema lookup
+                                        path={'address.suburb'}                   // ✅ pass correct path
+                                    />
+                                </div>
+                                <div className="mb-4" >
+                                    <ValidatedInput
+
+                                        label="State"
+                                        type="text"
+                                        value={formData.address.state}
+                                        onChange={(val) =>
+                                            handleInputChange("address", {
+                                                ...formData.address,
+                                                state: val,
+                                            })
+                                        }
+                                        schema={fieldSchemas['address.state']}   // ✅ schema lookup
+                                        path={'address.state'}                   // ✅ pass correct path
+                                    />
+                                </div>
+                                <div className="mb-4" >
+                                    <ValidatedInput
+
+                                        label="Postal Code"
+                                        type="text"
+                                        value={formData.address.postalCode}
+                                        onChange={(val) =>
+                                            handleInputChange("address", {
+                                                ...formData.address,
+                                                postalCode: val,
+                                            })
+                                        }
+                                        schema={fieldSchemas['address.postCode']}   // ✅ schema lookup
+                                        path={'address.postCode'}                   // ✅ pass correct path
+                                    />
+                                </div>
+                                {/* ))} */}
                             </div>
                         </div>
 
@@ -547,7 +781,7 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
 
                             {/* Tax File Number */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Tax File Number</label>
+                                {/* <label className="block text-sm font-medium text-gray-700 mb-2">Tax File Number</label>
                                 <input
                                     type="text"
                                     value={formData.additionalDetails.taxFileNumber || ""}
@@ -555,12 +789,22 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                         handleInputChange('additionalDetails', { ...formData.additionalDetails, taxFileNumber: e.target.value })
                                     }
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                /> */}
+
+                                <ValidatedInput
+                                    label="Tax File Number"
+                                    value={formData.additionalDetails.taxFileNumber}
+                                    onChange={(val) =>
+                                        handleInputChange('additionalDetails', { ...formData.additionalDetails, taxFileNumber: val })
+                                    }
+                                    schema={fieldSchemas["additionalDetails.taxFileNumber"]}
+                                    path="additionalDetails.taxFileNumber"
                                 />
                             </div>
 
                             {/* ABN */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">ABN</label>
+                                {/* <label className="block text-sm font-medium text-gray-700 mb-2">ABN</label>
                                 <input
                                     type="text"
                                     value={formData.additionalDetails.AbnNumber || ""}
@@ -568,12 +812,22 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                         handleInputChange('additionalDetails', { ...formData.additionalDetails, AbnNumber: e.target.value })
                                     }
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                /> */}
+
+                                <ValidatedInput
+                                    label="ABN"
+                                    value={formData.additionalDetails.AbnNumber}
+                                    onChange={(val) =>
+                                        handleInputChange('additionalDetails', { ...formData.additionalDetails, AbnNumber: val })
+                                    }
+                                    schema={fieldSchemas["additionalDetails.AbnNumber"]}
+                                    path="additionalDetails.AbnNumber"
                                 />
                             </div>
 
                             {/* Screening Checks */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Screening Checks</label>
+                                {/* <label className="block text-sm font-medium text-gray-700 mb-2">Screening Checks</label>
                                 <input
                                     type="text"
                                     value={formData.additionalDetails.workersScreeningCheck || ""}
@@ -581,12 +835,22 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                         handleInputChange('additionalDetails', { ...formData.additionalDetails, workersScreeningCheck: e.target.value })
                                     }
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                /> */}
+
+                                <ValidatedInput
+                                    label="Screening Checks"
+                                    value={formData.additionalDetails.workersScreeningCheck}
+                                    onChange={(val) =>
+                                        handleInputChange('additionalDetails', { ...formData.additionalDetails, workersScreeningCheck: val })
+                                    }
+                                    schema={fieldSchemas["additionalDetails.workersScreeningCheck"]}
+                                    path="additionalDetails.workersScreeningCheck"
                                 />
                             </div>
 
                             {/* Working with Children Check */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Working with Children Check</label>
+                                {/* <label className="block text-sm font-medium text-gray-700 mb-2">Working with Children Check</label>
                                 <select
                                     value={formData.additionalDetails.workingWithChildernCheck || ""}
                                     onChange={(e) =>
@@ -597,12 +861,26 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                     <option value="">Select</option>
                                     <option value="Yes">Yes</option>
                                     <option value="No">No</option>
-                                </select>
+                                </select> */}
+                                <ValidatedSelect
+                                    label="Working with Children Check"
+                                    value={formData.additionalDetails.workingWithChildernCheck}
+                                    onChange={(val) =>
+                                        handleInputChange('additionalDetails', { ...formData.additionalDetails, workingWithChildernCheck: val })
+                                    }
+                                    schema={fieldSchemas["additionalDetails.workingWithChildernCheck"]}
+                                    path="additionalDetails.workingWithChildernCheck"
+                                    options={[
+                                        { label: "Select", value: "" },
+                                        { label: "Yes", value: "Yes" },
+                                        { label: "No", value: "No" },
+                                    ]}
+                                />
                             </div>
 
                             {/* Police Check */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Police Check</label>
+                                {/* <label className="block text-sm font-medium text-gray-700 mb-2">Police Check</label>
                                 <select
                                     value={formData.additionalDetails.policeCheck || ""}
                                     onChange={(e) =>
@@ -613,12 +891,26 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                     <option value="">Select</option>
                                     <option value="Yes">Yes</option>
                                     <option value="No">No</option>
-                                </select>
+                                </select> */}
+                                <ValidatedSelect
+                                    label="Police Check"
+                                    value={formData.additionalDetails.policeCheck}
+                                    onChange={(val) =>
+                                        handleInputChange('additionalDetails', { ...formData.additionalDetails, policeCheck: val })
+                                    }
+                                    schema={fieldSchemas["additionalDetails.policeCheck"]}
+                                    path="additionalDetails.policeCheck"
+                                    options={[
+                                        { label: "Select", value: "" },
+                                        { label: "Yes", value: "Yes" },
+                                        { label: "No", value: "No" },
+                                    ]}
+                                />
                             </div>
 
                             {/* First Aid */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">First Aid</label>
+                                {/* <label className="block text-sm font-medium text-gray-700 mb-2">First Aid</label>
                                 <select
                                     value={formData.additionalDetails.firstAid || ""}
                                     onChange={(e) =>
@@ -629,12 +921,26 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                     <option value="">Select</option>
                                     <option value="Yes">Yes</option>
                                     <option value="No">No</option>
-                                </select>
+                                </select> */}
+                                <ValidatedSelect
+                                    label="First Aid"
+                                    value={formData.additionalDetails.firstAid}
+                                    onChange={(val) =>
+                                        handleInputChange('additionalDetails', { ...formData.additionalDetails, firstAid: val })
+                                    }
+                                    schema={fieldSchemas["additionalDetails.firstAid"]}
+                                    path="additionalDetails.firstAid"
+                                    options={[
+                                        { label: "Select", value: "" },
+                                        { label: "Yes", value: "Yes" },
+                                        { label: "No", value: "No" },
+                                    ]}
+                                />
                             </div>
 
                             {/* Assign Vehicle */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Assign Vehicle</label>
+                                {/* <label className="block text-sm font-medium text-gray-700 mb-2">Assign Vehicle</label>
                                 <select
                                     value={formData.vehicle || ""}
                                     onChange={(e) => setFormData({ ...formData, vehicle: e.target.value })}
@@ -643,7 +949,21 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                     <option value="">Select</option>
                                     <option value="OD01AK0344">OD01AK0344</option>
                                     <option value="OD33Y6025">OD33Y6025</option>
-                                </select>
+                                </select> */}
+                                <ValidatedSelect
+                                    label="Assign Vehicle"
+                                    value={formData.vehicle}
+                                    onChange={(val) =>
+                                        setFormData({ ...formData, vehicle: val })
+                                    }
+                                    schema={fieldSchemas["vehicle"]}
+                                    path="vehicle"
+                                    options={[
+                                        { label: "Select", value: "" },
+                                        { label: "OD01AK0344", value: "OD01AK0344" },
+                                        { label: "OD33Y6025", value: "OD33Y6025" },
+                                    ]}
+                                />
                             </div>
                         </div>
 
@@ -667,13 +987,34 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                 </div>
 
                                 {/* Uploaded file tag */}
-                                {documentsPolicyCheck && <div className="flex items-center gap-2 mt-3 bg-purple-50 text-purple-700 px-3 py-1 rounded-full w-fit">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    {documentsPolicyCheck?.name}
-                                    <button className="ml-2 text-purple-500 hover:text-purple-700" onClick={() => setDocumentsPolicyCheck(null)}>×</button>
-                                </div>}
+                                {documentsPolicyCheck || formData.documents.uploadPoliceCheck.docId ? (
+                                    <div className="flex items-center gap-2 mt-3 bg-purple-50 text-purple-700 px-3 py-1 rounded-full w-fit">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-4 w-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                        </svg>
+
+                                        {/* Show uploaded name or extract from existing URL */}
+                                        {documentsPolicyCheck?.name ||
+                                            (() => {
+                                                const url = formData.documents.uploadPoliceCheck.docId;
+                                                const fileName = url?.split("/").pop() || "unknown-file";
+                                                return fileName;
+                                            })()}
+
+                                        <button
+                                            className="ml-2 text-purple-500 hover:text-purple-700"
+                                            onClick={() => setDocumentsPolicyCheck(null)}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ) : null}
 
                                 {/* Custom Date Picker */}
                                 <div className="mt-3">
@@ -681,8 +1022,8 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                     <DateInput
                                         value={formData.documents.uploadPoliceCheck.expiryDate}
                                         onChange={(value) => {
-                                            handleInputChange('documents.uploadPoliceCheck', { ...formData.documents.uploadPoliceCheck, expiryDate: value })
-                                            // setFormData({ ...formData, startDate: value as string, dayOfMonth: dayjs(value as string, 'YYYY-MM-DD').get('D'), dayOfWeek: dayjs(value as string, 'YYYY-MM-DD').day() })
+                                            // handleInputChange('documents.uploadPoliceCheck', { ...formData.documents.uploadPoliceCheck, expiryDate: value })
+                                            setFormData({ ...formData, documents: { ...formData.documents, uploadPoliceCheck: { ...formData.documents.uploadPoliceCheck, expiryDate: value as string } } })
                                         }}
                                         dateFormat={'yyyy-mm-dd'}
                                         calendarMode={'dropdown'}
@@ -718,13 +1059,44 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                                     <button className="ml-2 text-purple-500 hover:text-purple-700" onClick={() => setDocumentsFirstAid(null)}>×</button>
                                 </div>}
 
+
+                                {documentsFirstAid || formData.documents.uploadFirstAidCertificate.docId ? (
+                                    <div className="flex items-center gap-2 mt-3 bg-purple-50 text-purple-700 px-3 py-1 rounded-full w-fit">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-4 w-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                        </svg>
+
+                                        {/* Show uploaded name or extract from existing URL */}
+                                        {documentsFirstAid?.name ||
+                                            (() => {
+                                                const url = formData.documents.uploadFirstAidCertificate.docId;
+                                                const fileName = url?.split("/").pop() || "unknown-file";
+                                                return fileName;
+                                            })()}
+
+                                        <button
+                                            className="ml-2 text-purple-500 hover:text-purple-700"
+                                            onClick={() => setDocumentsFirstAid(null)}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ) : null}
+
                                 {/* Custom Date Picker */}
                                 <div className="mt-3">
                                     <p className="text-sm font-medium text-gray-700 mb-1">Set Expiry Dates</p>
                                     <DateInput
                                         value={formData.documents.uploadFirstAidCertificate.expiryDate}
                                         onChange={(value) => {
-                                            handleInputChange('documents.uploadFirstAidCertificate', { ...formData.documents.uploadFirstAidCertificate, expiryDate: value })
+                                            setFormData({ ...formData, documents: { ...formData.documents, uploadFirstAidCertificate: { ...formData.documents.uploadFirstAidCertificate, expiryDate: value as string } } })
+                                            // handleInputChange('documents.uploadFirstAidCertificate', { ...formData.documents.uploadFirstAidCertificate, expiryDate: value })
                                         }}
                                         dateFormat={'yyyy-mm-dd'}
                                         calendarMode={'dropdown'}
@@ -747,45 +1119,85 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
 
                         {/* Tax File Number */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Receiver Email</label>
+                            {/* <label className="block text-sm font-medium text-gray-700 mb-2">Receiver Email</label>
                             <input
                                 type="text"
                                 value={formData.receiverEmail || ""}
                                 onChange={(e) => setFormData({ ...formData, receiverEmail: e.target.value })}
 
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                            /> */}
+                            <ValidatedInput
+                                label="Receiver Email"
+                                type="email"
+                                value={formData.receiverEmail}
+                                onChange={(val) =>
+                                    setFormData({ ...formData, receiverEmail: val })
+                                }
+                                schema={fieldSchemas["receiverEmail"]}
+                                path="receiverEmail"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Create Email</label>
+                            {/* <label className="block text-sm font-medium text-gray-700 mb-2">Create Email</label>
                             <input
                                 type="text"
                                 value={formData.createEmail || ""}
                                 onChange={(e) => setFormData({ ...formData, createEmail: e.target.value })}
 
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                            /> */}
+                            <ValidatedInput
+                                label="Create Email"
+                                type="email"
+                                value={formData.createEmail}
+                                onChange={(val) =>
+                                    setFormData({ ...formData, createEmail: val })
+                                }
+                                schema={fieldSchemas["createEmail"]}
+                                path="createEmail"
                             />
                         </div>
 
                         {/* ABN */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                            {/* <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
                             <input
                                 type="password"
                                 value={formData.password || ""}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                            /> */}
+                            <ValidatedInput
+                                label="New Password"
+                                type="password"
+                                value={formData.password}
+                                onChange={(val) =>
+                                    setFormData({ ...formData, password: val })
+                                }
+                                schema={fieldSchemas["password"]}
+                                path="password"
                             />
                         </div>
 
                         {/* Screening Checks */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                            {/* <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
                             <input
                                 type="password"
                                 value={formData.confirmPass || ""}
                                 onChange={(e) => setFormData({ ...formData, confirmPass: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                /> */}
+                            <ValidatedInput
+                                label="Confirm New Password"
+                                type="password"
+                                value={formData.confirmPass}
+                                onChange={(val) =>
+                                    setFormData({ ...formData, confirmPass: val })
+                                }
+                                schema={fieldSchemas["confirmPass"]}
+                                path="confirmPass"
                             />
                         </div>
                     </div>
@@ -814,7 +1226,7 @@ export const AddCarer: React.FC<CarerProps> = ({ onSuccess }) => {
                     )}
                     {activeTab == 'credential' && (
                         <button onClick={handleAddParticipant} className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-purple-800">
-                            Add Participant
+                            {carerId ? 'Update' : 'Add'} Carer
                         </button>
 
                     )}

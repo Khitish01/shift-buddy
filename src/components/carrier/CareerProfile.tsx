@@ -14,9 +14,10 @@ import { adminClient } from '@/lib/apiClient';
 interface CarerProfileProps {
     carrierId: string;
     OpenCalendarView: () => void;
+    OpenEditView: () => void;
 
 }
-const CarerProfilePage: React.FC<CarerProfileProps> = ({ carrierId, OpenCalendarView }) => {
+const CarerProfilePage: React.FC<CarerProfileProps> = ({ carrierId, OpenEditView, OpenCalendarView }) => {
     // const [calenderDrawer, setCalenderDrawer] = useState<boolean>(false);
     // const openCalendarDrawer = () => {
     //     setCalenderDrawer(true)
@@ -30,14 +31,14 @@ const CarerProfilePage: React.FC<CarerProfileProps> = ({ carrierId, OpenCalendar
 
     const getBookingDetails = async () => {
         loader.showLoader()
-        const res = await apiCall<any>(adminClient,'POST', `/carrier/v1/carrier_details`, { carrierId })
+        const res = await apiCall<any>(adminClient, 'POST', `/carrier/v1/carrier_details`, { carrierId })
         console.log(res);
         setBookingDetails(res.data);
         loader.hideLoader()
     }
     const getUpcomingBooking = async () => {
         loader.showLoader()
-        const res = await apiCall<any>(adminClient,'POST', `/slot/v1/get_upcoming_slots`, { carrierId: bookingDetails?._id, limit: 10 })
+        const res = await apiCall<any>(adminClient, 'POST', `/slot/v1/get_upcoming_slots`, { carrierId: bookingDetails?._id, limit: 10 })
         console.log(res);
         setUpcomingBookings(res.data);
         loader.hideLoader()
@@ -92,7 +93,7 @@ const CarerProfilePage: React.FC<CarerProfileProps> = ({ carrierId, OpenCalendar
                             <h2 className="text-xl font-semibold text-[#1E1E1E]">{bookingDetails?.name} <span className="text-gray-500">(Carer)</span></h2>
                             <div className="flex text-primary items-center gap-2">
                                 <Calendar size={18} />
-                                <a href='javascript:void(0);' className="rounded-xl text-primary underline">Edit Details</a>
+                                <a href='javascript:void(0);' className="rounded-xl text-primary underline" onClick={OpenEditView}>Edit Details</a>
                             </div>
                         </div>
                         <p className="text-sm text-gray-500">{bookingDetails?.gender} | {dayjs().diff(dayjs(bookingDetails?.DOB), "year")} Years</p>

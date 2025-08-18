@@ -987,7 +987,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                                 </div>
 
                                 {/* Uploaded file tag */}
-                                {documentsPolicyCheck || formData.documents.uploadPoliceCheck.docId ? (
+                                {documentsPolicyCheck || formData.documents.uploadPoliceCheck.docId != '' ? (
                                     <div className="flex items-center gap-2 mt-3 bg-purple-50 text-purple-700 px-3 py-1 rounded-full w-fit">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -1050,17 +1050,17 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                                     <input type="file" onChange={handleFirstAid} hidden ref={fileInputFirstAidRef} />
                                 </div>
 
-                                {/* Uploaded file tag */}
+                                {/* Uploaded file tag
                                 {documentsFirstAid && <div className="flex items-center gap-2 mt-3 bg-purple-50 text-purple-700 px-3 py-1 rounded-full w-fit">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                     </svg>
                                     {documentsFirstAid?.name}
                                     <button className="ml-2 text-purple-500 hover:text-purple-700" onClick={() => setDocumentsFirstAid(null)}>×</button>
-                                </div>}
+                                </div>} */}
 
 
-                                {documentsFirstAid || formData.documents.uploadFirstAidCertificate.docId ? (
+                                {documentsFirstAid || formData.documents.uploadFirstAidCertificate.docId != '' ? (
                                     <div className="flex items-center gap-2 mt-3 bg-purple-50 text-purple-700 px-3 py-1 rounded-full w-fit">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"

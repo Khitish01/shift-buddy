@@ -7,23 +7,38 @@ import { useEffect, useRef, useState } from "react";
 import { DateInput } from "../common/date-input";
 import dayjs from "dayjs";
 import { adminClient } from "@/lib/apiClient";
+import { ValidatedInput } from "../ui/ValidatedInput";
+import { fieldSchemas } from "@/lib/validationSchemas";
+import PlacesAutocomplete from "../common/PlacesAutocomplete";
+import { ValidatedSelect } from "../ui/ValidatedSelect";
+import z from "zod";
 
-export const AddParticipant: React.FC = () => {
+interface AddParticipantProps {
+    // isOpen: boolean;
+    onSuccess: () => void;
+    clientId?: string;
+    // avatar: string
+    // children: React.ReactNode;
+    // width?: string;
+    // onBack?: () => void; // optional back button handler
+    // isBackButton?: boolean
+}
+
+export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSuccess }) => {
     const { showPopup, updatePopupStatus } = usePopup();
-    const [repeatModes, setRepeatModes] = useState<any[]>([])
     const [activeTab, setActiveTab] = useState('personal');
     const [allergyInput, setAllergyInput] = useState("");
-    const [allergyTags, setAllergyTags] = useState(["POIJ", "IBM-N"]);
+    const [allergyTags, setAllergyTags] = useState<string[]>([]);
     const [medication, setMedication] = useState("");
-    const [medicationTags, setMedicationTags] = useState(['IBM 60 - M', 'IBM 100-N']);
+    const [medicationTags, setMedicationTags] = useState<string[]>([]);
     const [profileImage, setProfileImage] = useState<File>();
     const documentRef = useRef<HTMLInputElement | null>(null);
     const complianceDocumentRef = useRef<HTMLInputElement | null>(null);
     const [documents, setDocuments] = useState<File[]>([]);
     const [complianceDocuments, setComplianceDocuments] = useState<File[]>([]);
     const loader = useTopLoader();
-    const [multipleValue, setMultipleValue] = useState<string[]>([])
-    const [carerList, setCarerList] = useState<any[]>([])
+
+    const [ndisTypes, setNdisTypes] = useState<any[]>([])
     const [formData, setFormData] = useState({
         clientId: '',
         // carrierId: '',
@@ -42,7 +57,7 @@ export const AddParticipant: React.FC = () => {
             dob: '',
             // clientNotes: '',
             profileImage: '',
-            typeOfCare: '',
+            // typeOfCare: '',
             email: '',
             mobileNumber: ''
         },
@@ -58,60 +73,32 @@ export const AddParticipant: React.FC = () => {
             postCode: ''
         },
         ndis: {
-            ndisNumber: '89000000122',
-            ndisType: 'NDIS Participant (NDIS)'
+            ndisNumber: '',
+            ndisType: ''
         },
         documents: {
             medicalDoc: [],
             complianceDoc: []
         },
         medicalInfo: {
-            diagnoses: 'sdfsdfs',
+            diagnoses: '',
             allergy: allergyTags,
             medicationAndTime: medicationTags,
-            mobilityNotes: 'asfasfasf',
-            emergencyPlan: 'gfghdfhdf'
+            mobilityNotes: '',
+            emergencyPlan: ''
         }
     });
     const [showAll, setShowAll] = useState(false);
 
-    // const handleRemoveDate = (dateToRemove: string) => {
-    //     const updatedDates = formData.customSlotArray.filter((date) => date !== dateToRemove)
-    //     // setMultipleValue((prev) => prev.filter((date) => date !== dateToRemove));
-    //     // formData.customSlotArray
-    //     setFormData({ ...formData, customSlotArray: updatedDates })
-    // };
-
-    // const toggleShowAll = () => {
-    //     setShowAll((prev) => !prev);
-    // };
-
-    // const getRepeatMode = async () => {
-    //     loader.showLoader()
-    //     try {
-    //         const res = await apiCall<any>('GET', '/master/v1/get_repeat_mode')
-    //         console.log(res);
-    //         setRepeatModes(res?.data)
-    //         // setTotalCount(res?.total)
-    //     } catch (error) {
-    //         console.error('Error setting role:', error)
-    //     } finally {
-    //         loader.hideLoader()
-    //     }
-    // }
-    // useEffect(() => {
-    //     getRepeatMode()
-
-    // }, [])
-    // useEffect(() => {
-    //     console.log(repeatModes.filter((x: any) => x.repeatType == 'Does not repeat')?.[0]?._id);
-
-    //     setFormData(prev => ({
-    //         ...prev,
-    //         repeatId: repeatModes.filter((x: any) => x.repeatType == 'Does not repeat')?.[0]?._id
-    //     }))
-    // }, [repeatModes])
-
+    const handleRemoveComplianceDoc = (docUrl: string) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            documents: {
+                ...prev.documents,
+                complianceDoc: prev.documents.complianceDoc.filter((item: string) => item !== docUrl),
+            },
+        }));
+    };
     const addAllergyTag = () => {
         const trimmed = allergyInput.trim();
         if (trimmed && !allergyTags.includes(trimmed)) {
@@ -260,103 +247,106 @@ export const AddParticipant: React.FC = () => {
     }
 
 
-    // const getAvailableCarer = async () => {
-    //     loader.showLoader()
-    //     let payload = {
-    //         startDate: formData.startDate,
-    //         endDate: formData.endDate,
-    //         startTime: formData.startTime,
-    //         endTime: formData.endTime,
-    //         repeatId: formData.repeatId,
-    //         dayOfWeek: dayjs(formData.startDate, 'YYYY-MM-DD').day(), //weekday number
-    //         dayOfMonth: dayjs(formData.startDate, 'YYYY-MM-DD').get('D'), //date of month
-    //         customSlotArray: formData.customSlotArray //provide the dates if repest Id is custom
-    //     }
-    //     try {
-    //         const res = await apiCall<any>('POST', '/carrier/v1/check_carrier_availability', payload)
-    //         console.log(res);
-    //         setCarerList(res?.data)
-    //         // setTotalCount(res?.total)
-    //     } catch (error) {
-    //         console.error('Error setting role:', error)
-    //     } finally {
-    //         loader.hideLoader()
-    //     }
-    // }
-
-    // useEffect(() => {
-    //     if (formData.repeatId == '') return
-    //     getAvailableCarer()
-
-    // }, [formData.repeatId, formData.customSlotArray, formData.startDate, formData.endDate, formData.startTime, formData.endTime])
-
-    const uploadDocuments = async () => {
-
-        showPopup('Uploading', "Documents are Uploading"); // Optional message & duration
+    const getNdisType = async () => {
+        loader.showLoader()
         try {
-
-            if (documents.length > 0) {
-                const formData = new FormData();
-                for (let file of documents) {
-
-                    formData.append('file', file);
-                }
-                const res = await apiCall<any>(adminClient,'POST', '/doc/v1/upload_doc', formData)
-                console.log('medical documents', res);
-                setFormData(prev => ({
-                    ...prev,
-                    documents: {
-                        ...prev.documents,
-                        medicalDoc: res.documentId
-                    }
-                }));
-
-            }
-
-            if (complianceDocuments.length > 0) {
-                const formData = new FormData();
-                for (let file of complianceDocuments) {
-
-                    formData.append('file', file);
-                }
-                const res = await apiCall<any>(adminClient,'POST', '/doc/v1/upload_doc', formData)
-                console.log('compliance documents', res);
-                setFormData(prev => ({
-                    ...prev,
-                    documents: {
-                        ...prev.documents,
-                        complianceDoc: res.documentId
-                    }
-                }));
-
-            }
-
-
-            // console.log(res)
+            const res = await apiCall<any>(adminClient, 'GET', '/master/v1/get_ndis')
+            console.log(res);
+            setNdisTypes(res?.data)
+            // setTotalCount(res?.total)
         } catch (error) {
             console.error('Error setting role:', error)
         } finally {
-            // loader.hideLoader()
-            updatePopupStatus('success', 'Booking Confirmed!', "Your booking has been confirmed!", 4000); // Optional message & duration
+            loader.hideLoader()
         }
     }
+    useEffect(() => {
+        getNdisType()
+    }, [])
+
+    const handleRemoveMedicalDoc = (docUrl: string) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            documents: {
+                ...prev.documents,
+                medicalDoc: prev.documents.medicalDoc.filter((item: string) => item !== docUrl),
+            },
+        }));
+    };
+
+
+    const uploadDocuments = async () => {
+        const updatedData: any = { ...formData }; // local copy
+
+        try {
+            // Upload medical documents (1 API call)
+            if (documents.length > 0) {
+                const formDataMedical = new FormData();
+                documents.forEach(file => formDataMedical.append("file", file));
+
+                const res = await apiCall<any>(adminClient, "POST", "/doc/v1/upload_doc", formDataMedical);
+                updatedData.documents = {
+                    ...updatedData.documents,
+                    medicalDoc: [...formData.documents.medicalDoc, ...res.documentId],
+                };
+            }
+
+            // Upload compliance documents (1 API call)
+            if (complianceDocuments.length > 0) {
+                const formDataCompliance = new FormData();
+                complianceDocuments.forEach(file => formDataCompliance.append("file", file));
+
+                const res = await apiCall<any>(adminClient, "POST", "/doc/v1/upload_doc", formDataCompliance);
+                updatedData.documents = {
+                    ...updatedData.documents,
+                    complianceDoc: [...formData.documents.complianceDoc, ...res.documentId],
+                };
+            }
+
+            // Upload profile image (1 API call)
+            if (profileImage) {
+                const formDataProfile = new FormData();
+                formDataProfile.append("file", profileImage);
+
+                const res = await apiCall<any>(adminClient, "POST", "/doc/v1/upload_doc", formDataProfile);
+                updatedData.personalInfo = {
+                    ...updatedData.personalInfo,
+                    profileImage: Array.isArray(res.documentId) ? res.documentId[0] : res.documentId,
+                };
+            }
+
+            return updatedData;
+        } catch (error) {
+            console.error("Error uploading documents:", error);
+            updatePopupStatus("error", "Upload Failed!", "Your documents upload has failed!", 4000);
+            throw error;
+        }
+    };
 
     const handleAddParticipant = async () => {
         // After booking logic
 
-        showPopup('Booking Processing', "Your booking has been initiated"); // Optional message & duration
+        showPopup('Participant Onboarding', "Participant has been onboarding!"); // Optional message & duration
 
         // loader.showLoader()
 
         try {
-            await uploadDocuments();
-            const res = await apiCall<any>(adminClient,'POST', '/client/v1/create_client', formData)
-            console.log(res)
+            updatePopupStatus("loading", "Uploading", "Documents are Uploading");
+            const updatedFormData = await uploadDocuments();
+
+            if (clientId) {
+                // updatedFormData['clientId'] = clientId
+                const res = await apiCall<any>(adminClient, 'POST', '/client/v1/update_client', updatedFormData)
+                updatePopupStatus('success', 'Participant Edited', "Participant has been edited successfully", 4000); // Optional message & duration
+            } else {
+                const res = await apiCall<any>(adminClient, 'POST', '/client/v1/create_only_client', updatedFormData)
+                updatePopupStatus('success', 'Participant Onboarded', "Participant has been onboarded successfully", 4000); // Optional message & duration
+            }
+            // console.log(res)
+            onSuccess()
         } catch (error) {
             console.error('Error setting role:', error)
-        } finally {
-            // loader.hideLoader()
-            updatePopupStatus('success', 'Booking Confirmed!', "Your booking has been confirmed!", 4000); // Optional message & duration
+            updatePopupStatus('error', 'Onboarding Failed!', "Participant has not been onboarded successfully", 4000); // Optional message & duration
         }
 
 
@@ -366,26 +356,73 @@ export const AddParticipant: React.FC = () => {
         // }, 1000)
     };
 
+    const mapApiDataToFormForEdit = (apiData: any) => {
+            return {
+                clientId: apiData?._id,
+                personalInfo: {
+                    name: apiData.personalInfo?.name || '',
+                    gender: apiData.personalInfo?.gender || '',
+                    dob: apiData.personalInfo?.dob ? dayjs(apiData.personalInfo.dob).format('YYYY-MM-DD') : '',
+                    // clientNotes: apiData.personalInfo?.clientNotes || '',
+                    profileImage: apiData.personalInfo?.profileImage || '',
+                    // typeOfCare: apiData.personalInfo?.typeOfCare || '',
+                    email: apiData.personalInfo?.email || '',
+                    mobileNumber: apiData.personalInfo?.mobileNumber || ''
+                },
+                relationInfo: {
+                    relativeName: apiData.relationInfo?.relativeName || '',
+                    relativeRelation: apiData.relationInfo?.relativeRelation || '',
+                    relativeNumber: apiData.relationInfo?.relativeNumber || ''
+                },
+                address: {
+                    street: apiData.address?.street,
+                    suburb: apiData.address?.suburb,
+                    state: apiData.address?.state,
+                    postCode: apiData.address?.postCode,
+                    locationUrl: apiData.address?.locationUrl,
+                },
+                ndis: {
+                    ndisNumber: apiData.ndis?.ndisNumber,
+                    ndisType: apiData.ndis?.ndisType
+                },
+                documents: {
+                    medicalDoc: apiData.documents?.medicalDoc || [],
+                    complianceDoc: apiData.documents?.complianceDoc || []
+                },
+                medicalInfo: {
+                    diagnoses: apiData.medicalInfo?.diagnoses || '',
+                    allergy: apiData.medicalInfo?.allergy || [],
+                    medicationAndTime: apiData.medicalInfo?.medicationAndTime || [],
+                    mobilityNotes: apiData.medicalInfo?.mobilityNotes || '',
+                    emergencyPlan: apiData.medicalInfo?.emergencyPlan || ''
+                }
+            };
+        };
+
+    const getSlotDetails = async () => {
+        loader.showLoader()
+        try {
+            const res = await apiCall<any>(adminClient, 'GET', `/client/v1/get_client/${clientId}`)
+            console.log(res);
+            // setSlotDetails(res?.data)
+            const mappedData = mapApiDataToFormForEdit(res.data);
+            setAllergyTags(mappedData.medicalInfo.allergy)
+            setMedicationTags(mappedData.medicalInfo.medicationAndTime)
+            setFormData(mappedData);
+            // setTotalCount(res?.total)
+        } catch (error) {
+            console.error('Error setting role:', error)
+        } finally {
+            loader.hideLoader()
+        }
+    }
+
+    useEffect(() => {
+        getSlotDetails()
+    }, [clientId])
+
     return (
         <div className="p-6">
-            {/* Shiftcare ID */}
-            {/* {activeTab === 'personal' && <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Enter Your Shiftcare ID
-                </label>
-                <div className="flex space-x-2">
-                    <input
-                        type="text"
-                        value={formData.clientId}
-                        onChange={(e) => handleInputChange('clientId', e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                    />
-                    <button className="px-8 py-1 bg-[#F2C7AC] text-primary text-sm rounded-full hover:bg-orange-300 transition-colors">
-                        Enter
-                    </button>
-                </div>
-            </div>} */}
-
             {/* Tabs */}
             <div className="flex justify-between items-center mb-6 border-b border-b-[#D4D4D4]">
                 <div className="flex">
@@ -448,206 +485,68 @@ export const AddParticipant: React.FC = () => {
                                     onClick={handleClick}
                                     className="block"
                                 >
-                                    {!profileImage ? (
+                                    {!profileImage && !formData.personalInfo.profileImage ? (
+                                        // --- Upload UI ---
                                         <div
-                                            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block">
+                                            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block"
+                                        >
                                             <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                                             <p className="text-sm text-gray-600">Click to Upload</p>
                                             <p className="text-xs text-gray-500">(Max file size: 25 MB)</p>
                                         </div>
-
                                     ) : (
+                                        // --- Image Preview ---
                                         <img
-                                            src={previewUrl}
+                                            src={
+                                                profileImage
+                                                    ? previewUrl // newly uploaded in Add/Edit
+                                                    : formData.personalInfo.profileImage // existing image in Edit
+                                            }
                                             alt="Preview"
                                             className="h-36 w-36 object-contain"
                                         />
                                     )}
+
                                 </label>
                             </div>
 
-                            {/* Type of Care */}
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Type of Care</label>
-                                {/* <Search className="absolute left-3 top-10 transform -translate-y-1/2 text-gray-400" size={16} /> */}
-                                <input
-                                    type="text"
-                                    placeholder="Type to search"
-                                    value={formData.personalInfo.typeOfCare}
-                                    onChange={(e) =>
-                                        handleInputChange('personalInfo', {
-                                            ...formData.personalInfo,
-                                            typeOfCare: e.target.value
-                                        })
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                />
-                            </div>
-
-                            {/* Scheduled Visit Time */}
-                            {/* <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Scheduled Visit Time</label>
-                           
-                                <DateInput
-                                    value={formData.startDate}
-                                    onChange={(value) => {
-                                        setFormData({ ...formData, startDate: value as string, dayOfMonth: dayjs(value as string, 'YYYY-MM-DD').get('D'), dayOfWeek: dayjs(value as string, 'YYYY-MM-DD').day() })
-                                    }}
-                                    dateFormat={'yyyy-mm-dd'}
-                                    calendarMode={'dropdown'}
-                                    selectionMode={'single'}
-                                    readonly={true}
-                                    placeholder={"Click to select date via calendar"}
-                                />
-                            </div> */}
-
-
-                            {/* Duration */}
-                            {/* <div className="mb-4 relative">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
-                                <Clock className="absolute left-3 top-12 h-5 w-5 transform -translate-y-1/2 text-gray-400" size={16} />
-                                <select
-                                    value={formData.duration}
-                                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                >
-                                    <option value="30mins">30mins</option>
-                                    <option value="1hour">1 hour</option>
-                                    <option value="2hours">2 hours</option>
-                                </select>
-                            </div> */}
-
-                            {/* Select Time */}
-                            {/* <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Select Time</label>
-                                <select
-                                    value={`${formData.startTime}-${formData.endTime}`}
-                                    onChange={(e) => {
-                                        const [start, end] = e.target.value.split('-');
-                                        setFormData({ ...formData, startTime: start, endTime: end });
-                                    }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                >
-                                    <option value="09:30-10:00">9:30am - 10:00am</option>
-                                </select>
-                            </div> */}
-
-                            {/* Repeat */}
-                            {/* <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Repeat</label>
-                                <select
-                                    value={formData.repeatId}
-                                    onChange={(e) => setFormData({ ...formData, repeatId: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                >
-                                    {repeatModes.map((mode: any, index: number) => (
-                                        <option key={index} value={mode._id}>{mode.repeatType}</option>
-
-                                    ))}
-                                </select>
-                            </div>
-
-                            {formData.repeatId != '6854576f74ae23c01c0faf1a' && formData.repeatId != '685c39a134947853141c3e5f' && (
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                                    <DateInput
-                                        value={formData.endDate}
-                                        onChange={(value) => setFormData({ ...formData, endDate: value as string })}
-                                        dateFormat={'yyyy-mm-dd'}
-                                        calendarMode={'dropdown'}
-                                        selectionMode={'single'}
-                                        readonly={true}
-                                        placeholder={"Click to select date via calendar"}
-                                    />
-
-                                </div>
-                            )}
-                            {formData.repeatId == '685c39a134947853141c3e5f' && (
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Custom Dates</label>
-                                    <DateInput
-                                        value={formData.customSlotArray}
-                                        onChange={(value) => setFormData({ ...formData, customSlotArray: value as string[] })}
-                                        dateFormat={'yyyy-mm-dd'}
-                                        calendarMode={'dropdown'}
-                                        selectionMode={'multiple'}
-                                        readonly={true}
-                                        placeholder={"Click to select date via calendar"}
-                                    />
-
-                                    {formData.customSlotArray.length > 0 && (
-                                        <div className="pt-4">
-                                            
-                                            <div className="flex flex-wrap gap-1">
-                                                {(showAll ? formData.customSlotArray : formData.customSlotArray.slice(0, 2)).map((date, index) => (
-                                                    <span
-                                                        key={index}
-                                                        className="px-2 py-1 bg-purple-200 text-purple-800 text-xs flex gap-2 items-center rounded-full"
-                                                    >
-                                                        <span>{date}</span>
-                                                        <X
-                                                            className="h-3 w-3 cursor-pointer"
-                                                            onClick={() => handleRemoveDate(date)}
-                                                        />
-                                                    </span>
-                                                ))}
-
-                                                {formData.customSlotArray.length > 2 && (
-                                                    <span
-                                                        className="px-2 py-1 bg-purple-200 text-purple-800 text-xs rounded-full cursor-pointer"
-                                                        onClick={toggleShowAll}
-                                                    >
-                                                        {showAll
-                                                            ? "Show less"
-                                                            : `+${formData.customSlotArray.length - 2} more`}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )} */}
 
                             {/* Name */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                                <input
-                                    type="text"
+                                <ValidatedInput
+                                    label="Name"
                                     value={formData.personalInfo.name}
-                                    onChange={(e) =>
-                                        handleInputChange('personalInfo', {
-                                            ...formData.personalInfo,
-                                            name: e.target.value
-                                        })
+                                    onChange={(val) =>
+                                        handleInputChange("personalInfo", { ...formData.personalInfo, name: val })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["personalInfo.name"]}
+                                    path="personalInfo.name"
                                 />
                             </div>
 
                             {/* Gender */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                                <select
+
+                                <ValidatedSelect
+                                    label="Gender"
                                     value={formData.personalInfo.gender}
-                                    onChange={(e) =>
-                                        handleInputChange('personalInfo', {
-                                            ...formData.personalInfo,
-                                            gender: e.target.value
-                                        })
+                                    onChange={(val) =>
+                                        handleInputChange("personalInfo", { ...formData.personalInfo, gender: val })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                >
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
-                                </select>
+                                    schema={fieldSchemas["personalInfo.gender"]}
+                                    path="personalInfo.gender"
+                                    options={[
+                                        { label: "Select gender", value: "" },
+                                        { label: "Male", value: "Male" },
+                                        { label: "Female", value: "Female" },
+                                        { label: "Other", value: "Other" },
+                                    ]}
+                                />
                             </div>
 
                             {/* Date of Birth */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-
-
                                 <DateInput
                                     value={formData.personalInfo.dob}
                                     onChange={(value) => handleInputChange('personalInfo', {
@@ -659,43 +558,69 @@ export const AddParticipant: React.FC = () => {
                                     selectionMode={'single'}
                                     readonly={true}
                                     placeholder={"Click to select date via calendar"}
+                                    schema={fieldSchemas["personalInfo.dob"]}
                                 />
                             </div>
 
                             {/* Address */}
                             <h3 className="text-lg font-medium text-gray-900 mt-6 mb-4">Address</h3>
-                            {(Object.keys(formData.address) as (keyof typeof formData.address)[]).map((field) => (
-                                <div className="mb-4" key={field}>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">{field.charAt(0).toUpperCase() + field.slice(1)}</label>
-                                    <input
-                                        type="text"
-                                        value={formData.address[field]}
-                                        onChange={(e) =>
-                                            handleInputChange('address', {
-                                                ...formData.address,
-                                                [field]: e.target.value
-                                            })
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                    />
-                                </div>
-                            ))}
+                            {/* {(Object.keys(formData.address) as (keyof typeof formData.address)[]).map((field) => ( */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Street</label>
+                                <PlacesAutocomplete formData={formData} setFormData={setFormData} />
+                            </div>
+                            <div className="mb-4" >
+                                {/* <PlacesAutocomplete /> */}
 
-                            {/* Client Notes */}
-                            {/* <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Client Notes</label>
-                                <textarea
-                                    value={formData.personalInfo.clientNotes}
-                                    onChange={(e) =>
-                                        handleInputChange('personalInfo', {
-                                            ...formData.personalInfo,
-                                            clientNotes: e.target.value
+                                <ValidatedInput
+
+                                    label="Suburb"
+                                    type="text"
+                                    value={formData.address.suburb}
+                                    onChange={(val) =>
+                                        handleInputChange("address", {
+                                            ...formData.address,
+                                            suburb: val,
                                         })
                                     }
-                                    rows={3}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas['address.suburb']}   // ✅ schema lookup
+                                    path={'address.suburb'}                   // ✅ pass correct path
                                 />
-                            </div> */}
+                            </div>
+                            <div className="mb-4" >
+                                <ValidatedInput
+
+                                    label="State"
+                                    type="text"
+                                    value={formData.address.state}
+                                    onChange={(val) =>
+                                        handleInputChange("address", {
+                                            ...formData.address,
+                                            state: val,
+                                        })
+                                    }
+                                    schema={fieldSchemas['address.state']}   // ✅ schema lookup
+                                    path={'address.state'}                   // ✅ pass correct path
+                                />
+                            </div>
+                            <div className="mb-4" >
+                                <ValidatedInput
+
+                                    label="Postal Code"
+                                    type="text"
+                                    value={formData.address.postCode}
+                                    onChange={(val) =>
+                                        handleInputChange("address", {
+                                            ...formData.address,
+                                            postCode: val,
+                                        })
+                                    }
+                                    schema={fieldSchemas['address.postCode']}   // ✅ schema lookup
+                                    path={'address.postCode'}                   // ✅ pass correct path
+                                />
+                            </div>
+                            {/* ))} */}
+
                         </div>
 
                         {/* Right Column */}
@@ -704,117 +629,124 @@ export const AddParticipant: React.FC = () => {
 
                             {/* Email */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Email ID</label>
-                                <input
+                                <ValidatedInput
+                                    label="Email ID"
                                     type="email"
                                     value={formData.personalInfo.email}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('personalInfo', {
                                             ...formData.personalInfo,
-                                            email: e.target.value
+                                            email: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["personalInfo.email"]}
+                                    path="personalInfo.email"
                                 />
                             </div>
 
                             {/* Phone No */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Phone No.</label>
-                                <input
+                                <ValidatedInput
+                                    label="Phone No."
                                     type="tel"
                                     value={formData.personalInfo.mobileNumber}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('personalInfo', {
                                             ...formData.personalInfo,
-                                            mobileNumber: e.target.value
+                                            mobileNumber: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["personalInfo.mobileNumber"]}
+                                    path="personalInfo.mobileNumber"
                                 />
                             </div>
 
                             {/* Family Member Name */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Family Member Name</label>
-                                <input
+                                <ValidatedInput
+                                    label="Family Member Name"
                                     type="text"
                                     value={formData.relationInfo.relativeName}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('relationInfo', {
                                             ...formData.relationInfo,
-                                            relativeName: e.target.value
+                                            relativeName: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["relationInfo.relativeName"]}
+                                    path="relationInfo.relativeName"
                                 />
                             </div>
 
                             {/* Contact Number */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Contact Number</label>
-                                <input
+                                <ValidatedInput
+                                    label="Emergency Contact Number"
                                     type="tel"
                                     value={formData.relationInfo.relativeNumber}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('relationInfo', {
                                             ...formData.relationInfo,
-                                            relativeNumber: e.target.value
+                                            relativeNumber: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["relationInfo.relativeNumber"]}
+                                    path="relationInfo.relativeNumber"
                                 />
                             </div>
 
                             {/* Relation */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Family Member Relation</label>
-                                <input
+                                <ValidatedInput
+                                    label="Family Member Relation"
                                     type="text"
                                     value={formData.relationInfo.relativeRelation}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('relationInfo', {
                                             ...formData.relationInfo,
-                                            relativeRelation: e.target.value
+                                            relativeRelation: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["relationInfo.relativeRelation"]}
+                                    path="relationInfo.relativeRelation"
                                 />
                             </div>
-
-
 
                             {/* NDIS */}
                             <h3 className="text-lg font-medium text-gray-900 mt-6 mb-4">NDIS</h3>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">NDIS Number</label>
-                                <input
+                                <ValidatedInput
+                                    label="NDIS Number"
                                     type="text"
                                     value={formData.ndis.ndisNumber}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('ndis', {
                                             ...formData.ndis,
-                                            ndisNumber: e.target.value
+                                            ndisNumber: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                    schema={fieldSchemas["ndis.ndisNumber"]}
+                                    path="ndis.ndisNumber"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">NDIS Type</label>
-                                <select
+                                <ValidatedSelect
+                                    label="NDIS Type"
                                     value={formData.ndis.ndisType}
-                                    onChange={(e) =>
+                                    onChange={(val) =>
                                         handleInputChange('ndis', {
                                             ...formData.ndis,
-                                            ndisType: e.target.value
+                                            ndisType: val
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                >
-                                    <option value="NDIS Participant (NDIS)">NDIS Participant (NDIS)</option>
-                                </select>
+                                    schema={fieldSchemas["ndis.ndisType"]}
+                                    path="ndis.ndisType"
+                                    options={[{ label: "Select NDIS Type", value: "" },].concat(ndisTypes.map((ndis: any) => ({
+                                        label: ndis.ndisType,
+                                        value: ndis._id,
+                                    })))}
+                                />
                             </div>
                         </div>
                     </div>
@@ -837,12 +769,26 @@ export const AddParticipant: React.FC = () => {
 
                         {/* Diagnoses */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Diagnoses</label>
-                            <input
+                            {/* <label className="block text-sm font-medium text-gray-700 mb-2">Diagnoses</label>
+                                        <input
+                                            type="text"
+                                            value={formData.medicalInfo.diagnoses}
+                                            onChange={(e) => handleInputChange("diagnoses", e.target.value)}
+                                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
+                                        /> */}
+
+                            <ValidatedInput
+                                label="Diagnoses"
                                 type="text"
                                 value={formData.medicalInfo.diagnoses}
-                                onChange={(e) => handleInputChange("diagnoses", e.target.value)}
-                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
+                                onChange={(val) =>
+                                    handleInputChange("medicalInfo", {
+                                        ...formData.medicalInfo,
+                                        diagnoses: val,
+                                    })
+                                }
+                                schema={fieldSchemas["medicalInfo.diagnoses"]}
+                                path="medicalInfo.diagnoses"
                             />
                         </div>
 
@@ -859,12 +805,20 @@ export const AddParticipant: React.FC = () => {
                                     <Plus size={16} />
                                 </button>
                             </label>
-                            <input
+                            {/* <input
+                                            type="text"
+                                            value={allergyInput}
+                                            onChange={(e) => setAllergyInput(e.target.value)}
+                                            placeholder="Type allergies"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                        /> */}
+                            <ValidatedInput
+                                label=""
                                 type="text"
                                 value={allergyInput}
-                                onChange={(e) => setAllergyInput(e.target.value)}
-                                placeholder="Type allergies"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                                onChange={setAllergyInput}
+                                schema={z.string().optional()} // only validate tags list, not typing
+                                path="medicalInfo.allergies"
                             />
                             <div className="flex flex-wrap gap-2 mt-2">
                                 {allergyTags.map((tag, index) => (
@@ -896,11 +850,19 @@ export const AddParticipant: React.FC = () => {
                                 </button>
                             </label>
                             {/* <label className="block text-sm font-medium text-gray-700 mb-2">Medications with Dosage & Timing</label> */}
-                            <input
+                            {/* <input
+                                            type="text"
+                                            value={medication}
+                                            onChange={(e) => setMedication(e.target.value)}
+                                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
+                                        /> */}
+                            <ValidatedInput
+                                label=""
                                 type="text"
                                 value={medication}
-                                onChange={(e) => setMedication(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
+                                onChange={setMedication}
+                                schema={z.string().optional()} // same logic: validate tags array, not typing
+                                path="medicalInfo.medications"
                             />
                             <div className="flex flex-wrap gap-2 mt-2">
                                 {medicationTags.map((tag, i) => (
@@ -916,41 +878,52 @@ export const AddParticipant: React.FC = () => {
 
                         {/* Mobility Notes */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Mobility Notes</label>
-                            <input
+                            {/* <label className="block text-sm font-medium text-gray-700 mb-2">Mobility Notes</label>
+                                        <input
+                                            type="text"
+                                            value={formData.medicalInfo.mobilityNotes}
+                                            onChange={(e) => handleInputChange("mobilityNotes", e.target.value)}
+                                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
+                                        /> */}
+                            <ValidatedInput
+                                label="Mobility Notes"
                                 type="text"
                                 value={formData.medicalInfo.mobilityNotes}
-                                onChange={(e) => handleInputChange("mobilityNotes", e.target.value)}
-                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
+                                onChange={(val) =>
+                                    handleInputChange("medicalInfo", {
+                                        ...formData.medicalInfo,
+                                        mobilityNotes: val,
+                                    })
+                                }
+                                schema={fieldSchemas["medicalInfo.mobilityNotes"]}
+                                path="medicalInfo.mobilityNotes"
                             />
                         </div>
 
                         {/* Emergency Plan */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Plan</label>
-                            <input
+                            {/* <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Plan</label>
+                                        <input
+                                            type="text"
+                                            value={formData.medicalInfo.emergencyPlan}
+                                            onChange={(e) => handleInputChange("emergencyPlan", e.target.value)}
+                                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
+                                        /> */}
+                            <ValidatedInput
+                                label="Emergency Plan"
                                 type="text"
                                 value={formData.medicalInfo.emergencyPlan}
-                                onChange={(e) => handleInputChange("emergencyPlan", e.target.value)}
-                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
+                                onChange={(val) =>
+                                    handleInputChange("medicalInfo", {
+                                        ...formData.medicalInfo,
+                                        emergencyPlan: val,
+                                    })
+                                }
+                                schema={fieldSchemas["medicalInfo.emergencyPlan"]}
+                                path="medicalInfo.emergencyPlan"
                             />
                         </div>
 
-                        {/* Carer */}
-                        {/* <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Carer</label>
-                            <select
-                                value={formData.carrierId}
-                                onChange={(e) => setFormData({ ...formData, carrierId: e.target.value })}
-                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
-                            >
-                                <option value={''}>Select Carer</option>
-                                {carerList.map((carer: any, index: number) => (
-                                    <option key={index} value={carer?._id}>{carer?.name}</option>
-
-                                ))}
-                            </select>
-                        </div> */}
                     </div>
 
                     {/* Right Column */}
@@ -962,6 +935,25 @@ export const AddParticipant: React.FC = () => {
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Medical Document</label>
                                     <div className="flex flex-wrap gap-2 mb-2">
+                                        {formData.documents.medicalDoc.map((url: string, index: number) => {
+                                            // Extract filename from URL
+                                            const fileName = url.split("/").pop() || "unknown-file";
+
+                                            return (
+                                                <span
+                                                    key={index}
+                                                    className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium"
+                                                >
+                                                    📄 {fileName}
+                                                    <button
+                                                        onClick={() => handleRemoveMedicalDoc(url)}
+                                                        className="ml-2 text-blue-600 hover:text-blue-800"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </span>
+                                            );
+                                        })}
                                         {documents.map((file, index) => (
                                             <span key={index} className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
                                                 📄 {file.name}
@@ -988,7 +980,7 @@ export const AddParticipant: React.FC = () => {
 
                         {/* Book Button */}
                         <div className="flex justify-end">
-                            <button onClick={uploadDocuments} className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-purple-800">
+                            <button onClick={() => setActiveTab('complianceDoc')} className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-purple-800">
                                 Continue
                             </button>
                         </div>
@@ -1003,6 +995,25 @@ export const AddParticipant: React.FC = () => {
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">Medical Document</label>
                             <div className="flex flex-wrap gap-2 mb-2">
+                                {formData.documents.complianceDoc.map((url: string, index: number) => {
+                                    // Extract filename from URL
+                                    const fileName = url.split("/").pop() || "unknown-file";
+
+                                    return (
+                                        <span
+                                            key={index}
+                                            className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium"
+                                        >
+                                            📄 {fileName}
+                                            <button
+                                                onClick={() => handleRemoveComplianceDoc(url)}
+                                                className="ml-2 text-blue-600 hover:text-blue-800"
+                                            >
+                                                ×
+                                            </button>
+                                        </span>
+                                    );
+                                })}
                                 {complianceDocuments.map((file, index) => (
                                     <span key={index} className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
                                         📄 {file.name}
@@ -1027,7 +1038,7 @@ export const AddParticipant: React.FC = () => {
                     </div>
                     <div className="flex justify-end">
                         <button onClick={handleAddParticipant} className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-purple-800">
-                            Add Participant
+                            Book Slot
                         </button>
                     </div>
                 </div>

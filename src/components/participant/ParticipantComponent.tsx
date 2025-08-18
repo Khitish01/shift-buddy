@@ -26,10 +26,11 @@ const ParticipantComponent = () => {
     const [sortConfig, setSortConfig] = useState<SortConfig | null>(null)
     const [drawerState, setDrawerState] = useState({
         isOpen: false,
-        type: 'book', // 'book' or 'details' or 'career'
+        type: 'book', // 'book' or 'details' or 'edit'
         avatar: '',
         title: ''
     });
+    // const [selectedClient, setSelectedBooking] = useState<string>('');
     // Column definitions
     const columns: ColumnDefinition[] = [
         {
@@ -52,12 +53,12 @@ const ParticipantComponent = () => {
             type: "text",
             sortable: true,
         },
-        {
-            key: "startDate",
-            label: "Booking Date",
-            type: "date",
-            sortable: true,
-        },
+        // {
+        //     key: "startDate",
+        //     label: "Booking Date",
+        //     type: "date",
+        //     sortable: true,
+        // },
         {
             key: "startTime",
             label: "Total bookings",
@@ -95,7 +96,11 @@ const ParticipantComponent = () => {
             id: "edit",
             label: "Edit",
             icon: <Edit className="h-4 w-4" />,
-            onClick: (row) => console.log("Edit", row),
+            onClick: (row) => {
+                setSelectedClient(row)
+                // setOpen(true)
+                openDrawer('edit')
+            },
             variant: "ghost",
         },
         {
@@ -108,17 +113,17 @@ const ParticipantComponent = () => {
         },
     ]
 
-    const openDrawer = (type: 'book' | 'details' | 'career', name: string = '', profileImage: string = '') => {
+    const openDrawer = (type: 'book' | 'details' | 'edit', name: string = '', profileImage: string = '') => {
         setDrawerState({
             isOpen: true,
             type,
             avatar:
-                type === 'career'
+                type === 'edit'
                     ? ''
                     : type === 'book'
                         ? ''
                         : profileImage,
-            title: type === 'career' ? '' : type === 'book' ? 'Add Participant' : name +' (Patient)'
+            title: type === 'edit' ? 'Edit Participant' : type === 'book' ? 'Add Participant' : name + ' (Patient)'
         });
     };
     const closeDrawer = () => {
@@ -157,7 +162,7 @@ const ParticipantComponent = () => {
     const getList = async () => {
         loader.showLoader()
         try {
-            const res = await apiCall<any>(adminClient,'POST', 'client/v1/client_list',
+            const res = await apiCall<any>(adminClient, 'POST', 'client/v1/client_list',
                 {
                     "search": debouncedSearch,
                     "sortBy": "createdAt",
@@ -226,7 +231,13 @@ const ParticipantComponent = () => {
                 avatar={drawerState.avatar}
                 title={drawerState.title}
             >
-                {drawerState.type === 'book' ? <AddParticipant /> : <ParticipantProfile clientId={selectedClient.clientId} />}
+                {drawerState.type === 'book' ? <AddParticipant onSuccess={() => {
+                    closeDrawer();
+                    getList();
+                }} /> : drawerState.type === 'edit' ? <AddParticipant clientId={selectedClient?.clientId} onSuccess={() => {
+                    closeDrawer();
+                    getList();
+                }} /> : <ParticipantProfile clientId={selectedClient?.clientId} />}
             </SideDrawer>
 
         </div>

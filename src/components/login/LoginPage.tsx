@@ -25,7 +25,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     const router = useRouter()
     const loader = useTopLoader()
     const { showPopup, updatePopupStatus } = usePopup();
-    const { fetchConversations } = useChatSocket(); // ✅ use context
+    // const { fetchConversations } = useChatSocket(); // ✅ use context
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         // console.log('logged in....');

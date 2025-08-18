@@ -54,7 +54,7 @@ const ChatDetails = ({ chat }: ChatDetailsProps) => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] border border-violet-200 rounded-2xl p-4 bg-white mx-6">
+    <div className="flex flex-col h-[calc(100vh-9rem)] border border-violet-200 rounded-2xl p-4 bg-white mx-6 mt-5">
       {/* Chat Header */}
       <div className="text-center text-sm text-primary font-medium mb-1">
         {messages.length > 0

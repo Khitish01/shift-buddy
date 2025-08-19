@@ -622,12 +622,13 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
             {/* Shiftcare ID */}
             {activeTab === 'personal' && <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Enter Your Shiftcare ID
+                    Enter Your Shift Buddy ID
                 </label>
                 <div className="flex space-x-2">
                     <input
                         type="text"
                         value={clientId}
+                        placeholder="Enter shift buddy ID"
                         onChange={(e) => setClientId(e.target.value)}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                     />
@@ -645,7 +646,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                     <button
                         onClick={() => setActiveTab('personal')}
                         className={`py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'personal'
-                            ? 'border-b-[3px] border-primary'
+                            ? 'border-b-[3px] border-primary text-primary'
                             : ''
                             }`}
                     >
@@ -654,7 +655,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                     <button
                         onClick={() => setActiveTab('medical')}
                         className={`py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'medical'
-                            ? 'border-b-[3px] border-primary'
+                            ? 'border-b-[3px] border-primary text-primary'
                             : ''
                             }`}
                     >
@@ -663,7 +664,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                     <button
                         onClick={() => setActiveTab('complianceDoc')}
                         className={`py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'complianceDoc'
-                            ? 'border-b-[3px] border-primary'
+                            ? 'border-b-[3px] border-primary text-primary'
                             : ''
                             }`}
                     >
@@ -871,6 +872,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                                 <ValidatedInput
                                     label="Name"
                                     value={formData.personalInfo.name}
+                                    placeholder="Enter name"
                                     onChange={(val) =>
                                         handleInputChange("personalInfo", { ...formData.personalInfo, name: val })
                                     }
@@ -924,6 +926,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Client Notes</label>
                                 <textarea
                                     value={formData.personalInfo.clientNotes}
+                                    placeholder="Enter client note"
                                     onChange={(e) =>
                                         handleInputChange('personalInfo', {
                                             ...formData.personalInfo,
@@ -945,6 +948,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                                 <ValidatedInput
                                     label="Email ID"
                                     type="email"
+                                    placeholder="Enter email"
                                     value={formData.personalInfo.email}
                                     onChange={(val) =>
                                         handleInputChange('personalInfo', {
@@ -962,6 +966,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                                 <ValidatedInput
                                     label="Phone No."
                                     type="tel"
+                                    placeholder="Enter phone no."
                                     value={formData.personalInfo.mobileNumber}
                                     onChange={(val) =>
                                         handleInputChange('personalInfo', {
@@ -979,6 +984,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                                 <ValidatedInput
                                     label="Family Member Name"
                                     type="text"
+                                    placeholder="Enter member name"
                                     value={formData.relationInfo.relativeName}
                                     onChange={(val) =>
                                         handleInputChange('relationInfo', {
@@ -995,6 +1001,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                             <div className="mb-4">
                                 <ValidatedInput
                                     label="Emergency Contact Number"
+                                    placeholder="Enter emergency number"
                                     type="tel"
                                     value={formData.relationInfo.relativeNumber}
                                     onChange={(val) =>
@@ -1012,6 +1019,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                             <div className="mb-4">
                                 <ValidatedInput
                                     label="Family Member Relation"
+                                    placeholder="Enter member relation"
                                     type="text"
                                     value={formData.relationInfo.relativeRelation}
                                     onChange={(val) =>
@@ -1039,6 +1047,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
 
                                     label="Suburb"
                                     type="text"
+                                    placeholder="Enter suburb"
                                     value={formData.address.suburb}
                                     onChange={(val) =>
                                         handleInputChange("address", {
@@ -1055,6 +1064,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
 
                                     label="State"
                                     type="text"
+                                    placeholder="Enter state"
                                     value={formData.address.state}
                                     onChange={(val) =>
                                         handleInputChange("address", {
@@ -1071,6 +1081,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
 
                                     label="Postal Code"
                                     type="text"
+                                    placeholder="Enter zipcode"
                                     value={formData.address.postCode}
                                     onChange={(val) =>
                                         handleInputChange("address", {
@@ -1098,7 +1109,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                                     }
                                     schema={fieldSchemas["ndis.ndisType"]}
                                     path="ndis.ndisType"
-                                    options={[{ label: "Select NDIS Type", value: "" },].concat(ndisTypes.map((ndis: any) => ({
+                                    options={[{ label: "Select Scheme Type", value: "" },].concat(ndisTypes.map((ndis: any) => ({
                                         label: ndis.ndisType,
                                         value: ndis._id,
                                     })))}
@@ -1108,6 +1119,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                                 <ValidatedInput
                                     label="NDIS Number"
                                     type="text"
+                                    placeholder="Enter ndis no."
                                     value={formData.ndis.ndisNumber}
                                     onChange={(val) =>
                                         handleInputChange('ndis', {
@@ -1153,6 +1165,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                             <ValidatedInput
                                 label="Diagnoses"
                                 type="text"
+                                placeholder="Enter diagnoses"
                                 value={formData.medicalInfo.diagnoses}
                                 onChange={(val) =>
                                     handleInputChange("medicalInfo", {
@@ -1188,6 +1201,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                             <ValidatedInput
                                 label=""
                                 type="text"
+                                placeholder="Enter allergies"
                                 value={allergyInput}
                                 onChange={setAllergyInput}
                                 schema={z.string().optional()} // only validate tags list, not typing
@@ -1232,6 +1246,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                             <ValidatedInput
                                 label=""
                                 type="text"
+                                placeholder="Enter medications"
                                 value={medication}
                                 onChange={setMedication}
                                 schema={z.string().optional()} // same logic: validate tags array, not typing
@@ -1261,6 +1276,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                             <ValidatedInput
                                 label="Mobility Notes"
                                 type="text"
+                                placeholder="Enter mobility notes"
                                 value={formData.medicalInfo.mobilityNotes}
                                 onChange={(val) =>
                                     handleInputChange("medicalInfo", {
@@ -1285,6 +1301,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                             <ValidatedInput
                                 label="Emergency Plan"
                                 type="text"
+                                placeholder="Enter emergency plan"
                                 value={formData.medicalInfo.emergencyPlan}
                                 onChange={(val) =>
                                     handleInputChange("medicalInfo", {

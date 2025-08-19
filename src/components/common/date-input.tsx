@@ -191,7 +191,7 @@ export function DateInput({
             <div className="relative">
                 <input
                     type="text"
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none pr-20 
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none pr-20 appearance-none bg-white
             ${error ? "border-red-500" : "border-gray-300 focus:border-purple-500"}`}
                     value={inputValue}
                     onChange={handleInputChange}

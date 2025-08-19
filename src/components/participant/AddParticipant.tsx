@@ -357,47 +357,47 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
     };
 
     const mapApiDataToFormForEdit = (apiData: any) => {
-            return {
-                clientId: apiData?._id,
-                personalInfo: {
-                    name: apiData.personalInfo?.name || '',
-                    gender: apiData.personalInfo?.gender || '',
-                    dob: apiData.personalInfo?.dob ? dayjs(apiData.personalInfo.dob).format('YYYY-MM-DD') : '',
-                    // clientNotes: apiData.personalInfo?.clientNotes || '',
-                    profileImage: apiData.personalInfo?.profileImage || '',
-                    // typeOfCare: apiData.personalInfo?.typeOfCare || '',
-                    email: apiData.personalInfo?.email || '',
-                    mobileNumber: apiData.personalInfo?.mobileNumber || ''
-                },
-                relationInfo: {
-                    relativeName: apiData.relationInfo?.relativeName || '',
-                    relativeRelation: apiData.relationInfo?.relativeRelation || '',
-                    relativeNumber: apiData.relationInfo?.relativeNumber || ''
-                },
-                address: {
-                    street: apiData.address?.street,
-                    suburb: apiData.address?.suburb,
-                    state: apiData.address?.state,
-                    postCode: apiData.address?.postCode,
-                    locationUrl: apiData.address?.locationUrl,
-                },
-                ndis: {
-                    ndisNumber: apiData.ndis?.ndisNumber,
-                    ndisType: apiData.ndis?.ndisType
-                },
-                documents: {
-                    medicalDoc: apiData.documents?.medicalDoc || [],
-                    complianceDoc: apiData.documents?.complianceDoc || []
-                },
-                medicalInfo: {
-                    diagnoses: apiData.medicalInfo?.diagnoses || '',
-                    allergy: apiData.medicalInfo?.allergy || [],
-                    medicationAndTime: apiData.medicalInfo?.medicationAndTime || [],
-                    mobilityNotes: apiData.medicalInfo?.mobilityNotes || '',
-                    emergencyPlan: apiData.medicalInfo?.emergencyPlan || ''
-                }
-            };
+        return {
+            clientId: apiData?._id,
+            personalInfo: {
+                name: apiData.personalInfo?.name || '',
+                gender: apiData.personalInfo?.gender || '',
+                dob: apiData.personalInfo?.dob ? dayjs(apiData.personalInfo.dob).format('YYYY-MM-DD') : '',
+                // clientNotes: apiData.personalInfo?.clientNotes || '',
+                profileImage: apiData.personalInfo?.profileImage || '',
+                // typeOfCare: apiData.personalInfo?.typeOfCare || '',
+                email: apiData.personalInfo?.email || '',
+                mobileNumber: apiData.personalInfo?.mobileNumber || ''
+            },
+            relationInfo: {
+                relativeName: apiData.relationInfo?.relativeName || '',
+                relativeRelation: apiData.relationInfo?.relativeRelation || '',
+                relativeNumber: apiData.relationInfo?.relativeNumber || ''
+            },
+            address: {
+                street: apiData.address?.street,
+                suburb: apiData.address?.suburb,
+                state: apiData.address?.state,
+                postCode: apiData.address?.postCode,
+                locationUrl: apiData.address?.locationUrl,
+            },
+            ndis: {
+                ndisNumber: apiData.ndis?.ndisNumber,
+                ndisType: apiData.ndis?.ndisType
+            },
+            documents: {
+                medicalDoc: apiData.documents?.medicalDoc || [],
+                complianceDoc: apiData.documents?.complianceDoc || []
+            },
+            medicalInfo: {
+                diagnoses: apiData.medicalInfo?.diagnoses || '',
+                allergy: apiData.medicalInfo?.allergy || [],
+                medicationAndTime: apiData.medicalInfo?.medicationAndTime || [],
+                mobilityNotes: apiData.medicalInfo?.mobilityNotes || '',
+                emergencyPlan: apiData.medicalInfo?.emergencyPlan || ''
+            }
         };
+    };
 
     const getSlotDetails = async () => {
         loader.showLoader()
@@ -429,7 +429,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                     <button
                         onClick={() => setActiveTab('personal')}
                         className={`py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'personal'
-                            ? 'border-b-[3px] border-primary'
+                            ? 'border-b-[3px] border-primary text-primary'
                             : ''
                             }`}
                     >
@@ -438,7 +438,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                     <button
                         onClick={() => setActiveTab('medical')}
                         className={`py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'medical'
-                            ? 'border-b-[3px] border-primary'
+                            ? 'border-b-[3px] border-primary text-primary'
                             : ''
                             }`}
                     >
@@ -447,7 +447,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                     <button
                         onClick={() => setActiveTab('complianceDoc')}
                         className={`py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'complianceDoc'
-                            ? 'border-b-[3px] border-primary'
+                            ? 'border-b-[3px] border-primary text-primary'
                             : ''
                             }`}
                     >
@@ -515,6 +515,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                             <div className="mb-4">
                                 <ValidatedInput
                                     label="Name"
+                                    placeholder="Enter name"
                                     value={formData.personalInfo.name}
                                     onChange={(val) =>
                                         handleInputChange("personalInfo", { ...formData.personalInfo, name: val })
@@ -576,6 +577,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
 
                                     label="Suburb"
                                     type="text"
+                                    placeholder="Enter suburb"
                                     value={formData.address.suburb}
                                     onChange={(val) =>
                                         handleInputChange("address", {
@@ -592,6 +594,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
 
                                     label="State"
                                     type="text"
+                                    placeholder="Enter state"
                                     value={formData.address.state}
                                     onChange={(val) =>
                                         handleInputChange("address", {
@@ -608,6 +611,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
 
                                     label="Postal Code"
                                     type="text"
+                                    placeholder="Enter zipcode"
                                     value={formData.address.postCode}
                                     onChange={(val) =>
                                         handleInputChange("address", {
@@ -632,6 +636,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                                 <ValidatedInput
                                     label="Email ID"
                                     type="email"
+                                    placeholder="Enter email"
                                     value={formData.personalInfo.email}
                                     onChange={(val) =>
                                         handleInputChange('personalInfo', {
@@ -649,6 +654,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                                 <ValidatedInput
                                     label="Phone No."
                                     type="tel"
+                                    placeholder="Enter phone no."
                                     value={formData.personalInfo.mobileNumber}
                                     onChange={(val) =>
                                         handleInputChange('personalInfo', {
@@ -666,6 +672,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                                 <ValidatedInput
                                     label="Family Member Name"
                                     type="text"
+                                    placeholder="Enter member name"
                                     value={formData.relationInfo.relativeName}
                                     onChange={(val) =>
                                         handleInputChange('relationInfo', {
@@ -683,6 +690,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                                 <ValidatedInput
                                     label="Emergency Contact Number"
                                     type="tel"
+                                    placeholder="Enter emergency number"
                                     value={formData.relationInfo.relativeNumber}
                                     onChange={(val) =>
                                         handleInputChange('relationInfo', {
@@ -700,6 +708,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                                 <ValidatedInput
                                     label="Family Member Relation"
                                     type="text"
+                                    placeholder="Enter member relation"
                                     value={formData.relationInfo.relativeRelation}
                                     onChange={(val) =>
                                         handleInputChange('relationInfo', {
@@ -713,26 +722,10 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                             </div>
 
                             {/* NDIS */}
-                            <h3 className="text-lg font-medium text-gray-900 mt-6 mb-4">NDIS</h3>
-                            <div className="mb-4">
-                                <ValidatedInput
-                                    label="NDIS Number"
-                                    type="text"
-                                    value={formData.ndis.ndisNumber}
-                                    onChange={(val) =>
-                                        handleInputChange('ndis', {
-                                            ...formData.ndis,
-                                            ndisNumber: val
-                                        })
-                                    }
-                                    schema={fieldSchemas["ndis.ndisNumber"]}
-                                    path="ndis.ndisNumber"
-                                />
-                            </div>
-
+                            <h3 className="text-lg font-medium text-gray-900 mt-6 mb-4">SCHEME</h3>
                             <div>
                                 <ValidatedSelect
-                                    label="NDIS Type"
+                                    label="Scheme Type"
                                     value={formData.ndis.ndisType}
                                     onChange={(val) =>
                                         handleInputChange('ndis', {
@@ -742,10 +735,26 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                                     }
                                     schema={fieldSchemas["ndis.ndisType"]}
                                     path="ndis.ndisType"
-                                    options={[{ label: "Select NDIS Type", value: "" },].concat(ndisTypes.map((ndis: any) => ({
+                                    options={[{ label: "Select Scheme Type", value: "" },].concat(ndisTypes.map((ndis: any) => ({
                                         label: ndis.ndisType,
                                         value: ndis._id,
                                     })))}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <ValidatedInput
+                                    label="NDIS Number"
+                                    type="text"
+                                    placeholder="Enter ndis no."
+                                    value={formData.ndis.ndisNumber}
+                                    onChange={(val) =>
+                                        handleInputChange('ndis', {
+                                            ...formData.ndis,
+                                            ndisNumber: val
+                                        })
+                                    }
+                                    schema={fieldSchemas["ndis.ndisNumber"]}
+                                    path="ndis.ndisNumber"
                                 />
                             </div>
                         </div>
@@ -780,6 +789,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                             <ValidatedInput
                                 label="Diagnoses"
                                 type="text"
+                                placeholder="Enter diagnoses"
                                 value={formData.medicalInfo.diagnoses}
                                 onChange={(val) =>
                                     handleInputChange("medicalInfo", {
@@ -815,6 +825,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                             <ValidatedInput
                                 label=""
                                 type="text"
+                                placeholder="Enter allergies"
                                 value={allergyInput}
                                 onChange={setAllergyInput}
                                 schema={z.string().optional()} // only validate tags list, not typing
@@ -859,6 +870,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                             <ValidatedInput
                                 label=""
                                 type="text"
+                                placeholder="Enter medications"
                                 value={medication}
                                 onChange={setMedication}
                                 schema={z.string().optional()} // same logic: validate tags array, not typing
@@ -888,6 +900,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                             <ValidatedInput
                                 label="Mobility Notes"
                                 type="text"
+                                placeholder="Enter mobility notes"
                                 value={formData.medicalInfo.mobilityNotes}
                                 onChange={(val) =>
                                     handleInputChange("medicalInfo", {
@@ -912,6 +925,7 @@ export const AddParticipant: React.FC<AddParticipantProps> = ({ clientId, onSucc
                             <ValidatedInput
                                 label="Emergency Plan"
                                 type="text"
+                                placeholder="Enter emergency plan"
                                 value={formData.medicalInfo.emergencyPlan}
                                 onChange={(val) =>
                                     handleInputChange("medicalInfo", {

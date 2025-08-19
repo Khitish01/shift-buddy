@@ -420,6 +420,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                                     /> */}
                                     <ValidatedInput
                                         label="Name"
+                                        placeholder="Enter name"
                                         value={formData.name}
                                         onChange={(val) =>
                                             setFormData({ ...formData, name: val })
@@ -519,53 +520,33 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                                 </div>
 
                                 {/* NDIS */}
-                                <h3 className="text-lg font-medium text-gray-900 mt-6 ">NDIS</h3>
-                                <div className="">
-                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">NDIS No.</label>
-                                    <input
-                                        type="text"
-                                        value={formData.ndis.ndisNumber}
-                                        onChange={(e) =>
-                                            handleInputChange('ndis', { ...formData.ndis, ndisNumber: e.target.value })
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                    /> */}
-
-                                    <ValidatedInput
-                                        label="NDIS No."
-                                        value={formData.ndis.ndisNumber}
-                                        onChange={(val) =>
-                                            handleInputChange('ndis', { ...formData.ndis, ndisNumber: val })
-                                        }
-                                        schema={fieldSchemas["ndis.ndisNumber"]}
-                                        path="ndis.ndisNumber"
-                                    />
-                                </div>
+                                <h3 className="text-lg font-medium text-gray-900 mt-6 ">SCHEME</h3>
                                 <div>
-                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">NDIS types</label>
-                                    <select
-                                        value={formData.ndis.ndisType}
-                                        onChange={(e) =>
-                                            handleInputChange('ndis', { ...formData.ndis, ndisType: e.target.value })
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                                    >
-                                        <option value="NDIS Participant (NDIS)">NDIS Participant (NDIS)</option>
-                                    </select> */}
-
-
                                     <ValidatedSelect
-                                        label="NDIS types"
+                                        label="Scheme types"
                                         value={formData.ndis.ndisType}
                                         onChange={(val) =>
                                             handleInputChange('ndis', { ...formData.ndis, ndisType: val })
                                         }
                                         schema={fieldSchemas["ndis.ndisType"]}
                                         path="ndis.ndisType"
-                                        options={[{ label: "Select NDIS Type", value: "" },].concat(ndisTypes.map((ndis: any) => ({
+                                        options={[{ label: "Select Scheme Type", value: "" },].concat(ndisTypes.map((ndis: any) => ({
                                             label: ndis.ndisType,
                                             value: ndis._id,
                                         })))}
+                                    />
+                                </div>
+                                <div className="">
+
+                                    <ValidatedInput
+                                        label="NDIS No."
+                                        placeholder="Enter ndis no."
+                                        value={formData.ndis.ndisNumber}
+                                        onChange={(val) =>
+                                            handleInputChange('ndis', { ...formData.ndis, ndisNumber: val })
+                                        }
+                                        schema={fieldSchemas["ndis.ndisNumber"]}
+                                        path="ndis.ndisNumber"
                                     />
                                 </div>
                             </div>
@@ -588,6 +569,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                                     <ValidatedInput
                                         label="Email ID"
                                         type="email"
+                                        placeholder="Enter email"
                                         value={formData.email}
                                         onChange={(val) =>
                                             setFormData({ ...formData, email: val })
@@ -611,6 +593,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                                     <ValidatedInput
                                         label="Phone No."
                                         type="tel"
+                                        placeholder="Enter phone no."
                                         value={formData.mobileNumber}
                                         onChange={(val) =>
                                             setFormData({ ...formData, mobileNumber: val })
@@ -634,6 +617,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                                     <ValidatedInput
                                         label="Emergency Contact Number"
                                         type="tel"
+                                        placeholder="Enter emergency no."
                                         value={formData.contactDetails.emergencyContactNumber}
                                         onChange={(val) =>
                                             handleInputChange('contactDetails', { ...formData.contactDetails, emergencyContactNumber: val })
@@ -656,6 +640,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                                     /> */}
                                     <ValidatedInput
                                         label="Family Member Name"
+                                        placeholder="Enter member name"
                                         value={formData.contactDetails.familyMemberName}
                                         onChange={(val) =>
                                             handleInputChange('contactDetails', { ...formData.contactDetails, familyMemberName: val })
@@ -678,6 +663,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                                     /> */}
                                     <ValidatedInput
                                         label="Family Member Relation"
+                                        placeholder="Enter member relation"
                                         value={formData.contactDetails.familyMemberRelation}
                                         onChange={(val) =>
                                             handleInputChange('contactDetails', { ...formData.contactDetails, familyMemberRelation: val })
@@ -720,6 +706,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
 
                                         label="Suburb"
                                         type="text"
+                                        placeholder="Enter suburb"
                                         value={formData.address.suburb}
                                         onChange={(val) =>
                                             handleInputChange("address", {
@@ -736,6 +723,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
 
                                         label="State"
                                         type="text"
+                                        placeholder="Enter state"
                                         value={formData.address.state}
                                         onChange={(val) =>
                                             handleInputChange("address", {
@@ -752,6 +740,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
 
                                         label="Postal Code"
                                         type="text"
+                                        placeholder="Enter zipcode"
                                         value={formData.address.postalCode}
                                         onChange={(val) =>
                                             handleInputChange("address", {
@@ -793,6 +782,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
 
                                 <ValidatedInput
                                     label="Tax File Number"
+                                    placeholder="Enter file no."
                                     value={formData.additionalDetails.taxFileNumber}
                                     onChange={(val) =>
                                         handleInputChange('additionalDetails', { ...formData.additionalDetails, taxFileNumber: val })
@@ -816,6 +806,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
 
                                 <ValidatedInput
                                     label="ABN"
+                                    placeholder="Enter abn"
                                     value={formData.additionalDetails.AbnNumber}
                                     onChange={(val) =>
                                         handleInputChange('additionalDetails', { ...formData.additionalDetails, AbnNumber: val })
@@ -839,6 +830,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
 
                                 <ValidatedInput
                                     label="Screening Checks"
+                                    placeholder="Enter checks"
                                     value={formData.additionalDetails.workersScreeningCheck}
                                     onChange={(val) =>
                                         handleInputChange('additionalDetails', { ...formData.additionalDetails, workersScreeningCheck: val })
@@ -1130,6 +1122,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                             <ValidatedInput
                                 label="Receiver Email"
                                 type="email"
+                                placeholder="Enter receiver email"
                                 value={formData.receiverEmail}
                                 onChange={(val) =>
                                     setFormData({ ...formData, receiverEmail: val })
@@ -1150,6 +1143,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                             <ValidatedInput
                                 label="Create Email"
                                 type="email"
+                                placeholder="Enter create email"
                                 value={formData.createEmail}
                                 onChange={(val) =>
                                     setFormData({ ...formData, createEmail: val })
@@ -1171,6 +1165,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                             <ValidatedInput
                                 label="New Password"
                                 type="password"
+                                placeholder="Enter password"
                                 value={formData.password}
                                 onChange={(val) =>
                                     setFormData({ ...formData, password: val })
@@ -1192,6 +1187,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
                             <ValidatedInput
                                 label="Confirm New Password"
                                 type="password"
+                                placeholder="Enter confirm password"
                                 value={formData.confirmPass}
                                 onChange={(val) =>
                                     setFormData({ ...formData, confirmPass: val })

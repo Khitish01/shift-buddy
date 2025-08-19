@@ -50,7 +50,7 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
                 value={value}
                 placeholder={placeholder}
                 onChange={(e) => handleChange(e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none 
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none appearance-none bg-white
           ${error ? "border-red-500" : "border-gray-300 focus:border-purple-500"}`}
             />
             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}

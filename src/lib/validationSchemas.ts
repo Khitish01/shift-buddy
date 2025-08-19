@@ -39,7 +39,7 @@ export const fieldSchemas: Record<string, z.ZodTypeAny> = {
     "address.state": z.string().min(2, "State is required"),
     "address.postCode": z.string().regex(/^[0-9]{4,6}$/, "Postcode must be 4–6 digits"),
     "ndis.ndisNumber": z.string().min(5, "NDIS number is required"),
-    "ndis.ndisType": z.string().min(1, "NDIS type is required"),
+    "ndis.ndisType": z.string().min(1, "Scheme type is required"),
     
     
     

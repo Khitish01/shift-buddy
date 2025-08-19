@@ -75,7 +75,7 @@ export default function StreetAutocomplete({ formData, setFormData }: any) {
             <input
                 type="text"
                 placeholder="Enter street"
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none 
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none appearance-none bg-white
           ${error ? "border-red-500" : "border-gray-300 focus:border-purple-500"}`}
                 value={formData.address.street}
                 onChange={(e) =>

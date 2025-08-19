@@ -242,7 +242,7 @@ const BookingComponent = () => {
                 data={data}
                 columns={columns}
                 actions={(row) => {
-                    if (row.slotStatusLabel === "overdue" || row.slotStatusLabel === "cancel") {
+                    if (row.slotStatusLabel === "overdue" || row.slotStatusLabel === "cancel"|| row.slotStatusLabel === "completed") {
                         return [] // no actions for these rows
                     }
                     return actions // otherwise show default actions

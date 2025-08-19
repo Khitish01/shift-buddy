@@ -894,6 +894,8 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                                         { label: "Select gender", value: "" },
                                         { label: "Male", value: "Male" },
                                         { label: "Female", value: "Female" },
+                                        { label: "Non Binary", value: "Non Binary" },
+                                        { label: "Not Preferable", value: "Not Preferable" },
                                         { label: "Other", value: "Other" },
                                     ]}
                                 />
@@ -1083,7 +1085,25 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                             {/* ))} */}
 
                             {/* NDIS */}
-                            <h3 className="text-lg font-medium text-gray-900 mt-6 mb-4">NDIS</h3>
+                            <h3 className="text-lg font-medium text-gray-900 mt-6 mb-4">SCHEME</h3>
+                            <div>
+                                <ValidatedSelect
+                                    label="Scheme Type"
+                                    value={formData.ndis.ndisType}
+                                    onChange={(val) =>
+                                        handleInputChange('ndis', {
+                                            ...formData.ndis,
+                                            ndisType: val
+                                        })
+                                    }
+                                    schema={fieldSchemas["ndis.ndisType"]}
+                                    path="ndis.ndisType"
+                                    options={[{ label: "Select NDIS Type", value: "" },].concat(ndisTypes.map((ndis: any) => ({
+                                        label: ndis.ndisType,
+                                        value: ndis._id,
+                                    })))}
+                                />
+                            </div>
                             <div className="mb-4">
                                 <ValidatedInput
                                     label="NDIS Number"
@@ -1100,24 +1120,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                                 />
                             </div>
 
-                            <div>
-                                <ValidatedSelect
-                                    label="NDIS Type"
-                                    value={formData.ndis.ndisType}
-                                    onChange={(val) =>
-                                        handleInputChange('ndis', {
-                                            ...formData.ndis,
-                                            ndisType: val
-                                        })
-                                    }
-                                    schema={fieldSchemas["ndis.ndisType"]}
-                                    path="ndis.ndisType"
-                                    options={[{ label: "Select NDIS Type", value: "" },].concat(ndisTypes.map((ndis: any) => ({
-                                        label: ndis.ndisType,
-                                        value: ndis._id,
-                                    })))}
-                                />
-                            </div>
+
                         </div>
                     </div>
 

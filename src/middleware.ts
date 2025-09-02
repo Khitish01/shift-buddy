@@ -6,7 +6,7 @@ import type { NextRequest } from 'next/server'
 // Define protected routes
 const protectedRoutes = {
     admin: ['/admin', '/admin/dashboard'],
-    staff: ['/staff', '/staff/dashboard'],
+    carer: ['/carer', '/carer/dashboard'],
     superadmin: ['/superadmin'],
 }
 
@@ -71,5 +71,5 @@ export async function middleware(request: NextRequest) {
 
 
 export const config = {
-    matcher: ['/admin/:path*', '/staff/:path*', '/superadmin/:path*'],
+    matcher: ['/admin/:path*', '/carer/:path*', '/superadmin/:path*'],
 }

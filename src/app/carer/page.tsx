@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-const AdminModule = () => {
+const CarerModule = () => {
     const router = useRouter();
 
     useEffect(() => {
@@ -13,4 +13,4 @@ const AdminModule = () => {
     return null; // Optional: you can show a loading spinner here if you want
 };
 
-export default AdminModule;
+export default CarerModule;

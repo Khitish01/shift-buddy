@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 export interface TableAction {
     id: string
     label: string
-    icon: React.ReactNode
+    icon?: React.ReactNode
     onClick: (row: any) => void
     variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
     className?: string
@@ -25,7 +25,7 @@ export interface ColumnDefinition {
     className?: string
     render?: (value: any, row: any) => React.ReactNode
     badgeVariant?: "default" | "secondary" | "destructive" | "outline"
-    badgeColorMap?: Record<string, "default" | "secondary" | "destructive" | "outline">
+    badgeColorMap?: Record<string, string>
 }
 
 export interface SortConfig {
@@ -142,10 +142,13 @@ export function DataTable({
                 if (typeof value === "boolean") {
                     displayValue = value ? "Active" : "Inactive"
                     badgeVariant = "custom"
-
                     customClasses += value ? " text-[#1F9254] bg-[#EBF9F1]" : " text-[#FF8285] bg-[#FBE7E8]"
                 } else if (column.badgeColorMap) {
-                    badgeVariant = column.badgeColorMap[value] || column.badgeVariant || "default"
+                    const colorConfig = column.badgeColorMap[value]
+                    if (colorConfig) {
+                        badgeVariant = "custom"
+                        customClasses += ` ${colorConfig}`
+                    }
                 }
 
                 return (
@@ -157,7 +160,7 @@ export function DataTable({
                 const rowActions = typeof actions === "function" ? actions(row) : actions
 
                 return (
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                         {rowActions.map((action, idx) => (
                             <Button
                                 key={idx}
@@ -167,10 +170,10 @@ export function DataTable({
                                     e.stopPropagation()
                                     action.onClick(row)
                                 }}
-                                className={action.className}
+                                className={`px-4 py-1 rounded-md text-sm font-medium ${action.className || ''}`}
                                 aria-label={action.label}
                             >
-                                {action.icon}
+                                {action.icon ? action.icon : action.label}
                             </Button>
                         ))}
                     </div>

@@ -13,6 +13,8 @@ import AddCarerModal from "./AddCarerModal";
 import AddShiftModal from "./AddShiftModal";
 import { usePopup } from "@/context/PopupContext";
 import { adminClient } from "@/lib/apiClient";
+import dayjs from "dayjs";
+import { ConfirmModal } from "../common/ConfirmModal";
 // const sampleData = [
 //     {
 //         id: '000989',
@@ -166,7 +168,7 @@ const ShiftComponent = () => {
     const [data, setData] = useState<any[]>([]);
     const { showPopup, updatePopupStatus } = usePopup();
     const [loading, setLoading] = useState(false);
-    const shiftTabs = ['Morning Shift', 'Evening Shift', 'Night Shift']
+    const [shiftTabs, setShiftTabs] = useState<any[]>([]);
     const [search, setSearch] = useState<string>('')
     const [debouncedSearch, setDebouncedSearch] = useState(search);
     const [activeTab, setActiveTab] = useState(0)
@@ -174,16 +176,18 @@ const ShiftComponent = () => {
     const [pageSize, setPageSize] = useState(10)
     const [totalCount, setTotalCount] = useState(0)
     const [sortConfig, setSortConfig] = useState<SortConfig | null>(null)
+    const [selectedCarer, setSelectedCarer] = useState<string>('');
     const [drawerState, setDrawerState] = useState({
         isOpen: false,
         type: 'book', // 'book' or 'details' or 'career'
         avatar: '',
         title: ''
     });
+    const [open, setOpen] = useState(false);
     // Column definitions
     const columns: ColumnDefinition[] = [
         {
-            key: "_id",
+            key: "carrierId",
             label: "Carer ID",
             type: "text",
             sortable: false,
@@ -197,20 +201,14 @@ const ShiftComponent = () => {
             width: "200px",
         },
         {
-            key: "personalInfo.name",
+            key: "carrierName",
             label: "Carer name",
             type: "text",
             sortable: true,
         },
         {
-            key: "startDate",
+            key: "dateRange",
             label: "Date Range",
-            type: "date",
-            sortable: true,
-        },
-        {
-            key: "startTime",
-            label: "Booking Time",
             type: "text",
             sortable: true,
         },
@@ -252,7 +250,10 @@ const ShiftComponent = () => {
             id: "delete",
             label: "Delete",
             icon: <Trash2 className="h-4 w-4" />,
-            onClick: (row) => console.log("Delete", row),
+            onClick: (row) => {
+                setOpen(true)
+                setSelectedCarer(row._id)
+            },
             variant: "ghost",
             className: "text-destructive hover:text-destructive",
         },
@@ -330,27 +331,74 @@ const ShiftComponent = () => {
         };
     }, [search]);
 
-    useEffect(() => {
-        const getList = async () => {
-            loader.showLoader()
-            try {
-                const res = await apiCall<any>(adminClient, 'POST', '/slot/v1/get_slot',
-                    {
-                        "startDate": "2025-05-25",
-                        "endDate": "2025-07-25"
-                    }
-                )
-                console.log(res);
-                setData(res?.data)
-                setTotalCount(res?.count)
-            } catch (error) {
-                console.error('Error setting role:', error)
-            } finally {
-                loader.hideLoader()
-            }
+    const getList = async () => {
+        loader.showLoader()
+        try {
+            const res = await apiCall<any>(adminClient, 'POST', '/shift/v1/get_shift_list_carrier',
+                {
+                    "page": currentPage,
+                    "limit": pageSize,
+                    "sortBy": "createdAt",
+                    "sortOrder": "desc",
+                    "search": debouncedSearch,
+                    "shiftId": shiftTabs?.[activeTab]?._id,
+                    "startDate": "",
+                    "endDate": ""
+                }
+            )
+            console.log(res);
+            const data: any[] = []
+            res.data.forEach((x: any) => {
+                x['dateRange'] = dayjs(x.startDate, 'YYYY-MM-DD').format('DD/MM/YYYY') + ' - ' + dayjs(x.endDate, 'YYYY-MM-DD').format('DD/MM/YYYY')
+                data.push(x)
+            })
+            setData(data)
+            setTotalCount(res?.pagination?.total)
+        } catch (error) {
+            console.error('Error setting role:', error)
+        } finally {
+            loader.hideLoader()
         }
+    }
+    useEffect(() => {
         getList()
-    }, [currentPage, pageSize, debouncedSearch])
+    }, [shiftTabs, activeTab, currentPage, pageSize, debouncedSearch])
+
+    const getShiftList = async () => {
+        const result = await apiCall<any>(adminClient, 'GET', '/shift/v1/get_shift')
+        console.log(result);
+        setShiftTabs(result?.data)
+
+    }
+    useEffect(() => {
+        getShiftList()
+    }, [])
+
+
+    const deleteCarer = async (selectedCarer: string) => {
+        loader.showLoader()
+        try {
+            const res = await apiCall<any>(adminClient, 'POST', '/shift/v1/delete_carrier_shift',
+                {
+                   shiftId : selectedCarer
+                }
+            )
+            console.log(res);
+            // showSucessToast(res?.msg)
+            showPopup("Carer deleted", "This Carer has been deleted from the shift");
+            updatePopupStatus("success", "Carer deleted", "This Carer has been deleted from the shift", 4000);
+            getList()
+
+            // setData(res?.data)
+            // setTotalCount(res?.count)
+        } catch (error) {
+            console.error('Error setting role:', error)
+            showPopup(`Something went wrong`, `Your booking has not been Cancelled`);
+            updatePopupStatus("error", `Something went wrong`, `Your booking has not been Cancelled`, 4000);
+        } finally {
+            loader.hideLoader()
+        }
+    }
 
     return (
         // <main className="pt-24 pl-20 p-6 w-[calc(100vw-1rem)]">
@@ -382,7 +430,7 @@ const ShiftComponent = () => {
                             : 'border-transparent text-gray-500'
                             }`}
                     >
-                        {tab}
+                        {tab?.shiftName}
                     </button>
                 ))}
                 <button
@@ -422,15 +470,45 @@ const ShiftComponent = () => {
                 } /> : <BookingDetailsContent bookingId="" />}
             </SideDrawer>
 
-            <AddCarerModal show={showCarerModal} onClose={() => {
-                setShowCarerModal(false)
+            <AddCarerModal show={showCarerModal} onSuccess={() => {
                 addCarerShift()
+                setShowCarerModal(false)
+                getList()
+
+            }} onClose={() => {
+                setShowCarerModal(false)
+
             }} />
-            <AddShiftModal show={showShiftModal} onClose={() => {
-                setShowShiftModal(false)
-                addNewShift()
-            }
-            } />
+            <AddShiftModal show={showShiftModal}
+                onSuccess={() => {
+                    addNewShift()
+                    setShowShiftModal(false)
+                    getShiftList()
+
+                }}
+                onClose={() => {
+                    setShowShiftModal(false)
+                }
+                } />
+
+            <ConfirmModal
+                open={open}
+                title="Are you sure to delete?"
+                message={
+                    <>
+                        This action <strong>cannot be undone</strong>. This will permanently delete the carer from this shift.
+                    </>
+                }
+                confirmText="Confirm"
+                cancelText="Cancel"
+                tone="danger"
+                onConfirm={() => {
+                    // alert("Deleted!");
+                    deleteCarer(selectedCarer)
+                    setOpen(false);
+                }}
+                onCancel={() => setOpen(false)}
+            />
 
         </div>
 

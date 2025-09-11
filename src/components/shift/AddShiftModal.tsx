@@ -1,8 +1,35 @@
 'use client'
 
-export default function AddShiftModal({ show, onClose }: { show: boolean; onClose: () => void }) {
-    if (!show) return null
+import { useEffect, useState } from "react";
+import { ValidatedInput } from "../ui/ValidatedInput";
+import { fieldSchemas } from "@/lib/validationSchemas";
+import { apiCall } from "@/lib/apiCall";
+import { adminClient } from "@/lib/apiClient";
+import { useTopLoader } from "@/context/TopLoader";
 
+export default function AddShiftModal({ show, onSuccess, onClose }: { show: boolean; onSuccess: () => void; onClose: () => void }) {
+    if (!show) return null
+    const loader = useTopLoader();
+    const [formData, setFormData] = useState({
+        shiftName: '',
+        timing: '',
+        startTime: '',
+        endTime: '',
+    });
+
+    const createShift = async () => {
+        loader.showLoader()
+        try {
+            const result = await apiCall<any>(adminClient, 'POST', '/shift/v1/create_shift', formData)
+            console.log(result);
+            loader.hideLoader()
+            onSuccess()
+        }
+        catch (error) {
+            console.log(error)
+            loader.hideLoader()
+        }
+    }
     return (
 
         <>
@@ -20,8 +47,8 @@ export default function AddShiftModal({ show, onClose }: { show: boolean; onClos
                     </div>
 
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Name of the shift</label>
-                        <input
+                        {/* <label className="block text-sm font-medium text-gray-700 mb-2">Name of the shift</label> */}
+                        {/* <input
                             type="text"
                             // value={formData.relationInfo.relativeRelation}
                             // onChange={(e) =>
@@ -31,11 +58,22 @@ export default function AddShiftModal({ show, onClose }: { show: boolean; onClos
                             //     })
                             // }
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                        /> */}
+
+                        <ValidatedInput
+                            label="Name of the shift"
+                            value={formData.shiftName}
+                            placeholder="Enter name"
+                            onChange={(val) =>
+                                setFormData({ ...formData, shiftName: val })
+                            }
+                            schema={fieldSchemas["shiftName"]}
+                            path="shiftName"
                         />
                     </div>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Shift Timing</label>
-                        <input
+                        {/* <label className="block text-sm font-medium text-gray-700 mb-2">Shift Timing</label> */}
+                        {/* <input
                             type="text"
                             // value={formData.relationInfo.relativeRelation}
                             // onChange={(e) =>
@@ -43,14 +81,29 @@ export default function AddShiftModal({ show, onClose }: { show: boolean; onClos
                             //         ...formData.relationInfo,
                             //         relativeRelation: e.target.value
                             //     })
+
+
                             // }
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                        /> */}
+
+                        <ValidatedInput
+                            label="Shift Timing"
+                            value={formData.timing}
+                            placeholder="Enter shift timing"
+                            onChange={(val) => {
+                                const [start, end] = val.split("-");
+                                setFormData({ ...formData, timing: val, startTime: start, endTime: end })
+                            }
+                            }
+                            schema={fieldSchemas["shiftName"]}
+                            path="shiftName"
                         />
                     </div>
 
                     <div className="flex justify-end">
                         <button className="px-5 bg-[#69417E] text-white py-2 rounded-xl hover:bg-[#452469]"
-                        onClick={onClose}
+                            onClick={createShift}
                         >
                             Add
                         </button>

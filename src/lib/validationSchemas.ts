@@ -17,8 +17,8 @@ export const fieldSchemas: Record<string, z.ZodTypeAny> = {
     "medicalInfo.diagnoses": z.string().min(1, "Diagnoses is required"),
     "medicalInfo.allergies": z.array(z.string().min(1)).min(1, "At least one allergy is required"),
     "medicalInfo.medications": z.array(z.string().min(1)).min(1, "At least one medication is required"),
-    "medicalInfo.mobilityNotes": z.string().min(1,"Mobility Note is required"),
-    "medicalInfo.emergencyPlan": z.string().min(1,"Emergency Plan is required"),
+    "medicalInfo.mobilityNotes": z.string().min(1, "Mobility Note is required"),
+    "medicalInfo.emergencyPlan": z.string().min(1, "Emergency Plan is required"),
 
     // --- Carer ---
     "carrierId": z.string().min(1, "Please select a carer"),
@@ -40,15 +40,15 @@ export const fieldSchemas: Record<string, z.ZodTypeAny> = {
     "address.postCode": z.string().regex(/^[0-9]{4,6}$/, "Postcode must be 4–6 digits"),
     "ndis.ndisNumber": z.string().min(5, "NDIS number is required"),
     "ndis.ndisType": z.string().min(1, "Scheme type is required"),
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
     "carer.shiftTiming": z.string().min(1, "Shift timing is required"),
     "carer.employementType": z.string().min(1, "Employement Type is required"),
     "additionalDetails.taxFileNumber": z.string().min(1, "Tax File no. is required"),
@@ -62,4 +62,10 @@ export const fieldSchemas: Record<string, z.ZodTypeAny> = {
     "receiverEmail": z.string().email("Invalid email"),
     "password": z.string().min(6, "Password is required"),
     "confirmPass": z.string().min(6, "Confirm Password is required"),
+
+
+
+    "shiftName": z.string().min(1, "Shift Name is Required"),
+    "carerName": z.string().min(1, "Carer Name is Required"),
+    "shiftId": z.string().min(1, "Select Shift"),
 };

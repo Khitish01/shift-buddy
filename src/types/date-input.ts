@@ -2,7 +2,7 @@ export type DateFormat = "dd-mm-yyyy" | "dd/mm/yyyy" | "mm-dd-yyyy" | "mm/dd/yyy
 
 export type CalendarMode = "inline" | "dropdown"
 
-export type SelectionMode = "single" | "multiple"
+export type SelectionMode = "single" | "multiple" |"range"
 
 // export type AddressType ="street" | "suburb"|"state"| "postCode"
 

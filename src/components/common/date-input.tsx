@@ -31,12 +31,23 @@ export function DateInput({
     const [isOpen, setIsOpen] = useState(calendarMode === "inline")
     const [inputValue, setInputValue] = useState("")
     const [selectedDates, setSelectedDates] = useState<Date[]>([])
+    const [rangeStart, setRangeStart] = useState<Date | null>(null)
     const [positionAbove, setPositionAbove] = useState(false)
     const [error, setError] = useState<string>("") // ✅ validation error
     const containerRef = useRef<HTMLDivElement>(null)
 
     const parsedMinDate = minDate ? parseDate(minDate, dateFormat) : undefined
     const parsedMaxDate = maxDate ? parseDate(maxDate, dateFormat) : undefined
+
+    const getDatesBetween = (start: Date, end: Date): Date[] => {
+        const dates = []
+        const current = new Date(start)
+        while (current <= end) {
+            dates.push(new Date(current))
+            current.setDate(current.getDate() + 1)
+        }
+        return dates
+    }
 
     // ---------------- VALIDATION ----------------
     const validateValue = (val: string | string[]) => {
@@ -80,6 +91,10 @@ export function DateInput({
             const formatted = dates.map((date) => formatDate(date, dateFormat))
             setInputValue(formatted.join(", "))
             validateValue(formatted)
+        } else if (selectionMode === "range" && dates.length === 2) {
+            const formatted = `${formatDate(dates[0], dateFormat)} - ${formatDate(dates[1], dateFormat)}`
+            setInputValue(formatted)
+            validateValue([formatDate(dates[0], dateFormat), formatDate(dates[1], dateFormat)])
         }
     }, [value, dateFormat, selectionMode])
 
@@ -120,6 +135,18 @@ export function DateInput({
         if (selectionMode === "single") {
             newSelectedDates = [date]
             setIsOpen(calendarMode === "dropdown" ? false : true)
+        } else if (selectionMode === "range") {
+            if (!rangeStart || selectedDates.length === 2) {
+                newSelectedDates = [date]
+                setRangeStart(date)
+            } else {
+                const start = rangeStart
+                const end = date
+                const [startDate, endDate] = start <= end ? [start, end] : [end, start]
+                newSelectedDates = getDatesBetween(startDate, endDate)
+                setRangeStart(null)
+                setIsOpen(calendarMode === "dropdown" ? false : true)
+            }
         } else {
             const isAlreadySelected = selectedDates.some((d) => isSameDate(d, date))
             newSelectedDates = isAlreadySelected
@@ -139,6 +166,24 @@ export function DateInput({
             setInputValue(formatted.join(", "))
             onChange?.(formatted)
             validateValue(formatted) // ✅ validate
+        } else if (selectionMode === "range") {
+            if (newSelectedDates.length >= 2) {
+                const startFormatted = formatDate(newSelectedDates[0], dateFormat)
+                const endFormatted = formatDate(newSelectedDates[newSelectedDates.length - 1], dateFormat)
+                const allFormatted = newSelectedDates.map(d => formatDate(d, dateFormat))
+                setInputValue(`${startFormatted} - ${endFormatted}`)
+                onChange?.(allFormatted)
+                validateValue(allFormatted)
+            } else if (newSelectedDates.length === 1) {
+                const formatted = formatDate(newSelectedDates[0], dateFormat)
+                setInputValue(formatted)
+                onChange?.([formatted])
+                validateValue([formatted])
+            } else {
+                setInputValue("")
+                onChange?.([])
+                validateValue("")
+            }
         } else {
             setInputValue("")
             onChange?.(selectionMode === "single" ? "" : [])
@@ -171,6 +216,7 @@ export function DateInput({
 
     const clearSelection = () => {
         setSelectedDates([])
+        setRangeStart(null)
         setInputValue("")
         onChange?.(selectionMode === "single" ? "" : [])
         validateValue("") // ✅ validate empty
@@ -183,7 +229,9 @@ export function DateInput({
     const getPlaceholder = () => {
         if (placeholder) return placeholder
         const formatExample = dateFormat.replace(/yyyy/g, "2024").replace(/mm/g, "12").replace(/dd/g, "31")
-        return selectionMode === "multiple" ? `Select dates (${formatExample})` : `Select date (${formatExample})`
+        if (selectionMode === "multiple") return `Select dates (${formatExample})`
+        if (selectionMode === "range") return `Select date range (${formatExample} - ${formatExample})`
+        return `Select date (${formatExample})`
     }
 
     return (

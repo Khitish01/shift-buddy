@@ -57,7 +57,7 @@ const Header = () => {
 
 
     return (
-        <header className={`fixed top-0 right-0  bg-white border-b border-gray-200 px-6 py-4 z-40 transition-all duration-300 ease-in-out ${isOpen && !isMobile ? !isCollapse ? 'left-[15.5rem]' : 'left-[4.5rem]' : 'left-0'}`}>
+        <header className={`fixed top-0 right-0  bg-white border-b border-gray-200 px-6 py-4 z-40 transition-all duration-300 ease-in-out ${isOpen && !isMobile ? !isCollapse ? 'left-[16.5rem]' : 'left-[4.5rem]' : 'left-0'}`}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                     {/* <p className="text-xl font-semibold text-primary flex flex-col">

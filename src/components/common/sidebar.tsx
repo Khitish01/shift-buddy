@@ -5,11 +5,15 @@ import { useSidebar } from "@/context/SidebarContext";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
     ArrowBigDown,
+    BookCheck,
     Calendar,
+    CalendarClock,
     ChevronRight,
     ClipboardList,
     Home,
     LogOut,
+    Mail,
+    Receipt,
     Settings,
     Truck,
     Users,
@@ -43,7 +47,11 @@ const SideBar = () => {
         { icon: CarrierIcon, label: 'Carer Management', id: 'carrier', path: '/admin/carrier' },
         { icon: ShiftIcon, label: 'Shift Management', id: 'shift', path: '/admin/shift' },
         { icon: LeaveIcon, label: 'Leave Management', id: 'leave', path: '/admin/leave' },
-        { icon: VehicleIcon, label: 'Vehicle Management', id: 'vehicles', path: '' },
+        { icon: VehicleIcon, label: 'Vehicle Management', id: 'vehicle', path: '/admin/vehicle' },
+        { icon: CalendarClock, label: 'Time-Sheet Management', id: 'time-sheet', path: '/admin/time-sheet' },
+        { icon: Receipt, label: 'Invoice Management', id: 'invoice', path: '/admin/invoice' },
+        { icon: BookCheck, label: 'Service Pricing', id: 'service', path: '/admin/service' },
+        { icon: Mail, label: 'Email Communication', id: 'email', path: '/admin/email' },
     ];
     return (
         <div className="relative z-50">
@@ -54,7 +62,7 @@ const SideBar = () => {
                             ? 'w-full opacity-100 rounded-none px-4'
                             : isCollapse
                                 ? 'w-20 opacity-100 px-2 items-center rounded-br-3xl rounded-tr-3xl'
-                                : 'w-64 opacity-100 px-4 rounded-br-3xl rounded-tr-3xl'
+                                : 'w-68 opacity-100 px-4 rounded-br-3xl rounded-tr-3xl'
                         : 'w-0 opacity-0'
                     }`}
             >
@@ -84,7 +92,7 @@ const SideBar = () => {
                 )}
 
                 {/* Navigation */}
-                <nav className="flex flex-col justify-between h-full">
+                <nav className="flex flex-col justify-between h-full overflow-auto scrollbar-hide">
                     <div className="flex flex-col space-y-2">
                         {isCollapse && !isMobile ? (
                             sidebarItems.map((item) => (
@@ -164,7 +172,7 @@ const SideBar = () => {
 
                 {/* Collapse Toggle Button (Desktop only) */}
                 {!isMobile && (
-                    <div className={`fixed bottom-10 transition-all duration-300 ease-in-out ${isCollapse ? 'left-[3.8rem]' : 'left-[14.8rem]'}`}>
+                    <div className={`fixed bottom-10 transition-all duration-300 ease-in-out ${isCollapse ? 'left-[3.8rem]' : 'left-[15.8rem]'}`}>
                         <button
                             className="bg-[#F2C7AC] font-bold h-10 w-10 flex items-center justify-center rounded-full"
                             onClick={collapse}

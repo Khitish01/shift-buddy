@@ -16,6 +16,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
         <LoadScript
             googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_API_KEY as string}
             libraries={libraries}
+            loadingElement={<div className="w-full h-full" />}
         >
             <TopLoaderProvider>
                 <PopupProvider>

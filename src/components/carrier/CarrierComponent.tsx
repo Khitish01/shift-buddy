@@ -316,6 +316,7 @@ const CarrierComponent = () => {
     }, [search]);
 
     const getList = async () => {
+        setLoading(true)
         loader.showLoader()
         try {
             const res = await apiCall<any>(adminClient, 'POST', '/carrier/v1/carrier_list', {
@@ -332,6 +333,7 @@ const CarrierComponent = () => {
             console.error('Error setting role:', error)
         } finally {
             loader.hideLoader()
+            setLoading(false)
         }
     }
     useEffect(() => {

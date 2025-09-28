@@ -68,4 +68,13 @@ export const fieldSchemas: Record<string, z.ZodTypeAny> = {
     "shiftName": z.string().min(1, "Shift Name is Required"),
     "carerName": z.string().min(1, "Carer Name is Required"),
     "shiftId": z.string().min(1, "Select Shift"),
+
+
+
+
+    "modelName": z.string().min(1, "Model Name is Required"),
+    "registrationNo": z.string().min(1, "Registration No is Required"),
+    "modelNumber": z.string().min(1, "Model Number No is Required"),
+    "assigneeMobile": z.string().min(1, "Assignee Mobile Number No is Required"),
+    "status": z.string().min(1, "Status is Required"),
 };

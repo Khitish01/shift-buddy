@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { Ban, Edit, Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import { Ban, CheckCircle, CircleX, Edit, Eye, Pencil, Plus, Trash, Trash2 } from "lucide-react";
 import { Input } from "../ui/input";
 import { apiCall } from "@/lib/apiCall";
 import { useTopLoader } from "@/context/TopLoader";
@@ -9,129 +9,79 @@ import { ColumnDefinition, DataTable, SortConfig, TableAction } from "../common/
 import { SideDrawer } from "../common/SIdeDrawer";
 import { BookSlotContent } from "../scheduler/SlotBooking";
 import { BookingDetailsContent } from "../scheduler/BookingDetails";
-import { AddParticipant } from "./AddParticipant";
-import { ParticipantProfile } from "./ParticipantDeatils";
+import { usePopup } from "@/context/PopupContext";
 import { adminClient } from "@/lib/apiClient";
+import dayjs from "dayjs";
+import { ConfirmModal } from "../common/ConfirmModal";
+import { AttendanceHistory } from "./AttendanceHistory";
 
-const ParticipantComponent = () => {
+export const TimeSheetComponent = () => {
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
     const [search, setSearch] = useState<string>('')
-    const [selectedClient, setSelectedClient] = useState<any>()
     const [debouncedSearch, setDebouncedSearch] = useState(search);
+
     const [currentPage, setCurrentPage] = useState(1)
     const [pageSize, setPageSize] = useState(10)
     const [totalCount, setTotalCount] = useState(0)
     const [sortConfig, setSortConfig] = useState<SortConfig | null>(null)
+
+
+    const [selectedVehicle, setSelectedVehicle] = useState<any>();
     const [drawerState, setDrawerState] = useState({
         isOpen: false,
-        type: 'book', // 'book' or 'details' or 'edit'
         avatar: '',
         title: ''
     });
-    // const [selectedClient, setSelectedBooking] = useState<string>('');
     // Column definitions
     const columns: ColumnDefinition[] = [
         {
-            key: "clientId",
-            label: "Participant ID",
+            key: "carrier.carrierId",
+            label: "Carer ID",
             type: "text",
             sortable: false,
             width: "120px",
         },
         {
-            key: "personalInfo.profileImage",
+            key: "carrier.profileImage",
             label: "Img",
             type: "image",
-            sortable: false,
-            width: "100px",
+            sortable: true,
         },
         {
-            key: "personalInfo.name",
-            label: "Name",
+            key: "carrier.name",
+            label: "Carer Name",
             type: "text",
             sortable: true,
         },
-        // {
-        //     key: "startDate",
-        //     label: "Booking Date",
-        //     type: "date",
-        //     sortable: true,
-        // },
         {
-            key: "startTime",
-            label: "Total bookings",
-            type: "number",
+            key: "date",
+            label: "Date",
+            type: "date",
             sortable: true,
         },
         {
-            key: "personalInfo.mobileNumber",
-            label: "Mobile No",
+            key: "time",
+            label: "Time",
             type: "text",
             sortable: false,
         },
         {
-            key: "status",
-            label: "Booking Status",
-            type: "badge",
+            key: "overTime",
+            label: "Overtime",
+            type: "text",
             sortable: false,
-            badgeColorMap: {
-                active: "default",
-                inactive: "destructive",
-            },
-        },
-        {
-            key: "actions",
-            label: "Action",
-            type: "actions",
-            sortable: false,
-            width: "100px",
         },
     ]
-
-    // Action definitions
-    const actions: TableAction[] = [
-        {
-            id: "edit",
-            label: "Edit",
-            icon: <Edit className="h-4 w-4" />,
-            onClick: (row) => {
-                setSelectedClient(row)
-                // setOpen(true)
-                openDrawer('edit')
-            },
-            variant: "ghost",
-        },
-        {
-            id: "delete",
-            label: "Delete",
-            icon: <Trash2 className="h-4 w-4" />,
-            onClick: (row) => console.log("Delete", row),
-            variant: "ghost",
-            className: "text-destructive hover:text-destructive",
-        },
-    ]
-
-    const openDrawer = (type: 'book' | 'details' | 'edit', name: string = '', profileImage: string = '') => {
-        setDrawerState({
-            isOpen: true,
-            type,
-            avatar:
-                type === 'edit'
-                    ? ''
-                    : type === 'book'
-                        ? ''
-                        : profileImage,
-            title: type === 'edit' ? 'Edit Participant' : type === 'book' ? 'Add Participant' : name + ' (Patient)'
-        });
-    };
     const closeDrawer = () => {
         setDrawerState(prev => ({ ...prev, isOpen: false }));
 
         // setCalenderDrawer(false)
 
     };
+
+
     const handlePageChange = (page: number) => {
         setCurrentPage(page)
     }
@@ -163,18 +113,27 @@ const ParticipantComponent = () => {
         setLoading(true)
         loader.showLoader()
         try {
-            const res = await apiCall<any>(adminClient, 'POST', 'client/v1/client_list',
+            const res = await apiCall<any>(adminClient, 'POST', '/timeSheet/v1/get_attendence',
                 {
-                    "search": debouncedSearch,
-                    "sortBy": "createdAt",
-                    "sortOrder": "desc",
-                    "page": currentPage,
-                    "limit": pageSize
+                    page: currentPage,
+                    limit: pageSize,
+                    search: debouncedSearch,
+                    sortBy: "date",
+                    sortOrder: "desc",
                 }
             )
             console.log(res);
+
+            const data: any[] = []
+            res.data.forEach((x: any) => {
+                const loginTime = dayjs(`2000-01-01 ${x.loginTime}`, 'YYYY-MM-DD hh:mm').format('hh:mm A');
+                const logoutTime = x.logoutTime ? dayjs(`2000-01-01 ${x.logoutTime}`, 'YYYY-MM-DD hh:mm').format('hh:mm A') : 'NA';
+                x['time'] = `${loginTime} - ${logoutTime}`;
+                data.push(x)
+            })
             setData(res?.data)
-            setTotalCount(res?.total)
+
+            setTotalCount(res?.pagination?.total)
         } catch (error) {
             console.error('Error setting role:', error)
         } finally {
@@ -186,29 +145,24 @@ const ParticipantComponent = () => {
         getList()
     }, [currentPage, pageSize, debouncedSearch])
 
+
     return (
         // <main className="pt-24 pl-20 p-6 w-[calc(100vw-1rem)]">
         <div className="bg-white">
             {/* This is carrier listing page */}
 
             <div className="flex justify-between items-center mb-3">
-                <h1 className="font-semibold text-xl md:text-2xl">Participant Listing</h1>
+                <h1 className="font-semibold text-xl md:text-2xl">TimeSheet Management</h1>
                 <div className="flex items-center gap-3">
                     <Input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
-                    <button className="bg-primary w-full text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-purple-900"
-                        style={{ boxShadow: '0px 1px 2px 0px #1018280D' }}
-                        onClick={() => openDrawer('book')}
-                    >
-                        <Plus size={16} />
-                        <span>Add Participant</span>
-                    </button>
+
                 </div>
             </div>
+
 
             <DataTable
                 data={data}
                 columns={columns}
-                actions={actions}
                 sortable={true}
                 paginated={true}
                 currentPage={currentPage}
@@ -220,30 +174,28 @@ const ParticipantComponent = () => {
                 onPageSizeChange={handlePageSizeChange}
                 onSortChange={handleSortChange}
                 loading={loading}
-                emptyMessage="No Participant found"
+                emptyMessage="No attendance found"
                 onRowClick={(row) => {
-                    setSelectedClient(row);
-                    openDrawer('details', row.personalInfo.name, row.personalInfo.profileImage);
+                    setSelectedVehicle(row)
+                    console.log(row);
+                    setDrawerState({
+                        isOpen: true,
+                        avatar: '',
+                        title: row?.carrier?.name
+                    })
                 }}
-            // className="border rounded-lg"
             />
+
             <SideDrawer
                 isOpen={drawerState.isOpen}
                 onClose={closeDrawer}
                 avatar={drawerState.avatar}
                 title={drawerState.title}
             >
-                {drawerState.type === 'book' ? <AddParticipant onSuccess={() => {
-                    closeDrawer();
-                    getList();
-                }} /> : drawerState.type === 'edit' ? <AddParticipant clientId={selectedClient?.clientId} onSuccess={() => {
-                    closeDrawer();
-                    getList();
-                }} /> : <ParticipantProfile clientId={selectedClient?.clientId} />}
+                <AttendanceHistory carrier={selectedVehicle} />
             </SideDrawer>
 
         </div>
 
     )
 }
-export default ParticipantComponent;

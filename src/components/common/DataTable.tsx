@@ -259,14 +259,14 @@ export function DataTable({
                             </tr>
                         </thead>
                         <tbody>
-                            {data.length === 0 ? (
+                            {data?.length === 0 ? (
                                 <tr>
                                     <td colSpan={columns.length} className="px-4 py-8 text-center text-muted-foreground">
                                         {emptyMessage}
                                     </td>
                                 </tr>
                             ) : (
-                                data.map((row, index) => (
+                                data?.map((row, index) => (
                                     <tr
                                         key={index}
                                         className={`transition-colors ${index % 2 === 0 ? "bg-[#F7F6FE]" : "bg-[#FFFFFF]"

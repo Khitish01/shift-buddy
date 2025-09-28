@@ -332,6 +332,7 @@ const ShiftComponent = () => {
     }, [search]);
 
     const getList = async () => {
+        setLoading(true)
         loader.showLoader()
         try {
             const res = await apiCall<any>(adminClient, 'POST', '/shift/v1/get_shift_list_carrier',
@@ -358,6 +359,7 @@ const ShiftComponent = () => {
             console.error('Error setting role:', error)
         } finally {
             loader.hideLoader()
+            setLoading(false)
         }
     }
     useEffect(() => {

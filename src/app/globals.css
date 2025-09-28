@@ -217,6 +217,15 @@
   scrollbar-color: #69417E #FFFFFF;
 }
 
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 #top-loader {
   position: fixed;
   top: 0;

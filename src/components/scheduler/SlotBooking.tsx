@@ -530,7 +530,9 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
     }
 
     useEffect(() => {
-        getSlotDetails()
+        if (slotId) {
+            getSlotDetails()
+        }
     }, [slotId])
 
 
@@ -596,7 +598,7 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
 
             if (slotId) {
 
-                updatedFormData['allSlot'] = "false";
+                updatedFormData['allSlot'] = false;
                 updatedFormData['slotId'] = slotId;
 
                 const res = await apiCall<any>(adminClient, "POST", "/slot/v1/update_slot", updatedFormData);

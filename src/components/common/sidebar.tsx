@@ -37,6 +37,12 @@ const SideBar = () => {
             // sessionStorage.clear()
             router.push('/');
 
+        } else if (activeView == 'settings') {
+            // Cookies.remove('accessToken');
+            // Cookies.remove('role');
+            // sessionStorage.clear()
+            router.push('/admin/settings');
+
         }
     }, [activeView])
 

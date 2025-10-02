@@ -36,7 +36,7 @@ const BookingComponent = () => {
     // Column definitions
     const columns: ColumnDefinition[] = [
         {
-            key: "_id",
+            key: "bookingId",
             label: "Booking ID",
             type: "text",
             sortable: false,

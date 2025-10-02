@@ -90,7 +90,8 @@ export default function AddShiftModal({ show, onSuccess, onClose }: { show: bool
                         <ValidatedInput
                             label="Shift Timing"
                             value={formData.timing}
-                            placeholder="Enter shift timing"
+                            title="Enter shift timing in start-end format, e.g., 09-18"
+                            placeholder="start-end (HH-HH)"
                             onChange={(val) => {
                                 const [start, end] = val.split("-");
                                 setFormData({ ...formData, timing: val, startTime: start, endTime: end })

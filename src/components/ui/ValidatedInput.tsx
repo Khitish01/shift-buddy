@@ -5,6 +5,7 @@ import { useState } from "react";
 interface ValidatedInputProps {
     label: string;
     type?: string;
+    title?: string;
     value: string;
     onChange: (val: string) => void;
     schema: z.ZodTypeAny;   // single field schema
@@ -16,6 +17,7 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
     label,
     type = "text",
     value,
+    title,
     onChange,
     schema,
     placeholder
@@ -48,6 +50,7 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
             <input
                 type={type}
                 value={value}
+                title={title}
                 placeholder={placeholder}
                 onChange={(e) => handleChange(e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none appearance-none bg-white

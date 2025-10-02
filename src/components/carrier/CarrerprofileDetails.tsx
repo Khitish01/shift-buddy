@@ -40,6 +40,7 @@ const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) =
   const [eventLevel, setEventLevel] = useState("");
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const calendarRef = useRef<FullCalendar>(null);
+   const [currentDate, setCurrentDate] = useState(dayjs());
   //   const { isOpen, openModal, closeModal } = useModal();
   const router = useRouter()
 
@@ -155,15 +156,15 @@ const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) =
     loader.showLoader()
     let payload = {
       carrierId,
-      startDate: "2025-08-01",
-      endDate: "2025-08-31",
+      startDate: dayjs(currentDate).startOf('month').format('YYYY-MM-DD'),
+      endDate: dayjs(currentDate).endOf('month').format('YYYY-MM-DD'),
       // page: "1",
       // limit: "20",
       slotView: "calendar",
       // sortBy: "createdAt",
       // sortOrder: "desc",
     }
-    const res = await apiCall<any>(adminClient,'POST', `/slot/v1/get_carrier_slot`, payload)
+    const res = await apiCall<any>(adminClient, 'POST', `/slot/v1/get_carrier_slot`, payload)
     console.log(res);
     setBookingDetails(res.data);
 
@@ -178,9 +179,9 @@ const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) =
   }
   useEffect(() => {
     getBookingDetails()
-  }, [carrierId]);
+  }, [carrierId, currentDate]);
   // const calendarRef = useRef<FullCalendar | null>(null);
-  const [currentDate, setCurrentDate] = useState(dayjs());
+ 
 
   const updateCurrentDate = () => {
     if (calendarRef.current) {
@@ -209,7 +210,7 @@ const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) =
           <div className="flex gap-2">
             <button
               onClick={handlePrev}
-              className="px-2 py-1 rounded-sm border border-[#E4E7EC] hover:bg-[#F9FAFB"
+              className="px-2 py-1 rounded-sm border border-[#E4E7EC] hover:bg-[#F9FAFB]"
             >
               <ChevronLeft />
             </button>

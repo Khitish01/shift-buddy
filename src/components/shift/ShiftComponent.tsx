@@ -194,7 +194,7 @@ const ShiftComponent = () => {
             width: "120px",
         },
         {
-            key: "personalInfo.name",
+            key: "profileImage",
             label: "Img",
             type: "image",
             sortable: false,
@@ -213,7 +213,7 @@ const ShiftComponent = () => {
             sortable: true,
         },
         {
-            key: "personalInfo.mobileNumber",
+            key: "mobileNumber",
             label: " Contact No.",
             type: "text",
             sortable: false,
@@ -260,17 +260,24 @@ const ShiftComponent = () => {
     ]
     const [showCarerModal, setShowCarerModal] = useState(false)
     const [showShiftModal, setShowShiftModal] = useState(false)
-    const addCarerShift = async () => {
+    const addCarerShift = async (type: 'success' | 'error', msg: string = '') => {
 
         showPopup('Processing', "Carer new shift is processing.."); // Optional message & duration
-        try {
 
-        } catch (error) {
-            console.error('Error setting role:', error)
-        } finally {
-            // loader.hideLoader()
+        if (type == 'success') {
             updatePopupStatus('success', 'Carer added to the shift', "Congratulation, Carer has been added to the shift.", 4000); // Optional message & duration
+            return;
+        } else {
+            updatePopupStatus('error', 'Error', msg, 6000); // Optional message & duration
         }
+        // try {
+
+        // } catch (error) {
+        //     console.error('Error setting role:', error)
+        // } finally {
+        //     // loader.hideLoader()
+        //     updatePopupStatus('success', 'Carer added to the shift', "Congratulation, Carer has been added to the shift.", 4000); // Optional message & duration
+        // }
     }
     const addNewShift = async () => {
 
@@ -382,7 +389,7 @@ const ShiftComponent = () => {
         try {
             const res = await apiCall<any>(adminClient, 'POST', '/shift/v1/delete_carrier_shift',
                 {
-                   shiftId : selectedCarer
+                    shiftId: selectedCarer
                 }
             )
             console.log(res);
@@ -473,13 +480,16 @@ const ShiftComponent = () => {
             </SideDrawer>
 
             <AddCarerModal show={showCarerModal} onSuccess={() => {
-                addCarerShift()
+                addCarerShift('success')
                 setShowCarerModal(false)
                 getList()
 
             }} onClose={() => {
                 setShowCarerModal(false)
 
+            }} onError={(msg:string) => {
+                addCarerShift('error',msg)
+                setShowCarerModal(false)
             }} />
             <AddShiftModal show={showShiftModal}
                 onSuccess={() => {

@@ -11,7 +11,7 @@ import { fieldSchemas } from "@/lib/validationSchemas";
 import dayjs from "dayjs";
 import { ValidatedSelect } from "../ui/ValidatedSelect";
 
-export default function AddCarerModal({ show, onSuccess, onClose }: { show: boolean; onSuccess: () => void; onClose: () => void }) {
+export default function AddCarerModal({ show, onSuccess, onError, onClose }: { show: boolean; onSuccess: () => void; onError: (msg: string) => void; onClose: () => void }) {
     if (!show) return null
     const [range, setRange] = useState<string[]>([])
     const [carerName, setCarerName] = useState<string>('')
@@ -62,9 +62,10 @@ export default function AddCarerModal({ show, onSuccess, onClose }: { show: bool
             console.log(result);
             loader.hideLoader()
             onSuccess()
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error setting role:', error)
             loader.hideLoader()
+            onError(error.response?.data?.msg || error.message || 'someting went wrong')
         }
     }
 

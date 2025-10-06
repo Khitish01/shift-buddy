@@ -142,7 +142,7 @@ export const AddCarer: React.FC<CarerProps> = ({ carerId, onSuccess }) => {
             const res = await apiCall<any>(adminClient, 'POST', `/carrier/v1/carrier_details`, { carrierId: carerId })
             console.log(res);
             // setSlotDetails(res?.data)
-            const mappedData = mapApiDataToFormForEdit(res.data);
+            const mappedData = mapApiDataToFormForEdit(res.data.carrier);
             setFormData(mappedData);
             // setTotalCount(res?.total)
         } catch (error) {

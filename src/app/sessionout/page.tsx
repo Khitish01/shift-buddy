@@ -5,11 +5,6 @@ import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const UnAuthorized = () => {
-    const user = {
-        name: "Khitish Mangal",
-        email: "khitish@example.com",
-        avatar: "https://ui-avatars.com/api/?name=Khitish+Mangal&background=69417E&color=fff"
-    };
 
     const router = useRouter();
 

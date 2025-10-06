@@ -32,7 +32,7 @@ const AdminProfile = () => {
         Cookies.remove('accessToken');
         Cookies.remove('role');
         // sessionStorage.clear()
-        router.push('/');
+        router.push('/admin-login');
     }
 
     return (

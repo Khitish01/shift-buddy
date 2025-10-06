@@ -1,5 +1,5 @@
 'use client'
-import LoginPage from "@/components/login/LoginPage";
+import {CarerLoginPage} from "@/components/login/CarerLoginPage";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,6 +13,6 @@ export default function Home() {
     setIsLoggedIn(true);
   };
   return (
-    <LoginPage onLogin={handleLogin} />
+    <CarerLoginPage onLogin={handleLogin} />
   );
 }

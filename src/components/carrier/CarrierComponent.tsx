@@ -205,7 +205,7 @@ const CarrierComponent = () => {
             sortable: true,
         },
         {
-            key: "totalShift",
+            key: "totalShifts",
             label: "Total Shift",
             type: "number",
             sortable: true,

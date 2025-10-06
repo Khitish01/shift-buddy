@@ -837,10 +837,10 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                                         schema={fieldSchemas["customSlotArray"]}
                                     />
 
-                                    {formData.customSlotArray.length > 0 && (
+                                    {formData?.customSlotArray?.length > 0 && (
                                         <div className="pt-4">
                                             <div className="flex flex-wrap gap-1">
-                                                {(showAll ? formData.customSlotArray : formData.customSlotArray.slice(0, 2)).map((date, index) => (
+                                                {(showAll ? formData?.customSlotArray : formData?.customSlotArray?.slice(0, 2)).map((date, index) => (
                                                     <span
                                                         key={index}
                                                         className="px-2 py-1 bg-purple-200 text-purple-800 text-xs flex gap-2 items-center rounded-full"
@@ -853,14 +853,14 @@ export const BookSlotContent: React.FC<BookSlotContentProps> = ({ slotId, onSucc
                                                     </span>
                                                 ))}
 
-                                                {formData.customSlotArray.length > 2 && (
+                                                {formData?.customSlotArray?.length > 2 && (
                                                     <span
                                                         className="px-2 py-1 bg-purple-200 text-purple-800 text-xs rounded-full cursor-pointer"
                                                         onClick={toggleShowAll}
                                                     >
                                                         {showAll
                                                             ? "Show less"
-                                                            : `+${formData.customSlotArray.length - 2} more`}
+                                                            : `+${formData?.customSlotArray?.length - 2} more`}
                                                     </span>
                                                 )}
                                             </div>

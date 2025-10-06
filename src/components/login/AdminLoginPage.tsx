@@ -18,7 +18,7 @@ interface LoginPageProps {
     onLogin: () => void;
 }
 
-export default function LoginPage({ onLogin }: LoginPageProps) {
+export const AdminLoginPage = ({ onLogin }: LoginPageProps) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('admin') // example role
@@ -37,7 +37,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                 email,
                 password
             }
-            const res = await apiCall<any>(adminClient,'POST', '/admin/v1/login', payload)
+            const res = await apiCall<any>(adminClient, 'POST', '/admin/v1/login', payload)
             // sessionStorage.setItem('accessToken', JSON.stringify(res.accessToken))
             // Cookies.set('accessToken', res.accessToken, { path: '/', secure: true, sameSite: 'Lax' })
             Cookies.set('accessToken', res.accessToken, {
@@ -62,7 +62,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             // showPopup('SUCCESS', "Login Successfull");
             // }, 1000)
 
-            
+
             router.push(res?.user?.role)
         } catch (error: any) {
             console.error('API error:', error.response?.data || error.message);

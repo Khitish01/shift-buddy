@@ -1,6 +1,4 @@
-import Footer from "@/components/common/footer";
-import Header from "@/components/common/header";
-import SideBar from "@/components/common/sidebar";
+import Layout from "@/components/layout/Layout";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 // import "../global.css";
@@ -16,11 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "Staff",
-    description: "This is the staff",
+    title: "Shift Buddy Staff",
+    description: "This is the shift buddy staff",
 };
 
-export default function AdminLayout({
+export default function CarerLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
@@ -30,13 +28,8 @@ export default function AdminLayout({
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
 
-            <Header />
-            <div className="flex">
-                <SideBar />
-                {children}
-            </div>
+            <Layout>{children}</Layout>
 
-            <Footer />
         </div>
 
     );

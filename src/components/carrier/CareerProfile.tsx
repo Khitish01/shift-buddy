@@ -11,6 +11,7 @@ import { apiCall } from '@/lib/apiCall';
 import dayjs from 'dayjs';
 import { DocumentUploadIcon } from '@/app/images';
 import { adminClient } from '@/lib/apiClient';
+import { VehicleDetails } from '../vehicle/VehicleDetails';
 interface CarerProfileProps {
     carrierId: string;
     OpenCalendarView: () => void;
@@ -27,13 +28,19 @@ const CarerProfilePage: React.FC<CarerProfileProps> = ({ carrierId, OpenEditView
     // };
     const loader = useTopLoader();
     const [bookingDetails, setBookingDetails] = useState<any>();
+    const [totalLeaves, setTotalLeaves] = useState<any>();
+    const [totalShifts, setTotalShifts] = useState<any>();
+    const [vehicleDetails, setVehicleDetails] = useState<any>();
     const [upcomingBookings, setUpcomingBookings] = useState<any[]>([]);
 
-    const getBookingDetails = async () => {
+    const getCarerDetails = async () => {
         loader.showLoader()
         const res = await apiCall<any>(adminClient, 'POST', `/carrier/v1/carrier_details`, { carrierId })
         console.log(res);
-        setBookingDetails(res.data);
+        setBookingDetails(res.data?.carrier);
+        setTotalShifts(res.data?.totalShifts);
+        setTotalLeaves(res.data?.totalLeaves);
+        setVehicleDetails(res.data?.vehicles);
         loader.hideLoader()
     }
     const getUpcomingBooking = async () => {
@@ -44,7 +51,7 @@ const CarerProfilePage: React.FC<CarerProfileProps> = ({ carrierId, OpenEditView
         loader.hideLoader()
     }
     useEffect(() => {
-        getBookingDetails()
+        getCarerDetails()
     }, [carrierId])
     useEffect(() => {
         getUpcomingBooking()
@@ -75,6 +82,14 @@ const CarerProfilePage: React.FC<CarerProfileProps> = ({ carrierId, OpenEditView
         const [, ...nameParts] = lastSegment?.split('-');
         return decodeURIComponent(nameParts?.join('-'));
     };
+
+    const updateStatus = async (status: string) => {
+        loader.showLoader()
+        const res = await apiCall<any>(adminClient, 'POST', `/carrier/v1/update-employment-or-availability`, { carrierId: bookingDetails?.carrierId, availabilityStatus: status })
+        console.log(res);
+        getCarerDetails();
+        loader.hideLoader()
+    }
     return (
         <div className="min-h-screen bg-[#F9F8FC] p-4 md:p-8 font-sans">
             {/* Header Section */}
@@ -118,18 +133,26 @@ const CarerProfilePage: React.FC<CarerProfileProps> = ({ carrierId, OpenEditView
                 {/* Vehicle Details */}
                 <div>
                     <h3 className="text-base font-semibold text-gray-800 mb-2">Vehicle Details</h3>
-                    <div className="flex items-center justify-between p-5 rounded-2xl h-28 bg-[#81B29C1A] w-full">
-                        <div>
-                            <p className="text-sm font-medium text-gray-900">Nexon, SUV</p>
-                            <p className="text-sm text-gray-600">Model: BKQLA921000</p>
-                            <p className="text-sm text-gray-600">License No: IKQLA-921000</p>
-                            <a href="#" className="text-sm text-purple-600 underline mt-1 inline-block">Change Vehicle</a>
-                        </div>
-                        <img
-                            src="https://cdn-icons-png.flaticon.com/512/744/744465.png"
-                            alt="Vehicle"
-                            className="w-16 h-16 object-contain"
-                        />
+                    <div className="p-5 rounded-2xl h-28 bg-[#81B29C1A] w-full">
+                        {vehicleDetails && vehicleDetails.length > 0 ? (
+                            <div className='flex items-center justify-between '>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-900">{vehicleDetails?.[0]?.modelName}</p>
+                                    <p className="text-sm text-gray-600">Model: {vehicleDetails?.[0]?.modelNumber}</p>
+                                    <p className="text-sm text-gray-600">License No: {vehicleDetails?.[0]?.registrationNo}</p>
+                                    <a href="#" className="text-sm text-primary underline mt-1 inline-block">Change Vehicle</a>
+                                </div>
+                                <img
+                                    src={vehicleDetails?.[0]?.vehicleImage}
+                                    alt="Vehicle"
+                                    className="w-16 h-16 object-contain"
+                                />
+                            </div>
+                        ) : (
+                            <div className='text-center text-gray-500 italic'>
+                                No vehicle assigned
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -137,20 +160,25 @@ const CarerProfilePage: React.FC<CarerProfileProps> = ({ carrierId, OpenEditView
                 <div>
                     <h3 className="text-base font-semibold text-gray-800 mb-2">Overview</h3>
                     <div className="p-5 bg-[#edf9ff] rounded-2xl h-28 w-full">
-                        <div className="flex items-baseline justify-between gap-6">
+                        <div className="flex items-baseline justify-between gap-3">
                             <div className="space-y-1 text-center">
                                 <p className="text-sm text-gray-500">Total Shift</p>
-                                <p className="text-2xl font-bold text-purple-700">1,054</p>
+                                <p className="text-2xl font-bold text-primary">{totalShifts}</p>
                             </div>
                             <div className="space-y-1 text-center">
                                 <p className="text-sm text-gray-500">Leaves</p>
-                                <p className="text-2xl font-bold text-purple-700">7</p>
+                                <p className="text-2xl font-bold text-primary">{totalLeaves}</p>
                             </div>
                             <div className=" space-y-1 text-center">
                                 <span className="text-sm text-gray-500">Status</span>
-                                <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-sm font-medium">
-                                    Available
-                                    <ChevronDown className="w-4 h-4" />
+                                <div className="relative">
+                                    <select value={bookingDetails?.availabilityStatus} onChange={(e) => updateStatus(e.target.value)} className="flex items-center gap-1 px-3 py-1 pr-8 rounded-full bg-purple-100 text-primary text-sm font-medium border-none outline-none appearance-none cursor-pointer">
+                                        <option value="Available">Available</option>
+                                        <option value="Busy">Busy</option>
+                                        <option value="Offline">Offline</option>
+                                        <option value="Ideal">Ideal</option>
+                                    </select>
+                                    <ChevronDown className="w-4 h-4 text-primary absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
                                 </div>
                             </div>
                         </div>
@@ -177,39 +205,39 @@ const CarerProfilePage: React.FC<CarerProfileProps> = ({ carrierId, OpenEditView
                 <div>
                     <h3 className="text-base font-semibold text-gray-800 mb-2">Document Details</h3>
                     <div className="p-5 rounded-2xl h-52 overflow-auto custom-scrollbar bg-[#81B29C1A] w-full space-y-3">
-                        {bookingDetails?.documents?.uploadPoliceCheck?.docId || bookingDetails?.documents?.uploadFirstAidCertificate?.docId ? (
-                            <div>
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <img src="/icons/eye-icon.svg" alt="" />
-                                        <div className="">
-                                            <p className="block text-sm font-medium text-[#78777E]">{getOriginalFileName(bookingDetails?.documents?.uploadFirstAidCertificate?.docId)}</p>
-                                            <p className="block text-xs font-medium text-[#78777E]">{bookingDetails?.documents?.uploadFirstAidCertificate?.expiryDate}</p>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <a href={bookingDetails?.documents?.uploadFirstAidCertificate?.docId} target="_blank" rel="noopener noreferrer">
-                                            <img src="/icons/eye-icon.svg" alt="View" />
-                                        </a>
+                        {bookingDetails?.documents?.uploadFirstAidCertificate?.docId && (
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                    <img src="/icons/eye-icon.svg" alt="" />
+                                    <div className="">
+                                        <p className="block text-sm font-medium text-[#78777E]">{getOriginalFileName(bookingDetails?.documents?.uploadFirstAidCertificate?.docId)}</p>
+                                        <p className="block text-xs font-medium text-[#78777E]">{bookingDetails?.documents?.uploadFirstAidCertificate?.expiryDate}</p>
                                     </div>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <img src="/icons/eye-icon.svg" alt="" />
-                                        <div className="">
-                                            <p className="block text-sm font-medium text-[#78777E]">{getOriginalFileName(bookingDetails?.documents?.uploadPoliceCheck?.docId)}</p>
-                                            <p className="block text-xs font-medium text-[#78777E]">{bookingDetails?.documents?.uploadPoliceCheck?.expiryDate}</p>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <a href={bookingDetails?.documents?.uploadPoliceCheck?.docId} target="_blank" rel="noopener noreferrer">
-                                            <img src="/icons/eye-icon.svg" alt="View" />
-                                        </a>
-                                    </div>
+                                <div>
+                                    <a href={bookingDetails?.documents?.uploadFirstAidCertificate?.docId} target="_blank" rel="noopener noreferrer">
+                                        <img src="/icons/eye-icon.svg" alt="View" />
+                                    </a>
                                 </div>
                             </div>
-                        ) : (
-
+                        )}
+                        {bookingDetails?.documents?.uploadPoliceCheck?.docId && (
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                    <img src="/icons/eye-icon.svg" alt="" />
+                                    <div className="">
+                                        <p className="block text-sm font-medium text-[#78777E]">{getOriginalFileName(bookingDetails?.documents?.uploadPoliceCheck?.docId)}</p>
+                                        <p className="block text-xs font-medium text-[#78777E]">{bookingDetails?.documents?.uploadPoliceCheck?.expiryDate}</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a href={bookingDetails?.documents?.uploadPoliceCheck?.docId} target="_blank" rel="noopener noreferrer">
+                                        <img src="/icons/eye-icon.svg" alt="View" />
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+                        {!bookingDetails?.documents?.uploadFirstAidCertificate?.docId && !bookingDetails?.documents?.uploadPoliceCheck?.docId && (
                             <div className='flex justify-center items-center text-[#78777E]'>No Documents available</div>
                         )}
 

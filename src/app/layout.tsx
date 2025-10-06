@@ -1,13 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { TopLoaderProvider } from "@/context/TopLoader";
-import { SidebarProvider } from "@/context/SidebarContext";
-import ConfirmationPopup from "@/components/common/ConfirmationPopup";
-import { PopupProvider } from "@/context/PopupContext";
-import { Toaster } from "react-hot-toast";
-import { ChatSocketProvider } from "@/context/ChatSocketContext";
-import { LoadScript } from "@react-google-maps/api";
 import ClientProviders from "@/components/ClientProviders";
 
 const geistSans = Geist({

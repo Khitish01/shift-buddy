@@ -53,6 +53,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // If no role, redirect to login
+    // const redirectPath = role === 'superadmin' ? '/super-admin-login' : role === 'admin' ? '/admin-login' : '/';
     if (!role) {
         return NextResponse.redirect(new URL('/', request.url))
     }

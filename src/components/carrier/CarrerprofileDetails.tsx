@@ -22,6 +22,7 @@ import { adminClient } from "@/lib/apiClient";
 interface CalendarEvent extends EventInput {
   extendedProps: {
     calendar: string;
+    type?: string; // 'slot' or 'leave'
   };
 }
 
@@ -40,7 +41,7 @@ const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) =
   const [eventLevel, setEventLevel] = useState("");
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const calendarRef = useRef<FullCalendar>(null);
-   const [currentDate, setCurrentDate] = useState(dayjs());
+  const [currentDate, setCurrentDate] = useState(dayjs());
   //   const { isOpen, openModal, closeModal } = useModal();
   const router = useRouter()
 
@@ -49,6 +50,14 @@ const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) =
     Success: "success",
     Primary: "primary",
     Warning: "warning",
+    Leave: {
+      "Annual Leave": "text-[#1F9254] bg-[#EBF9F1]",
+      "Sick Leave": "text-[#FF8285] bg-[#FBE7E8]",
+      "Emergency Leave": "text-[#909090] bg-[#90909036]",
+      "Personal Leave": "text-[#69417E] bg-[#F2C7AC59]",
+      "Medical Leave": "text-[#69417E] bg-[#F2C7AC59]",
+      "Long Service Leave": "text-[#69417E] bg-[#F2C7AC59]",
+    }
   };
 
   useEffect(() => {
@@ -86,6 +95,7 @@ const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) =
 
   const handleEventClick = (clickInfo: EventClickArg) => {
     const event = clickInfo.event;
+    if (event.extendedProps.type === 'leave') return;
     setSelectedEvent(event as unknown as CalendarEvent);
     setEventTitle(event.title);
     setEventStartDate(event.start?.toISOString().split("T")[0] || "");
@@ -145,11 +155,13 @@ const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) =
 
   const loader = useTopLoader();
   const [bookingDetails, setBookingDetails] = useState<any>();
+  const [leaveDetails, setLeaveDetails] = useState<any>();
   const statusToCalendar: any = {
     cancelled: calendarsEvents.Danger,
     completed: calendarsEvents.Success,
     pending: calendarsEvents.Primary,
     default: calendarsEvents.Warning,
+    leave: calendarsEvents.Leave,
   };
 
   const getBookingDetails = async () => {
@@ -167,13 +179,25 @@ const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) =
     const res = await apiCall<any>(adminClient, 'POST', `/slot/v1/get_carrier_slot`, payload)
     console.log(res);
     setBookingDetails(res.data);
+    setLeaveDetails(res.leave);
+    // let data = res?.data || [];
 
     const events = res?.data.map((item: any, index: number) => ({
       id: String(index + 1),
       title: `${item.status}(${item.count})`,
       start: item.date,
-      extendedProps: { calendar: statusToCalendar[item.status] || statusToCalendar.default }
+
+      extendedProps: { calendar: statusToCalendar[item.status] || statusToCalendar.default, type: 'slot' }
     }));
+    res.leave.forEach((leaveItem: any) => {
+      events.push({
+        id: `leave-${leaveItem._id}`,
+        title: leaveItem.leaveType.leaveType,
+        start: leaveItem.date,
+
+        extendedProps: { calendar: statusToCalendar.leave[leaveItem.leaveType.leaveType], type: 'leave' }
+      });
+    })
     setEvents(events)
     loader.hideLoader()
   }
@@ -181,7 +205,7 @@ const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) =
     getBookingDetails()
   }, [carrierId, currentDate]);
   // const calendarRef = useRef<FullCalendar | null>(null);
- 
+
 
   const updateCurrentDate = () => {
     if (calendarRef.current) {
@@ -265,16 +289,30 @@ const CalendarPage: React.FC<CarerProfileProps> = ({ carrierId, carrierName }) =
 };
 
 const renderEventContent = (eventInfo: EventContentArg) => {
-  const colorClass = `fc-bg-${eventInfo.event.extendedProps.calendar.toLowerCase()}`;
-  return (
-    <div
-      className={`event-fc-color flex fc-event-main ${colorClass} p-1 rounded-sm`}
-    >
-      <div className="fc-daygrid-event-dot"></div>
-      <div className="fc-event-time">{eventInfo.timeText}</div>
-      <div className="fc-event-title">{eventInfo.event.title}</div>
-    </div>
-  );
+  if (eventInfo.event.extendedProps.type == 'leave') {
+    return (
+      <div
+        className={`event-fc-color flex fc-event-main ${eventInfo.event.extendedProps.calendar} p-1 rounded-sm`}
+      >
+        <div className={`fc-daygrid-event-dot ${eventInfo.event.extendedProps.calendar} filter saturate-[100]`}></div>
+        <div className="fc-event-time">{eventInfo.timeText}</div>
+        <div className="fc-event-title">{eventInfo.event.title}</div>
+      </div>
+    );
+  } else {
+    const colorClass = `fc-bg-${eventInfo.event.extendedProps.calendar.toLowerCase()}`;
+    return (
+      <div
+        className={`event-fc-color flex fc-event-main ${colorClass} p-1 rounded-sm`}
+      >
+        <div className="fc-daygrid-event-dot"></div>
+        <div className="fc-event-time">{eventInfo.timeText}</div>
+        <div className="fc-event-title">{eventInfo.event.title}</div>
+      </div>
+    );
+  }
+
+
 };
 
 export default CalendarPage;

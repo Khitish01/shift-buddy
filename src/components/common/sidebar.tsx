@@ -25,40 +25,74 @@ import Cookies from 'js-cookie';
 
 const SideBar = () => {
     const [activeView, setActiveView] = useState('dashboard');
+    const [userRole, setUserRole] = useState<string>('');
     const { isOpen, isCollapse, collapse, toggle } = useSidebar();
     const isMobile = useIsMobile();
     const router = useRouter();
     const path = usePathname();
 
     useEffect(() => {
+        const role = Cookies.get('role') || '';
+        setUserRole(role);
+    }, []);
+
+    useEffect(() => {
         if (activeView == 'logout') {
             Cookies.remove('accessToken');
             Cookies.remove('role');
-            // sessionStorage.clear()
-            router.push('/');
-
+            const redirectPath = userRole === 'superadmin' ? '/super-admin-login' : userRole === 'admin' ? '/admin-login' : '/';
+            router.push(redirectPath);
         } else if (activeView == 'settings') {
-            // Cookies.remove('accessToken');
-            // Cookies.remove('role');
-            // sessionStorage.clear()
-            router.push('/admin/settings');
-
+            const basePath = userRole;
+            router.push(`${basePath}/settings`);
         }
-    }, [activeView])
+    }, [activeView, userRole])
 
-    const sidebarItems = [
-        { icon: DashBoardIcon, label: 'Home', id: 'dashboard', path: '/admin/dashboard' },
-        { icon: BookingIcon, label: 'Booking Management', id: 'booking', path: '/admin/booking' },
-        { icon: ParticipantIcon, label: 'Participant Management', id: 'participant', path: '/admin/participant' },
-        { icon: CarrierIcon, label: 'Carer Management', id: 'carrier', path: '/admin/carrier' },
-        { icon: ShiftIcon, label: 'Shift Management', id: 'shift', path: '/admin/shift' },
-        { icon: LeaveIcon, label: 'Leave Management', id: 'leave', path: '/admin/leave' },
-        { icon: VehicleIcon, label: 'Vehicle Management', id: 'vehicle', path: '/admin/vehicle' },
-        { icon: CalendarClock, label: 'Time-Sheet Management', id: 'time-sheet', path: '/admin/time-sheet' },
-        { icon: Receipt, label: 'Invoice Management', id: 'invoice', path: '/admin/invoice' },
-        { icon: BookCheck, label: 'Service Pricing', id: 'service', path: '/admin/service' },
-        { icon: Mail, label: 'Email Communication', id: 'email', path: '/admin/email' },
-    ];
+    const getSidebarItems = () => {
+        const baseItems = [
+            { icon: DashBoardIcon, label: 'Home', id: 'dashboard', path: `/${userRole}/dashboard` },
+        ];
+
+        if (userRole === 'superadmin') {
+            return [
+                ...baseItems,
+                // { icon: BookingIcon, label: 'Booking Management', id: 'booking', path: '/admin/booking' },
+                // { icon: ParticipantIcon, label: 'Participant Management', id: 'participant', path: '/admin/participant' },
+                // { icon: CarrierIcon, label: 'Carer Management', id: 'carrier', path: '/admin/carrier' },
+                // { icon: ShiftIcon, label: 'Shift Management', id: 'shift', path: '/admin/shift' },
+                // { icon: LeaveIcon, label: 'Leave Management', id: 'leave', path: '/admin/leave' },
+                // { icon: VehicleIcon, label: 'Vehicle Management', id: 'vehicle', path: '/admin/vehicle' },
+                { icon: CalendarClock, label: 'Time-Sheet Management', id: 'time-sheet', path: '/admin/time-sheet' },
+                { icon: Receipt, label: 'Invoice Management', id: 'invoice', path: '/admin/invoice' },
+                { icon: BookCheck, label: 'Service Pricing', id: 'service', path: '/admin/service' },
+                { icon: Mail, label: 'Email Communication', id: 'email', path: '/admin/email' },
+            ];
+        } else if (userRole === 'admin') {
+            return [
+                ...baseItems,
+                { icon: BookingIcon, label: 'Booking Management', id: 'booking', path: '/admin/booking' },
+                { icon: ParticipantIcon, label: 'Participant Management', id: 'participant', path: '/admin/participant' },
+                { icon: CarrierIcon, label: 'Carer Management', id: 'carrier', path: '/admin/carrier' },
+                { icon: ShiftIcon, label: 'Shift Management', id: 'shift', path: '/admin/shift' },
+                { icon: LeaveIcon, label: 'Leave Management', id: 'leave', path: '/admin/leave' },
+                { icon: VehicleIcon, label: 'Vehicle Management', id: 'vehicle', path: '/admin/vehicle' },
+                { icon: CalendarClock, label: 'Time-Sheet Management', id: 'time-sheet', path: '/admin/time-sheet' },
+                { icon: Receipt, label: 'Invoice Management', id: 'invoice', path: '/admin/invoice' },
+                { icon: BookCheck, label: 'Service Pricing', id: 'service', path: '/admin/service' },
+                { icon: Mail, label: 'Email Communication', id: 'email', path: '/admin/email' },
+            ];
+        } else if (userRole === 'carer') {
+            return [
+                ...baseItems,
+                { icon: ShiftIcon, label: 'My Shifts', id: 'shift', path: '/carer/shift' },
+                { icon: LeaveIcon, label: 'Leave Requests', id: 'leave', path: '/carer/leave' },
+                { icon: CalendarClock, label: 'Time-Sheet', id: 'time-sheet', path: '/carer/time-sheet' },
+            ];
+        }
+        return baseItems;
+    };
+
+    const sidebarItems = getSidebarItems();
     return (
         <div className="relative z-50">
             <div
@@ -115,7 +149,6 @@ const SideBar = () => {
                                     title={item.label}
                                 >
                                     <item.icon className={`w-6 h-6`} />
-                                    {/* <img src={item?.icon} alt="" className={`w-5 h-5 ${!path.includes(item.id) ? '' : 'filter invert sepia saturate-[500%] hue-rotate-[235deg] brightness-[95%] contrast-[87%]'}`} /> */}
                                 </button>
                             ))
                         ) : (
@@ -133,7 +166,6 @@ const SideBar = () => {
                                         }`}
                                 >
                                     <item.icon className={`w-6 h-6 `} />
-                                    {/* <img src={item?.icon} alt="" className={`w-5 h-5 ${!path.includes(item.id) ? '' : 'filter invert sepia saturate-[500%] hue-rotate-[235deg] brightness-[95%] contrast-[87%]'}`} /> */}
                                     <span>{item.label}</span>
                                 </button>
                             ))

@@ -1,3 +1,4 @@
+
 import Layout from "@/components/layout/Layout";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -14,11 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "Organization Admin",
-    description: "This is the organization admin",
+    title: "Super Admin",
+    description: "This is the shift buddy super admin",
 };
 
-export default function AdminLayout({
+export default function SuperAdminLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
@@ -30,7 +31,6 @@ export default function AdminLayout({
 
             <Layout>{children}</Layout>
 
-            {/* <Footer /> */}
         </div>
 
     );

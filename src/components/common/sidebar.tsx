@@ -44,7 +44,7 @@ const SideBar = () => {
             router.push(redirectPath);
         } else if (activeView == 'settings') {
             const basePath = userRole;
-            router.push(`${basePath}/settings`);
+            router.push(`/${basePath}/settings`);
         }
     }, [activeView, userRole])
 

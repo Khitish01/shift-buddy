@@ -63,7 +63,7 @@ export const AdminLoginPage = ({ onLogin }: LoginPageProps) => {
             // }, 1000)
 
 
-            router.push(res?.user?.role)
+            router.push('dashboard')
         } catch (error: any) {
             console.error('API error:', error.response?.data || error.message);
             showErrorToast(error?.response?.data?.msg || 'Something went wrong');

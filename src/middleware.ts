@@ -3,11 +3,11 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 // import { jwtVerify } from 'jose'
 
-// Define protected routes
+// Define base protected routes
 const protectedRoutes = {
-    admin: ['/admin', '/admin/dashboard'],
-    carer: ['/carer', '/carer/dashboard'],
-    superadmin: ['/superadmin'],
+    admin: '/admin',
+    carer: '/carer',
+    superadmin: '/superadmin'
 }
 
 // Function to get user role (mocked from cookies/localStorage/etc.)
@@ -37,33 +37,40 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
     const role = getUserRole(request)
 
-    // const accessToken = request.cookies.get('accessToken')?.value
+    // Only protect the 3 specific routes
+    const isProtectedRoute = pathname.startsWith('/admin') || 
+                           pathname.startsWith('/carer') || 
+                           pathname.startsWith('/superadmin')
 
-    // if (!accessToken || !(await verifyToken(accessToken))) {
-    //     return NextResponse.redirect(new URL('/unauthorized', request.url))
-    // }
+    // If not a protected route, allow access
+    if (!isProtectedRoute) {
+        return NextResponse.next()
+    }
 
-    // Skip checks for static files, API, etc.
+    // Allow public access to login pages
     if (
-        pathname.startsWith('/_next') ||
-        pathname.startsWith('/api') ||
-        pathname === '/favicon.ico'
+        pathname === '/admin/login' ||
+        pathname === '/carer/login' ||
+        pathname === '/superadmin/login'
     ) {
         return NextResponse.next()
     }
 
-    // If no role, redirect to login
-    // const redirectPath = role === 'superadmin' ? '/super-admin-login' : role === 'admin' ? '/admin-login' : '/';
+    // If no role, redirect to appropriate login page
     if (!role) {
-        return NextResponse.redirect(new URL('/', request.url))
+        if (pathname.startsWith('/admin')) {
+            return NextResponse.redirect(new URL('/admin/login', request.url))
+        } else if (pathname.startsWith('/carer')) {
+            return NextResponse.redirect(new URL('/carer/login', request.url))
+        } else if (pathname.startsWith('/superadmin')) {
+            return NextResponse.redirect(new URL('/superadmin/login', request.url))
+        }
     }
 
-    // Check if the path is allowed for the user's role
-    const allowedPaths = protectedRoutes[role as keyof typeof protectedRoutes] || []
+    // Check if the path matches the user's role base route
+    const allowedBasePath = protectedRoutes[role as keyof typeof protectedRoutes]
 
-    const isAllowed = allowedPaths.some(path => pathname.startsWith(path))
-
-    if (!isAllowed) {
+    if (!allowedBasePath || !pathname.startsWith(allowedBasePath)) {
         return NextResponse.redirect(new URL('/unauthorized', request.url))
     }
 

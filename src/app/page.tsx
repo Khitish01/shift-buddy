@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Home() {
-  const [role, setRole] = useState('admin') // example role
+  // const [role, setRole] = useState('admin') // example role
   const router = useRouter()
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 

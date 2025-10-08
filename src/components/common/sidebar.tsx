@@ -40,11 +40,11 @@ const SideBar = () => {
         if (activeView == 'logout') {
             Cookies.remove('accessToken');
             Cookies.remove('role');
-            const redirectPath = userRole === 'superadmin' ? '/super-admin-login' : userRole === 'admin' ? '/admin-login' : '/';
-            router.push(redirectPath);
+            // const redirectPath = userRole === 'superadmin' ? '/superadmin' : userRole === 'admin' ? '/admin' : '/carer';
+            router.push(`/${userRole}`);
         } else if (activeView == 'settings') {
-            const basePath = userRole;
-            router.push(`/${basePath}/settings`);
+            // const basePath = userRole;
+            router.push(`/${userRole}/settings`);
         }
     }, [activeView, userRole])
 

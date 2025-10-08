@@ -40,7 +40,7 @@ export const CarerLoginPage = ({ onLogin }: LoginPageProps) => {
             const res = await apiCall<any>(carerClient, 'POST', '/carrier/v1/carrier-login', payload)
             // sessionStorage.setItem('accessToken', JSON.stringify(res.accessToken))
             // Cookies.set('accessToken', res.accessToken, { path: '/', secure: true, sameSite: 'Lax' })
-            const role = res?.carrer?.role == "carrier" ? 'carer' : 'superadmin'
+            const role = res?.carrer?.role == "carer" ? 'carer' : 'superadmin'
             console.log(role);
             
             Cookies.set('accessToken', res.accessToken, {
@@ -66,7 +66,7 @@ export const CarerLoginPage = ({ onLogin }: LoginPageProps) => {
             // }, 1000)
 
 
-            router.push(role)
+            router.push('dashboard')
         } catch (error: any) {
             console.error('API error:', error.response?.data || error.message);
             showErrorToast(error?.response?.data?.msg || 'Something went wrong');

@@ -7,7 +7,7 @@ const CarerModule = () => {
     const router = useRouter();
 
     useEffect(() => {
-        router.replace('/carer/dashboard'); // Redirect to carer dashboard
+        router.replace('/carer/login'); // Redirect to carer dashboard
     }, [router]);
 
     return (

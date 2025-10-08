@@ -7,7 +7,7 @@ const AdminModule = () => {
     const router = useRouter();
 
     useEffect(() => {
-        router.replace('/admin/dashboard'); // Redirect to /dashboard
+        router.replace('/admin/login'); // Redirect to /dashboard
     }, [router]);
 
     return null; // Optional: you can show a loading spinner here if you want

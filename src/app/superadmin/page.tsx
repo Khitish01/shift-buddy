@@ -7,7 +7,7 @@ const SuperAdminModule = () => {
     const router = useRouter();
 
     useEffect(() => {
-        router.replace('/superadmin/dashboard'); // Redirect to carer dashboard
+        router.replace('/superadmin/login'); // Redirect to carer dashboard
     }, [router]);
 
     return (

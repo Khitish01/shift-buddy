@@ -14,11 +14,9 @@ import Cookies from 'js-cookie'
 import { useChatSocket } from '@/context/ChatSocketContext';
 import { adminClient, carerClient } from '@/lib/apiClient';
 
-interface LoginPageProps {
-    onLogin: () => void;
-}
 
-export const CarerLoginPage = ({ onLogin }: LoginPageProps) => {
+
+export const CarerLoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('admin') // example role
@@ -66,7 +64,7 @@ export const CarerLoginPage = ({ onLogin }: LoginPageProps) => {
             // }, 1000)
 
 
-            router.push('dashboard')
+            router.push('/carer/dashboard')
         } catch (error: any) {
             console.error('API error:', error.response?.data || error.message);
             showErrorToast(error?.response?.data?.msg || 'Something went wrong');
